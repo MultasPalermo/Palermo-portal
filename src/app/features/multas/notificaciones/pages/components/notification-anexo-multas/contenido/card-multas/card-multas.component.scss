@@ -1,0 +1,43 @@
+.multa-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+
+  .multa-header {
+    font-weight: bold;
+    color: #d32f2f;
+    margin-bottom: 0.5rem;
+  }
+
+  .multa-body {
+    font-size: 0.95rem;
+
+    .multa-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .estado {
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      color: white;
+      font-weight: bold;
+
+      &.estado-abierto {
+        background-color: #4caf50;
+      }
+      &.estado-pendiente {
+        background-color: #ff9800;
+      }
+    }
+
+    .multa-location {
+      margin-top: 0.5rem;
+      color: #616161;
+      font-size: 0.85rem;
+    }
+  }
+}

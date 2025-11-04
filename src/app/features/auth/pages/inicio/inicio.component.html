@@ -1,0 +1,186 @@
+<div class="page-wrapper">
+  <!-- NAV -->
+  <nav class="navbar" role="navigation" aria-label="Principal">
+    <h3 class="logo">Sistema de Multas</h3>
+    <div class="nav-links">
+      <a href="#" class="login-btn" (click)="onLogin($event)" role="button" aria-label="Iniciar sesión">
+        Acceso Funcionario
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <main class="hero" id="inicio">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-badge">Sistema Ciudadano</span>
+        <h1 class="hero-title">
+          Sistema de Multas<br/>
+          de Convivencia
+        </h1>
+        <p class="hero-subtitle">
+          Consulta rápida, información transparente y gestión digital de tus infracciones ciudadanas
+        </p>
+      </div>
+      <div class="hero-form">
+        <app-identification
+          [layout]="'embedded'"
+          [mode]="'modal'"
+          (loginSuccess)="onMultasConsultadas($event.multas, $event.ciudadano)">
+        </app-identification>
+      </div>
+    </div>
+  </main>
+
+  <!-- SERVICIOS -->
+  <section class="services-section" id="servicios">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Nuestros Servicios</span>
+        <h2 class="section-title">¿Qué puedes hacer aquí?</h2>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">
+            <mat-icon>search</mat-icon>
+          </div>
+          <h3>Consulta</h3>
+          <p>Busca tus multas de convivencia ciudadana de forma rápida y segura</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">
+            <mat-icon>description</mat-icon>
+          </div>
+          <h3>Detalles</h3>
+          <p>Accede a información completa sobre infracciones y procedimientos</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">
+            <mat-icon>verified_user</mat-icon>
+          </div>
+          <h3>Seguridad</h3>
+          <p>Sistema seguro que protege tu información personal en todo momento</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">
+            <mat-icon>schedule</mat-icon>
+          </div>
+          <h3>Disponible 24/7</h3>
+          <p>Consulta en cualquier momento, desde cualquier dispositivo</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Proceso Simple</span>
+        <h2 class="section-title">¿Cómo funciona?</h2>
+      </div>
+      <app-step-card [steps]="steps"></app-step-card>
+    </div>
+  </section>
+
+  <!-- INFO CARDS -->
+  <section class="info-section">
+    <div class="container">
+      <div class="info-grid">
+        <div class="info-card primary">
+          <div class="info-card-content">
+            <mat-icon>article</mat-icon>
+            <h3>Consulta de multas</h3>
+            <p>
+              Ingresa tu documento de identificación en el formulario principal para consultar
+              si tienes multas de convivencia ciudadana. El sistema te mostrará información
+              detallada sobre cada infracción registrada.
+            </p>
+          </div>
+        </div>
+
+        <div class="info-card secondary">
+          <div class="info-card-content">
+            <mat-icon>admin_panel_settings</mat-icon>
+            <h3>Para Funcionarios</h3>
+            <p>
+              Si eres funcionario de la administración municipal de <strong>Palermo</strong>,
+              utiliza el botón "Acceso Funcionario" para ingresar al panel administrativo
+              con tus credenciales.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANNER DESTACADO -->
+      <div class="featured-banner">
+        <div class="banner-content">
+          <mat-icon>info</mat-icon>
+          <div>
+            <h3>Información Transparente</h3>
+            <p>Accede a todos los tipos de infracciones y sus respectivas sanciones establecidas por la ley</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIPOS DE MULTAS -->
+  <section class="multas-section" id="consultas" aria-labelledby="titulo-multas">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Información Legal</span>
+        <h2 class="section-title" id="titulo-multas">Tipos de Infracciones</h2>
+      </div>
+
+      <mat-accordion [multi]="false" class="accordion-lg">
+        <ng-container *ngFor="let cat of categories; let i = index">
+          <mat-expansion-panel (opened)="onParentOpened(i)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ cat.title }}</mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <mat-accordion [multi]="true" class="sub-accordion-lg" #subAcc>
+              <ng-container *ngFor="let it of cat.items; let j = index">
+                <mat-expansion-panel>
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>{{ it.title }}</mat-panel-title>
+                  </mat-expansion-panel-header>
+                  <p class="subtext">{{ it.text }}</p>
+                </mat-expansion-panel>
+              </ng-container>
+            </mat-accordion>
+          </mat-expansion-panel>
+        </ng-container>
+      </mat-accordion>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-info">
+          <h3>Sistema de Multas</h3>
+          <p>Municipio de Palermo - Convivencia Ciudadana</p>
+        </div>
+        <div class="footer-year">
+          <p>© 2025</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE MULTAS -->
+  <app-multas-modal
+    [(visible)]="modalVisible"
+    [multas]="multas"
+    [ciudadano]="ciudadano"
+    (visibleChange)="onModalClose()">
+  </app-multas-modal>
+</div>

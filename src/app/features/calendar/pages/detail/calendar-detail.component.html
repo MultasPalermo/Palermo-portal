@@ -1,0 +1,53 @@
+<div class="calendar-detail-wrapper">
+  <div class="calendar-detail-header">
+    <button class="back-btn" (click)="goBack()">&#8592;</button>
+    <h1>Calendario</h1>
+    <p>
+      En este calendario podrás visualizar el plazo establecido para el pago de tus multas.<br>
+      <span class="green">Si realizas el pago durante los días marcados en color verde, obtendrás un descuento del 50% sobre el valor total.</span>
+      <span class="yellow">Si pagas durante los días señalados en color amarillo, deberás cancelar el valor completo de la multa, sin descuento.</span>
+      <span class="black">El día marcado con color negro representa el día actual.</span>
+    </p>
+  </div>
+  <div class="calendar-detail-content">
+    <div class="calendar-panel">
+      <div class="calendar-nav">
+        <button class="calendar-arrow-btn" (click)="prevMonth()">
+          <span>&#9650;</span>
+        </button>
+        <span style="font-weight: bold; font-size: 1.2rem;">{{ months[selectedMonth] }} - {{ selectedYear }}</span>
+        <button class="calendar-arrow-btn" (click)="nextMonth()">
+          <span>&#9660;</span>
+        </button>
+      </div>
+      <div class="calendar-grid">
+        <div class="week-row">
+          <span *ngFor="let wd of weekDays" class="week-day">{{ wd }}</span>
+        </div>
+        <div class="days-row">
+          <span 
+            *ngFor="let day of getDaysArray(); let i = index"
+            [ngClass]="getDayColor(day)"
+            class="calendar-day">
+            {{ day ? day : '' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="calendar-info-panel">
+      <h3>Información del pago</h3>
+      <div class="info-card">
+        <strong>Conferencia - UNIN</strong>
+        <p>
+          Si pagas en día <span class="green">verde</span>: descuento del 50%. Ejemplo: multa tipo 1 de $198.000.
+        </p>
+      </div>
+      <div class="info-card">
+        <strong>Conferencia - UNIN</strong>
+        <p>
+          Si pagas en día <span class="yellow">amarillo</span>: sin descuento. Ejemplo: multa tipo 2 de $376.000.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

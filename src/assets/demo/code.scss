@@ -1,0 +1,26 @@
+pre.app-code {
+    background-color: var(--code-background);
+    margin: 0 0 1rem 0;
+    padding: 0;
+    border-radius: var(--content-border-radius);
+    overflow: auto;
+
+    code {
+        color: var(--code-color);
+        padding: 1rem;
+        margin: 0;
+        line-height: 1.5;
+        display: block;
+        font-weight: semibold;
+        font-family: monaco, Consolas, monospace;
+    }
+
+    .sidebar-logo {
+  background-image: url('/assets/flags/image_6.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  height: 100px;
+  width: 100px;
+}
+
+}

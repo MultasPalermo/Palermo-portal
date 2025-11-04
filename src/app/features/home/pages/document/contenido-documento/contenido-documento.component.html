@@ -1,0 +1,24 @@
+<!-- contenido-documento.component.html -->
+<mat-card class="payment-fines-card">
+  <app-card-header
+    [showBack]="true"
+    (back)="onBack()"
+    title="Multas de convivencia ciudadana"
+    [description]="ciudadano ? 'Ciudadano: ' + ciudadano : 'Seleccione las multas que desea incluir en el acuerdo de pago.\nPuede elegir una o varias multas para generar el acuerdo.'">
+  </app-card-header>
+
+  <div class="multas-actions">
+    <button mat-raised-button color="primary" (click)="openMultasModal()">
+      <mat-icon>visibility</mat-icon>
+      Ver Multas
+    </button>
+  </div>
+
+  <app-multas-modal
+    [(visible)]="modalVisible"
+    [multas]="multas"
+    [ciudadano]="ciudadano"
+    (visibleChange)="onModalClose()">
+  </app-multas-modal>
+
+</mat-card>

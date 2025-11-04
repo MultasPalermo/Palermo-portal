@@ -1,0 +1,152 @@
+<!-- Paso 1 - Formulario -->
+<div class="form-container" *ngIf="step === 1">
+  <button type="button" class="back-button" (click)="goHome()">⬅ Volver</button>
+
+  <h2>Crear Acuerdo de Pago</h2>
+
+  <form #formRef="ngForm" (ngSubmit)="goToStep2(formRef)">
+    <div class="form-grid">
+      <div class="form-column">
+        <label>Nombre</label>
+        <input type="text" [(ngModel)]="initData.personName" name="personName" readonly />
+
+        <label>Número de Documento</label>
+        <input type="text" [(ngModel)]="initData.documentNumber" name="documentNumber" readonly />
+
+        <label>Tipo de Documento</label>
+        <input type="text" [(ngModel)]="initData.documentType" name="documentType" readonly />
+
+        <label>Fecha de Expedición de la Cédula</label>
+        <input type="date" [(ngModel)]="form.expeditionCedula" name="expeditionCedula" required [max]="today"
+          #expDate="ngModel" />
+        <div class="error" *ngIf="expDate.invalid && expDate.touched">
+          <small *ngIf="expDate.errors?.['required']">⚠️ La fecha de expedición es obligatoria.</small>
+        </div>
+
+        <label>Número de Teléfono</label>
+        <input type="text" [(ngModel)]="form.phoneNumber" name="phoneNumber" required pattern="^[0-9]{7,10}$"
+          #phone="ngModel" />
+        <div class="error" *ngIf="phone.invalid && phone.touched">
+          <small *ngIf="phone.errors?.['required']">⚠️ El teléfono es obligatorio.</small>
+          <small *ngIf="phone.errors?.['pattern']">⚠️ El teléfono debe tener entre 7 y 10 dígitos.</small>
+        </div>
+
+        <label>Dirección</label>
+        <input type="text" [(ngModel)]="form.address" name="address" required #address="ngModel" />
+        <div class="error" *ngIf="address.invalid && address.touched">
+          <small>⚠️ La dirección es obligatoria.</small>
+        </div>
+
+        <label>Barrio</label>
+        <input type="text" [(ngModel)]="form.neighborhood" name="neighborhood" required #neigh="ngModel" />
+        <div class="error" *ngIf="neigh.invalid && neigh.touched">
+          <small>⚠️ El barrio es obligatorio.</small>
+        </div>
+
+        <label>Método de Pago</label>
+        <select [(ngModel)]="form.typePaymentId" name="typePaymentId" required #typePay="ngModel">
+          <option *ngFor="let tp of typePayments" [ngValue]="tp.id">{{tp.name}}</option>
+        </select>
+        <div class="error" *ngIf="typePay.invalid && typePay.touched">
+          <small>⚠️ Selecciona un método de pago.</small>
+        </div>
+
+        <label>Frecuencia de Pago</label>
+        <select [(ngModel)]="form.paymentFrequencyId" name="paymentFrequencyId" required #freq="ngModel"
+          (change)="onFrequencyChange($event)">
+          <option *ngFor="let f of paymentFrequencies" [ngValue]="f.id">{{f.intervalPage}}</option>
+        </select>
+        <div class="error" *ngIf="freq.invalid && freq.touched">
+          <small>⚠️ Selecciona una frecuencia de pago.</small>
+        </div>
+      </div>
+
+      <div class="form-column">
+        <label>Correo Electrónico</label>
+        <input type="email" [(ngModel)]="form.email" name="email" required #email="ngModel" />
+        <div class="error" *ngIf="email.invalid && email.touched">
+          <small *ngIf="email.errors?.['required']">⚠️ El correo es obligatorio.</small>
+          <small *ngIf="email.errors?.['email']">⚠️ El formato del correo no es válido.</small>
+        </div>
+
+        <label>Infracción</label>
+        <input type="text" [(ngModel)]="initData.infringement" name="infringement" readonly />
+
+        <label>Tipo de Multa</label>
+        <input type="text" [(ngModel)]="initData.typeFine" name="typeFine" readonly />
+
+        <label>Valor en SMDLV</label>
+        <input type="number" [(ngModel)]="initData.valorSMDLV" name="valorSMDLV" readonly />
+
+        <label>Descripción</label>
+        <textarea rows="4" [(ngModel)]="form.agreementDescription" name="agreementDescription" required maxlength="500"
+          #desc="ngModel"></textarea>
+        <div class="error" *ngIf="desc.invalid && desc.touched">
+          <small *ngIf="desc.errors?.['required']">⚠️ La descripción es obligatoria.</small>
+          <small *ngIf="desc.errors?.['maxlength']">⚠️ No puede superar los 500 caracteres.</small>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn green">Continuar a cuotas</button>
+  </form>
+</div>
+
+<!-- Paso 2 - Cuotas -->
+<div class="agreement-card" *ngIf="step === 2">
+  <button type="button" class="back-btn" (click)="goToStep1()">⬅ Volver</button>
+
+  <h2>Acuerdo de Pago - Cuotas</h2>
+
+  <form (ngSubmit)="onConfirm()">
+      <div class="form-group">
+        <label for="installments">Número de cuotas</label>
+        <input id="installments" type="number" [(ngModel)]="form.installments" name="installments" required min="1"
+          [readonly]="selectedFrequency?.intervalPage === 'UNICA'" (ngModelChange)="onInstallmentsChange($event)"
+          #inst="ngModel" />
+        <div class="error" *ngIf="inst.invalid && inst.touched">
+          <small>⚠️ El número de cuotas debe ser válido.</small>
+        </div>
+      </div>
+
+    <div class="form-row">
+      <!-- Monto total -->
+      <div class="form-group">
+        <label>Monto total</label>
+        <p class="amount">
+          {{ (form.baseAmount > 0 ? form.baseAmount : initData.baseAmount) | currency:'COP':'symbol':'1.0-0' }}
+        </p>
+      </div>
+
+
+      <div class="form-group">
+        <label for="monthlyFee">Valor de cada cuota</label>
+        <input id="monthlyFee" type="number" [value]="form.monthlyFee" name="monthlyFee" readonly />
+      </div>
+
+    </div>
+
+    <button type="submit" class="btn-confirm">Confirmar acuerdo</button>
+  </form>
+</div>
+
+<!-- Paso 3 - Confirmación -->
+<div class="success-card" *ngIf="step === 3">
+  <h2>Tu acuerdo de pago ha sido generado con éxito</h2>
+  <p>Tu acuerdo de pago ha sido creado correctamente. Puedes descargar el comprobante o volver al inicio.</p>
+
+  <div class="dates">
+    <div class="date-item">
+      <label>Fecha de inicio</label>
+      <p>{{ agreementStart | date:'yyyy-MM-dd' }}</p>
+    </div>
+    <div class="date-item">
+      <label>Fecha de vencimiento</label>
+      <p>{{ agreementEnd | date:'yyyy-MM-dd' }}</p>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="btn-secondary" (click)="goHome()">Volver al inicio</button>
+  </div>
+</div>

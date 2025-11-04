@@ -1,0 +1,26 @@
+// variables primero (si las tienes)
+@use './variables/_common' as *;
+@use './variables/_light' as *;
+@use './variables/_dark' as *;
+@use './variables/_profile' as *;
+
+// utilidades y mixins
+@use './_mixins';
+
+// bloques globales del layout
+@use './_preloading';
+@use './_core';
+@use './_main';
+@use './_menu';
+@use './_footer';
+@use './_responsive';
+@use './_typography';
+@use './_utils';
+@use './_topbar';
+
+// páginas/estilos específicos
+@use './_registrar';
+@use './_recoveryPassword';
+
+// **tu login**
+@use './_veryCode';

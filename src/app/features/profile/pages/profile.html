@@ -1,0 +1,98 @@
+<!-- Toast para mensajes -->
+<p-toast></p-toast>
+
+<!-- Loading overlay -->
+<div *ngIf="isLoading" class="loading-overlay">
+  <i class="pi pi-spin pi-spinner" style="font-size: 3rem"></i>
+</div>
+
+<div class="setting-container">
+    <!-- Profile Info Section -->
+    <div class="profile-info">
+      <div class="avatar-container">
+        <div class="profile-avatar">
+          <span class="profile-initials">{{ getInitials() }}</span>
+        </div>
+        <span class="online-indicator"></span>
+      </div>
+      
+      <div class="profile-details">
+        <h2 class="profile-name">{{ getFullName() }}</h2>
+      </div>
+    </div>
+
+    <!-- Logout Button Section -->
+    <div class="logout-section">
+      <button class="logout-btn" (click)="logout()" type="button">
+        <i class="pi pi-sign-out"></i>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+
+    <!-- Edit Profile Section -->
+    <div class="edit-profile-section">
+      <div class="section-header">
+        <span class="last-update"></span>
+      </div>
+
+      <!-- Profile Content -->
+        <div class="form-sections">
+          <!-- Personal Section -->
+          <div class="form-section">
+            <h4 class="section-title">Persona</h4>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label>Nombre</label>
+                <div class="field-value">{{ profile?.firstName || 'No disponible' }}</div>
+              </div>
+              
+              <div class="form-field">
+                <label>Apellido</label>
+                <div class="field-value">{{ profile?.lastName || 'No disponible' }}</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Tipo de Documento</label>
+                <div class="field-value">{{ getDocumentType() || 'No disponible' }}</div>
+              </div>
+              
+              <div class="form-field">
+                <label>Número de Documento</label>
+                <div class="field-value">{{ profile?.documentNumber || 'No disponible' }}</div>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- Contact Section -->
+          <div class="form-section">
+            <h4 class="section-title">Contacto</h4>
+            
+            <div class="form-row">
+              <div class="form-field">
+                <label>Email</label>
+                <div class="field-value">{{ profile?.email || 'No disponible' }}</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Número de Teléfono</label>
+                <div class="field-value">{{ profile?.phoneNumber || 'No disponible' }}</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Ciudad</label>
+                <div class="field-value">{{ profile?.address || 'No disponible' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>

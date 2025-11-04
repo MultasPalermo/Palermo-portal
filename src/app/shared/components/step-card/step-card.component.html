@@ -1,0 +1,24 @@
+<section class="howto" aria-labelledby="howto-title">
+  <header class="howto__header">
+    <h2 id="howto-title">{{ headline }}</h2>
+    <p class="howto__subtitle">{{ subHeadline }}</p>
+  </header>
+
+  <div class="cards">
+    <!-- usamos data-num para pintar el número gigante con ::after -->
+    <article
+      class="card"
+      *ngFor="let s of steps; let i = index"
+    >
+      <div class="card__icon" *ngIf="s.icon">
+        <span class="material-symbols-outlined">{{ s.icon }}</span>
+      </div>
+
+      <!-- el número visible ya no se muestra (lo dibuja ::after) -->
+      <!-- <div class="card__number">{{ pad(s.number, i) }}</div> -->
+
+      <h3 class="card__title">{{ s.title }}</h3>
+      <p class="card__desc">{{ s.description }}</p>
+    </article>
+  </div>
+</section>

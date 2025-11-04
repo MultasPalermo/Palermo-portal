@@ -1,0 +1,26 @@
+<mat-card class="payment-fines-card">
+  <app-card-header
+   [showBack]="true"
+  (back)="onBack()"
+    title="Selección de Multas para Acuerdo de Pago"
+    [description]="ciudadano ? 'Ciudadano: ' + ciudadano : 'Seleccione una multa para generar el acuerdo de pago.'">
+  </app-card-header>
+
+  <!-- Mensaje de advertencia -->
+  <div *ngIf="searchWarning" class="warning-msg">
+    {{ searchWarning }}
+  </div>
+
+  <!-- Mensaje sin resultados -->
+  <div *ngIf="noResults && !searchWarning" class="no-results">
+    No se encontraron resultados para la búsqueda.
+  </div>
+
+  <!-- Tabla -->
+  <app-generic-multas-table
+    *ngIf="!noResults && !searchWarning"
+    [data]="multas"
+    [columns]="columns"
+    (rowClicked)="onMultaSelected($event)">
+  </app-generic-multas-table>
+</mat-card>

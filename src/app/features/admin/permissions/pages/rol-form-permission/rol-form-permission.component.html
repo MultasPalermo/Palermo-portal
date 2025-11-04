@@ -1,0 +1,163 @@
+<div class="grid">
+  <div class="col-12">
+    <p-card header="Gestión de Roles-Formularios-Permisos" class="shadow-2">
+
+      <!-- Toolbar -->
+      <p-toolbar class="mb-4">
+        <div class="p-toolbar-group-left">
+          <p-button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (onClick)="openNew()">
+          </p-button>
+        </div>
+
+        <div class="p-toolbar-group-right">
+          <span class="p-input-icon-left">
+            <input pInputText type="text" placeholder="Buscar..." [(ngModel)]="globalFilter"
+              (input)="onGlobalFilter($event)" class="w-full">
+          </span>
+        </div>
+      </p-toolbar>
+
+      <!-- Loading spinner -->
+      <div *ngIf="loading" class="flex justify-content-center align-items-center p-4">
+        <p-progressSpinner></p-progressSpinner>
+        <span class="ml-2">Cargando datos...</span>
+      </div>
+
+      <!-- Data table -->
+      <p-table *ngIf="!loading" [value]="filteredData" [rows]="10" [paginator]="true" [responsive]="true"
+        [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+        [tableStyle]="{'min-width': '60rem'}" class="p-datatable-gridlines">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="rolName" class="text-center">
+              Rol
+              <p-sortIcon field="rolName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="formName" class="text-center">
+              Formulario
+              <p-sortIcon field="formName"></p-sortIcon>
+            </th>
+            <th pSortableColumn="permissionName" class="text-center">
+              Permiso
+              <p-sortIcon field="permissionName"></p-sortIcon>
+            </th>
+            <th class="text-center">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-rowData>
+          <tr>
+            <td class="text-center">
+              <span class="p-tag p-tag-info font-bold">{{ rowData.rolName }}</span>
+            </td>
+            <td class="text-center">
+              <span class="font-medium">{{ rowData.formName }}</span>
+            </td>
+            <td class="text-center">
+              <span class="p-tag p-tag-success">{{ rowData.permissionName }}</span>
+            </td>
+            <td class="text-center">
+              <p-button icon="pi pi-pencil" class="p-button-rounded p-button-warning p-button-text mr-2"
+                pTooltip="Editar" tooltipPosition="top" (onClick)="editItem(rowData)">
+              </p-button>
+              <p-button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
+                tooltipPosition="top" (onClick)="deleteItem(rowData)">
+              </p-button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center p-4">
+              <div class="flex flex-column align-items-center">
+                <i class="pi pi-info-circle"
+                  style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                <span class="text-lg">No se encontraron registros</span>
+                <span class="text-500">Intente ajustar los filtros de búsqueda</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+    </p-card>
+  </div>
+</div>
+
+<!-- Dialog for Create/Edit -->
+<p-dialog 
+    [(visible)]="displayDialog" 
+    [header]="dialogTitle" 
+    [modal]="true"
+    [style]="{width: '90%', maxWidth: '900px', minWidth: '500px', height: '60vh', maxHeight: '90vh'}"
+    [contentStyle]="{overflow: 'auto'}"
+    [closable]="true" 
+    [draggable]="false"
+    [resizable]="false">
+
+  <form [formGroup]="rolFormPermissionForm" (ngSubmit)="saveItem()">
+
+    <!-- Rol Field -->
+    <div class="field">
+      <label for="rolid" class="block text-900 font-medium mb-2">
+        Rol <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown id="rolid" formControlName="rolid" [options]="roleOptions" placeholder="Seleccione un rol"
+        [style]="{'width': '100%'}">
+      </p-dropdown>
+
+      <small *ngIf="isFieldInvalid('rolid')" class="p-error block mt-1">
+        {{ getFieldError('rolid') }}
+      </small>
+    </div>
+
+    <!-- Form Field -->
+    <div class="field">
+      <label for="formid" class="block text-900 font-medium mb-2">
+        Formulario <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown id="formid" formControlName="formid" [options]="formOptions" placeholder="Seleccione un formulario"
+        [style]="{'width': '100%'}" [class]="isFieldInvalid('formid') ? 'ng-invalid ng-dirty p-invalid' : ''">
+      </p-dropdown>
+      <small *ngIf="isFieldInvalid('formid')" class="p-error block mt-1">
+        {{ getFieldError('formid') }}
+      </small>
+    </div>
+
+    <!-- Permission Field -->
+    <div class="field">
+      <label for="permissionid" class="block text-900 font-medium mb-2">
+        Permiso <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown id="permissionid" formControlName="permissionid" [options]="permissionOptions"
+        placeholder="Seleccione un permiso" [style]="{'width': '100%'}"
+        [class]="isFieldInvalid('permissionid') ? 'ng-invalid ng-dirty p-invalid' : ''">
+      </p-dropdown>
+      <small *ngIf="isFieldInvalid('permissionid')" class="p-error block mt-1">
+        {{ getFieldError('permissionid') }}
+      </small>
+    </div>
+
+  </form>
+
+   <ng-template pTemplate="footer">
+    <div class="flex justify-content-end gap-2">
+      <p-button label="Cancelar" icon="pi pi-times" class="p-button-text p-button-secondary" (onClick)="closeDialog()"></p-button>
+      <p-button [label]="isEditMode ? 'Actualizar' : 'Guardar'" 
+                [icon]="isEditMode ? 'pi pi-check' : 'pi pi-save'"
+                class="p-button-primary" 
+                [disabled]="rolFormPermissionForm.invalid" 
+                (onClick)="saveItem()"></p-button>
+    </div>
+  </ng-template>
+
+</p-dialog>
+
+<!-- Toast messages -->
+<p-toast></p-toast>
+
+<!-- Confirmation dialog -->
+<p-confirmDialog></p-confirmDialog>

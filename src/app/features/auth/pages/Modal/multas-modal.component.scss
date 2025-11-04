@@ -1,0 +1,159 @@
+.multas-container {
+  padding: 16px;
+
+  .ciudadano-info {
+    margin-bottom: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+
+    h4 {
+      margin: 0 0 8px 0;
+      color: #495057;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .description {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+  }
+
+  .multas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+    padding: 0 8px;
+
+    .multa-card {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      ::ng-deep .p-card-header {
+        padding: 16px 20px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 100%);
+        color: white;
+
+        .card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+          }
+
+          ::ng-deep .p-chip {
+            font-size: 0.85rem;
+            font-weight: 500;
+
+            &.p-chip-success {
+              background: #43a047;
+            }
+
+            &.p-chip-warning {
+              background: #ff9800;
+              color: #212529;
+            }
+
+            &.p-chip-danger {
+              background: #f44336;
+            }
+
+            &.p-chip-info {
+              background: #2196f3;
+            }
+          }
+        }
+      }
+
+      ::ng-deep .p-card-body {
+        padding: 20px;
+
+        .multa-content {
+          .multa-detail {
+            margin-bottom: 12px;
+            line-height: 1.5;
+
+            strong {
+              color: #495057;
+              font-weight: 600;
+            }
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          .multa-action {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #e9ecef;
+
+            .click-hint {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              color: var(--primary-color);
+              font-size: 0.85rem;
+              font-weight: 500;
+
+              i {
+                font-size: 0.9rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .no-multas {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+
+    p {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .multas-container {
+    .multas-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .ciudadano-info {
+      padding: 12px;
+
+      h4 {
+        font-size: 1.1rem;
+      }
+
+      .description {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+
+<div class="table-container">
+  <table mat-table [dataSource]="data" multiTemplateDataRows>
+
+    <!-- Columnas dinámicas -->
+    <ng-container *ngFor="let col of columns" [matColumnDef]="col.key">
+      <th mat-header-cell *matHeaderCellDef>{{ col.header }}</th>
+      <td mat-cell *matCellDef="let row">
+        <ng-container [ngSwitch]="col.type || 'text'">
+
+          <!-- texto -->
+          <ng-container *ngSwitchCase="'text'">
+            {{ row[col.key] }}
+          </ng-container>
+
+          <!-- fecha -->
+          <ng-container *ngSwitchCase="'date'">
+            {{ row[col.key] | date:(col.dateFormat || 'dd/MM/yyyy') }}
+          </ng-container>
+
+          <!-- moneda -->
+          <ng-container *ngSwitchCase="'currency'">
+            {{ row[col.key] | currency:(col.currencyCode || 'COP'):(col.currencyDisplay || 'symbol') }}
+          </ng-container>
+
+          <!-- chip (estado) -->
+          <ng-container *ngSwitchCase="'chip'">
+            <mat-chip [color]="chipColor(row[col.key])" selected>
+              {{ row[col.key] }}
+            </mat-chip>
+          </ng-container>
+
+          <!-- por defecto -->
+          <ng-container *ngSwitchDefault>
+            {{ row[col.key] }}
+          </ng-container>
+
+        </ng-container>
+      </td>
+    </ng-container>
+
+    <!-- Encabezados -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumnKeys"></tr>
+
+    <!-- Filas clickeables -->
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumnKeys"
+      (click)="onRowClick(row)"
+      class="clickable-row">
+    </tr>
+  </table>
+</div>

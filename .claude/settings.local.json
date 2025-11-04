@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "Bash(npx ng build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 10 bash -c 'while true; do curl -s http://localhost:4200 > /dev/null && echo \"\"Servidor listo\"\" && break; sleep 1; done')",
+      "Bash(find:*)",
+      "Bash(git mv:*)"
+    ],
+    "deny": []
+  }
+}

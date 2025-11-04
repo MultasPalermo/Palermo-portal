@@ -1,0 +1,11 @@
+
+<div class="float-end">
+<mat-card-actions >
+  <button mat-raised-button
+          [color]="color"
+          *ngIf="texto"
+          (click)="onClick()">
+    {{ texto }}
+  </button>
+</mat-card-actions>
+</div>

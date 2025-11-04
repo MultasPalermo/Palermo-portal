@@ -1,0 +1,46 @@
+<div class="notificaciones-container">
+
+  <!-- Banner -->
+  <div class="banner">
+    Notificación de nuevos acuerdos de pago
+  </div>
+
+  <!-- Datos del usuario -->
+  <!-- <div class="usuario-card">
+    <div class="usuario-nombre">{{ usuario.nombre }}</div>
+    <div class="usuario-cc">CC: {{ usuario.cc }}</div>
+
+    <div class="usuario-stats">
+      <div class="stat">
+        <span>{{ usuario.acuerdosPago }}</span>
+        <small>Total Acuerdos de pago</small>
+      </div>
+      <div class="stat">
+        <span>{{ usuario.nuevasNotificaciones }}</span>
+        <small>Nuevas notificaciones</small>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Loader -->
+  <div *ngIf="cargando" class="loader">
+    <p>🔄 Cargando acuerdos...</p>
+  </div>
+
+  <!-- Lista de acuerdos -->
+  <div class="multas-section" *ngIf="!cargando">
+    <!-- <h3>Vista previa de acuerdos de pago</h3> -->
+
+    <!-- Si hay acuerdos -->
+    <app-multa-card
+      *ngFor="let agreement of agreements"
+      [multa]="agreement">
+    </app-multa-card>
+
+    <!-- Si no hay -->
+    <p *ngIf="agreements.length === 0" class="no-multas">
+      ✅ No tienes acuerdos de pago registrados.
+    </p>
+  </div>
+
+</div>

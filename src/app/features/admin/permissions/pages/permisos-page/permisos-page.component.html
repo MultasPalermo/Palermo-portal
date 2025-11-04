@@ -1,0 +1,105 @@
+<div class="permisos-container bg-gray-50 min-h-screen py-10 px-4 md:px-16">
+  <div class="permisos-header flex items-center justify-between mb-8">
+    <div class="header-title flex items-center gap-2">
+      <span class="icon text-3xl text-emerald-500"><i class="material-icons">lock_open</i></span>
+      <span class="title text-2xl font-bold text-gray-700">Permisos del Sistema</span>
+    </div>
+    <button class="add-btn flex items-center gap-2" (click)="abrirFormulario()">
+      <i class="material-icons text-lg">add</i>
+      <span>Agregar Permiso</span>
+    </button>
+  </div>
+  <!-- Modal para agregar permiso -->
+  <div *ngIf="showForm"
+    class="modal-overlay fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="modal-content permiso-form bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+      <h2 class="text-xl font-semibold mb-4 text-emerald-600">Crear Permiso</h2>
+      <form [formGroup]="permisoForm" (ngSubmit)="crearPermiso()">
+        <div class="form-group mb-4">
+          <label for="name" class="block font-medium mb-1">Nombre</label>
+          <input id="name" formControlName="name" type="text"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            maxlength="50" />
+          <div class="error text-red-500 text-xs mt-1"
+            *ngIf="permisoForm.get('name')?.touched && permisoForm.get('name')?.invalid">
+            <span *ngIf="permisoForm.get('name')?.errors?.['required']">El nombre es requerido.</span>
+            <span *ngIf="permisoForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres.</span>
+            <span *ngIf="permisoForm.get('name')?.errors?.['maxlength']">Máximo 50 caracteres.</span>
+          </div>
+        </div>
+        <div class="form-group mb-4">
+          <label for="description" class="block font-medium mb-1">Descripción</label>
+          <textarea id="description" formControlName="description"
+            class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+            maxlength="200"></textarea>
+          <div class="error text-red-500 text-xs mt-1"
+            *ngIf="permisoForm.get('description')?.touched && permisoForm.get('description')?.invalid">
+            <span *ngIf="permisoForm.get('description')?.errors?.['required']">La descripción es requerida.</span>
+            <span *ngIf="permisoForm.get('description')?.errors?.['minlength']">Mínimo 5 caracteres.</span>
+            <span *ngIf="permisoForm.get('description')?.errors?.['maxlength']">Máximo 200 caracteres.</span>
+          </div>
+        </div>
+        <div class="modal-actions flex gap-3 mt-6">
+          <button type="submit" [disabled]="loading"
+            class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded font-semibold shadow">Crear</button>
+          <button type="button" (click)="cerrarFormulario()"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded font-semibold">Cancelar</button>
+        </div>
+        <div *ngIf="errorMsg" class="error text-red-500 text-sm mt-2">{{ errorMsg }}</div>
+      </form>
+    </div>
+  </div>
+  <div class="permisos-list space-y-4">
+    <div
+      class="permiso-row flex items-center justify-between p-4 rounded-lg shadow bg-white border-l-4 border-emerald-400 hover:shadow-lg transition-all duration-200"
+      *ngFor="let permiso of paginatedPermisos">
+      <div class="permiso-content">
+        <div class="permiso-nombre text-lg font-semibold text-emerald-700">{{ permiso.name }}</div>
+        <div class="permiso-descripcion text-gray-500 text-sm">{{ permiso.description }}</div>
+      </div>
+      <div class="permiso-actions flex gap-2">
+        <button class="edit-btn" (click)="confirmarActualizacion(permiso)"><i class="material-icons">edit</i></button>
+        <button class="delete-btn" (click)="confirmarEliminacion(permiso)"><i class="material-icons">delete</i></button>
+      </div>
+    </div>
+    <!-- Paginación -->
+    <app-pagination [currentPage]="paginationConfig.currentPage" [totalPages]="paginationConfig.totalPages"
+      [totalItems]="paginationConfig.totalItems" [itemsPerPage]="paginationConfig.itemsPerPage"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+  </div>
+
+</div>
+
+<!-- Modal de alerta -->
+<div *ngIf="showAlert" class="alert-modal-overlay">
+  <div class="alert-modal-content" [ngClass]="alertType">
+    <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
+    <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+    <span class="alert-msg">{{ alertMsg }}</span>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div *ngIf="showConfirm" class="alert-modal-overlay">
+  <div class="alert-modal-content eliminado">
+    <span class="alert-icon">🗑️</span>
+    <span class="alert-msg">¿Estás seguro de que deseas eliminar este permiso?</span>
+    <div class="modal-actions">
+      <button class="blue-btn" (click)="cancelarEliminacion()">Cancelar</button>
+      <button class="red-btn" (click)="eliminarPermiso()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para actualizar -->
+<div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
+  <div class="alert-modal-content eliminado">
+    <span class="alert-icon">✏️</span>
+    <span class="alert-msg">¿Está seguro que desea actualizar el permiso "{{ permisoAActualizar?.name }}"?</span>
+    <div class="modal-actions">
+      <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
+      <button class="blue-btn" (click)="editarPermiso()">Sí, Editar</button>
+    </div>
+  </div>
+</div>

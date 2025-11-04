@@ -1,0 +1,89 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '90vw', maxWidth: '800px', maxHeight: '90vh'}"
+  [contentStyle]="{'max-height': '60vh', 'overflow': 'auto'}"
+  header="Términos y Condiciones">
+
+  <div class="terminos-content" #terminosContent (scroll)="onScroll($event)">
+    <h3>1. Aceptación de los Términos</h3>
+    <p>
+      Al acceder y utilizar este sistema de gestión de multas, usted acepta cumplir con estos términos y condiciones.
+      Si no está de acuerdo con alguno de estos términos, no debe utilizar este servicio.
+    </p>
+
+    <h3>2. Uso del Servicio</h3>
+    <p>
+      Este sistema le permite consultar y gestionar multas asociadas a su documento de identidad.
+      Usted es responsable de mantener la confidencialidad de su información de acceso y de todas
+      las actividades que ocurran bajo su cuenta.
+    </p>
+
+    <h3>3. Protección de Datos Personales</h3>
+    <p>
+      Sus datos personales serán tratados de acuerdo con nuestra política de privacidad y la normativa
+      vigente de protección de datos. La información recopilada será utilizada únicamente para los fines
+      del servicio de gestión de multas.
+    </p>
+
+    <h3>4. Veracidad de la Información</h3>
+    <p>
+      Usted se compromete a proporcionar información verdadera, exacta y actualizada. El uso de información
+      falsa o de terceros sin autorización está prohibido y puede resultar en acciones legales.
+    </p>
+
+    <h3>5. Seguridad</h3>
+    <p>
+      Este sitio está protegido por reCAPTCHA y se aplican la Política de Privacidad y los Términos de
+      Servicio de Google. Implementamos medidas de seguridad para proteger su información.
+    </p>
+
+    <h3>6. Consulta de Multas</h3>
+    <p>
+      La información de multas presentada en este sistema es de carácter informativo. Para cualquier
+      trámite oficial o reclamación, debe dirigirse a las oficinas correspondientes.
+    </p>
+
+    <h3>7. Modificaciones</h3>
+    <p>
+      Nos reservamos el derecho de modificar estos términos y condiciones en cualquier momento.
+      Las modificaciones entrarán en vigor inmediatamente después de su publicación.
+    </p>
+
+    <h3>8. Limitación de Responsabilidad</h3>
+    <p>
+      No nos hacemos responsables por interrupciones del servicio, errores técnicos o pérdida de datos
+      que puedan ocurrir. El servicio se proporciona "tal cual".
+    </p>
+
+    <div class="acceptance-section">
+      <small *ngIf="!hasScrolledToBottom" class="scroll-hint">
+        <i class="pi pi-arrow-down"></i> Desplázate hasta el final para aceptar los términos
+      </small>
+      <p *ngIf="hasScrolledToBottom" class="scroll-completed">
+        <i class="pi pi-check-circle"></i> Has leído todos los términos y condiciones
+      </p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Aceptar y Continuar"
+      icon="pi pi-check"
+      class="p-button-success"
+      [disabled]="!hasScrolledToBottom"
+      (click)="onAccept()">
+    </button>
+    <button
+      pButton
+      label="Rechazar"
+      icon="pi pi-times"
+      class="p-button-text p-button-danger"
+      (click)="onReject()">
+    </button>
+  </ng-template>
+</p-dialog>

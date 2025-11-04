@@ -1,0 +1,98 @@
+/* Contenedor con scroll horizontal en móviles */
+.table-container {
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e6e8eb;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+
+  /* scroll horizontal en pantallas angostas */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tabla Material */
+table {
+  width: 100%;
+  border-spacing: 0;
+}
+
+/* Header */
+tr.mat-mdc-header-row {
+  background: #f8fafc;
+}
+
+th.mat-mdc-header-cell {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: .95rem;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb !important;
+  position: sticky; /* header fijo opcional */
+  top: 0;
+  z-index: 2;
+}
+
+/* Celdas */
+td.mat-mdc-cell {
+  padding: 14px 16px;
+  font-size: .95rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Zebra + hover */
+tr.mat-mdc-row:nth-child(even) td { background: #fcfdff; }
+tr.mat-mdc-row:hover td { background: #f6faff; }
+
+/* Alineación de columnas (ajusta índices según tu orden):
+   1=Tipo, 2=Fecha, 3=Descripción, 4=Costo, 5=Estado
+*/
+th.mat-mdc-header-cell:nth-child(4),
+td.mat-mdc-cell:nth-child(4) { text-align: right; }
+
+/* Chips de estado con colores suaves */
+mat-chip {
+  font-weight: 600;
+  border-radius: 999px;
+  padding-inline: 10px;
+  height: 28px;
+
+  &.mat-mdc-standard-chip.mdc-evolution-chip--selected {
+    box-shadow: none;
+  }
+}
+.mat-primary {  background: #e0f2fe !important; color: #075985 !important; } /* Pendiente */
+.mat-accent  {  background: #dcfce7 !important; color: #166534 !important; } /* Pagada */
+.mat-warn    {  background: #fee2e2 !important; color: #991b1b !important; } /* Vencida */
+
+/* Acciones del card (si las usas en el padre) */
+::ng-deep mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+/* Botón Cerrar sesión (si lo usas debajo) */
+.logout-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0 0;
+
+  button {
+    border-radius: 999px;
+    padding: 8px 18px;
+    text-transform: none;
+    font-weight: 600;
+    letter-spacing: .2px;
+  }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  th.mat-mdc-header-cell,
+  td.mat-mdc-cell { padding: 12px; }
+}

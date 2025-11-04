@@ -1,0 +1,158 @@
+<div class="usuarios-container">
+  <!-- Modal de alerta -->
+  <div *ngIf="showAlert" class="alert-modal-overlay">
+    <div class="alert-modal-content" [ngClass]="alertType">
+      <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
+      <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+      <span class="alert-icon" *ngIf="alertType === 'error'">❌</span>
+      <span class="alert-icon" *ngIf="alertType === 'info'">ℹ️</span>
+      <span class="alert-msg">{{ alertMsg }}</span>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="showConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">🗑️</span>
+      <span class="alert-msg">¿Estás seguro de que deseas eliminar este usuario?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarEliminar()">Cancelar</button>
+        <button class="red-btn" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="usuarios-header">
+    <span class="icon"><i class="material-icons">person</i></span>
+    <span class="title">Gestión de Usuarios</span>
+    <button class="add-usuario-btn" (click)="abrirModal()">+ Agregar Usuario</button>
+  </div>
+  
+  <div class="usuarios-list">
+    <div class="usuario-card" *ngFor="let usuario of paginatedUsuarios">
+      <div class="usuario-info">
+        <span><b>Nombre:</b> {{ usuario.name }}</span>
+        <span><b>Email:</b> {{ usuario.email }}</span>
+      </div>
+      <div class="usuario-actions">
+        <button class="blue-btn" (click)="confirmarActualizacion(usuario)">+ Actualizar</button>
+        <button class="red-btn" (click)="pedirConfirmacionEliminar(usuario)">= Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <app-pagination
+    [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages"
+    [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+
+<!-- Modal para crear usuario -->
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal-content persona-form">
+    <h2>Crear Usuario</h2>
+    <form (ngSubmit)="crearUsuario()" autocomplete="off" #crearForm="ngForm">
+      <label>
+        Nombre:
+        <input type="text" [(ngModel)]="nuevoUsuario.name" name="name" required 
+               #nameInput="ngModel" maxlength="100" />
+        <div *ngIf="nameInput.invalid && nameInput.touched" class="error-msg">
+          El nombre es requerido
+        </div>
+      </label>
+      <label>
+        Email:
+        <input type="email" [(ngModel)]="nuevoUsuario.email" name="email" required 
+               #emailInput="ngModel" maxlength="150" />
+        <div *ngIf="emailInput.invalid && emailInput.touched" class="error-msg">
+          El email es requerido y debe ser válido
+        </div>
+      </label>
+      <label>
+        Contraseña:
+        <input type="password" [(ngModel)]="nuevoUsuario.password" name="password" required
+               #passwordInput="ngModel" minlength="6" maxlength="50" />
+        <div *ngIf="passwordInput.invalid && passwordInput.touched" class="error-msg">
+          La contraseña es requerida (mínimo 6 caracteres)
+        </div>
+      </label>
+      <label>
+        Persona:
+        <select [(ngModel)]="nuevoUsuario.selectedPersona" name="selectedPersona" required
+                #personaInput="ngModel">
+          <option [ngValue]="null">Seleccionar persona</option>
+          <option *ngFor="let persona of personasDisponibles" [ngValue]="persona">
+            {{ persona.firstName }} {{ persona.lastName }} (ID: {{ persona.id }})
+          </option>
+        </select>
+        <div *ngIf="personaInput.invalid && personaInput.touched" class="error-msg">
+          Debe seleccionar una persona
+        </div>
+      </label>
+      <div class="modal-actions">
+        <button type="button" (click)="cerrarModal()">Cancelar</button>
+        <button type="submit" [disabled]="crearForm.invalid || !nuevoUsuario.name.trim() || !nuevoUsuario.email.trim() || !nuevoUsuario.password.trim() || !nuevoUsuario.selectedPersona">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para actualizar usuario -->
+<div *ngIf="showUpdateModal && usuarioSeleccionado" class="modal-overlay">
+  <div class="modal-content persona-form">
+    <h2>Actualizar Usuario</h2>
+    <form (ngSubmit)="actualizarUsuario()" autocomplete="off" #updateForm="ngForm">
+      <label>
+        Nombre:
+        <input type="text" [(ngModel)]="usuarioSeleccionado.name" name="name" required 
+               #nameUpdateInput="ngModel" maxlength="100" />
+        <div *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched" class="error-msg">
+          El nombre es requerido
+        </div>
+      </label>
+      <label>
+        Email:
+        <input type="email" [(ngModel)]="usuarioSeleccionado.email" name="email" required 
+               #emailUpdateInput="ngModel" maxlength="150" />
+        <div *ngIf="emailUpdateInput.invalid && emailUpdateInput.touched" class="error-msg">
+          El email es requerido y debe ser válido
+        </div>
+      </label>
+      <label>
+        Contraseña:
+        <input type="password" [(ngModel)]="usuarioSeleccionado.password" name="password" required
+               #passwordUpdateInput="ngModel" minlength="6" maxlength="50" />
+        <div *ngIf="passwordUpdateInput.invalid && passwordUpdateInput.touched" class="error-msg">
+          La contraseña es requerida (mínimo 6 caracteres)
+        </div>
+      </label>
+      <label>
+        ID de Persona:
+        <input type="number" [(ngModel)]="usuarioSeleccionado.personId" name="personId" required 
+               #personIdUpdateInput="ngModel" min="1" />
+        <div *ngIf="personIdUpdateInput.invalid && personIdUpdateInput.touched" class="error-msg">
+          El ID de persona es requerido
+        </div>
+      </label>
+      <div class="modal-actions">
+        <button type="button" (click)="cerrarModalActualizar()">Cancelar</button>
+        <button type="submit" [disabled]="updateForm.invalid || !usuarioSeleccionado.name.trim() || !usuarioSeleccionado.email.trim() || !usuarioSeleccionado.password.trim()">Actualizar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de confirmación para actualizar -->
+<div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
+  <div class="alert-modal-content eliminado">
+    <span class="alert-icon">✏️</span>
+    <span class="alert-msg">¿Está seguro que desea actualizar el usuario "{{ usuarioAActualizar?.name }}"?</span>
+    <div class="modal-actions">
+      <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
+      <button class="blue-btn" (click)="abrirModalActualizar()">Sí, Editar</button>
+    </div>
+  </div>
+</div>

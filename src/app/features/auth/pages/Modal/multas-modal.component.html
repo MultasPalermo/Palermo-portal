@@ -1,0 +1,62 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{width: '90vw', maxWidth: '1000px', maxHeight: '90vh'}"
+  [contentStyle]="{'max-height': '70vh', 'overflow': 'auto'}"
+  header="Multas de convivencia ciudadana"
+  (onHide)="onClose()">
+
+  <div class="multas-container">
+    <div class="ciudadano-info" *ngIf="ciudadano">
+      <h4>Ciudadano: {{ maskCitizenName(ciudadano) }}</h4>
+      <p class="description">Al seleccionar alguna multa podrá descargar el PDF correspondiente.</p>
+    </div>
+
+    <div class="multas-grid">
+      <p-card *ngFor="let multa of multas; trackBy: trackByFn" class="multa-card" (click)="onMultaClick(multa)">
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <h5>{{ multa.tipo }}</h5>
+            <p-chip
+              [label]="multa.estado"
+              [styleClass]="getEstadoSeverity(multa.estado)">
+            </p-chip>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="content">
+          <div class="multa-content">
+            <div class="multa-detail">
+              <strong>Fecha de infracción:</strong> {{ multa.fecha }}
+            </div>
+            <div class="multa-detail">
+              <strong>Descripción:</strong> {{ multa.descripcion }}
+            </div>
+            <div class="multa-action" *ngIf="multa.estado === 'Pendiente' || multa.estado === 'Con acuerdo'">
+              <small class="click-hint">
+                <i class="pi pi-download"></i>
+                {{ multa.estado === 'Pendiente' ? 'Descargar PDF de multa' : 'Descargar acuerdo de pago' }}
+              </small>
+            </div>
+          </div>
+        </ng-template>
+      </p-card>
+    </div>
+
+    <div *ngIf="multas.length === 0" class="no-multas">
+      <p>No hay multas disponibles para mostrar.</p>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      styleClass="p-button-text"
+      (click)="onClose()">
+    </p-button>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,23 @@
+<div class="multa-card">
+  <div class="multa-header">
+    <strong>{{ multa.typeInfractionName }}</strong>
+  </div>
+
+  <div class="multa-body">
+    <p><strong>Persona:</strong> {{ multa.firstName }} {{ multa.lastName }}</p>
+    <p><strong>Documento:</strong> {{ multa.documentNumber }}</p>
+
+    <div class="multa-info">
+      <span class="fecha">📅 {{ multa.dateInfraction | date:'dd/MM/yyyy' }}</span>
+      <span class="estado" [ngClass]="estadoClass">
+        {{ estadoTexto }}
+      </span>
+    </div>
+
+    <div class="multa-location">
+      💰 {{ multa.amountToPay | currency:'COP':'symbol-narrow' }}
+    </div>
+
+    <p><strong>Observaciones:</strong> {{ multa.observations }}</p>
+  </div>
+</div>

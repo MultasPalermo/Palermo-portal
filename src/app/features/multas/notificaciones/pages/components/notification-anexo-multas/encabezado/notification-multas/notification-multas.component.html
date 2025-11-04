@@ -1,0 +1,25 @@
+<div class="notificaciones-container">
+
+  <!-- Banner -->
+  <div class="banner">
+    Notificación de nuevas multas
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="cargando" class="loader">
+    <p>🔄 Cargando multas...</p>
+  </div>
+
+  <!-- Lista de multas -->
+  <div class="multas-section" *ngIf="!cargando">
+    <app-card-multas
+      *ngFor="let multa of multas"
+      [multa]="multa">
+    </app-card-multas>
+
+    <p *ngIf="multas.length === 0" class="no-multas">
+      ✅ No tienes multas registradas.
+    </p>
+  </div>
+
+</div>

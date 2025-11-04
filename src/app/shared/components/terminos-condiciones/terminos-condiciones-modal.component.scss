@@ -1,0 +1,138 @@
+.terminos-content {
+  padding: 1rem;
+  line-height: 1.6;
+  max-height: 65vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #28a745 #f1f1f1;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #28a745;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #218838;
+  }
+
+  h3 {
+    color: #2c3e50;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin-bottom: 1rem;
+    text-align: justify;
+    color: #555;
+  }
+}
+
+.acceptance-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+  text-align: center;
+
+  .scroll-hint {
+    display: block;
+    color: #dc3545;
+    font-weight: 500;
+    font-size: 0.95rem;
+    animation: pulse 2s infinite;
+
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .scroll-completed {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+
+    i {
+      margin-right: 0.5rem;
+      font-size: 1.2rem;
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
+
+::ng-deep {
+  .p-dialog {
+    max-width: 800px;
+    width: 90%;
+    max-height: 95vh;
+    overflow: hidden; /* Ocultar cualquier scroll del modal */
+    
+    /* Ocultar scrollbars del modal si aparecen */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    overflow: hidden; /* Ocultar scroll del contenido del modal */
+    
+    /* Ocultar scrollbars del contenido del modal si aparecen */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .p-dialog-header {
+    background-color: #28a745;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .p-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem !important;
+    border-top: 1px solid #e9ecef;
+    
+    .p-button {
+      &.p-button-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        
+        &:hover {
+          background-color: #218838;
+          border-color: #1e7e34;
+        }
+      }
+    }
+  }
+}

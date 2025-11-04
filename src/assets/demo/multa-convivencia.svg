@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <!-- Sistema de multas - Convivencia ciudadana -->
+  <defs>
+    <radialGradient id="plaza" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#90EE90"/>
+      <stop offset="100%" stop-color="#228B22"/>
+    </radialGradient>
+  </defs>
+  
+  <rect width="300" height="200" fill="#87CEEB"/>
+  
+  <!-- Plaza/Parque -->
+  <ellipse cx="150" cy="130" rx="120" ry="50" fill="url(#plaza)"/>
+  
+  <!-- Banco del parque -->
+  <rect x="80" y="120" width="40" height="8" fill="#8B4513"/>
+  <rect x="85" y="115" width="30" height="3" fill="#A0522D"/>
+  <rect x="88" y="128" width="6" height="12" fill="#654321"/>
+  <rect x="108" y="128" width="6" height="12" fill="#654321"/>
+  
+  <!-- Personas en el parque -->
+  <g>
+    <!-- Persona 1 (sentada en banco) -->
+    <ellipse cx="95" cy="108" rx="4" ry="5" fill="#F4D1AE"/>
+    <rect x="92" y="108" width="6" height="12" fill="#4CAF50"/>
+  </g>
+  
+  <!-- Basura tirada (infracción) -->
+  <rect x="130" y="135" width="8" height="5" fill="#8B4513"/>
+  <circle cx="145" cy="138" r="3" fill="#FF6B6B"/>
+  <rect x="160" y="137" width="5" height="3" fill="#666"/>
+  
+  <!-- Inspector municipal -->
+  <g transform="translate(200,100)">
+    <ellipse cx="0" cy="-5" rx="5" ry="6" fill="#F4D1AE"/>
+    <rect x="-4" y="-5" width="8" height="15" fill="#1E3A8A"/>
+    <rect x="-5" y="5" width="10" height="8" fill="#1E3A8A"/>
+    <!-- Gorra -->
+    <ellipse cx="0" cy="-8" rx="6" ry="3" fill="#1E3A8A"/>
+    <!-- Placa -->
+    <rect x="-2" y="0" width="4" height="3" fill="#FFD700"/>
+    <!-- Libreta de multas -->
+    <rect x="6" y="-2" width="4" height="6" fill="#FFF"/>
+    <rect x="6" y="-2" width="4" height="1" fill="#DC143C"/>
+  </g>
+  
+  <!-- Señal de "No arrojar basura" -->
+  <g transform="translate(50,90)">
+    <rect x="0" y="0" width="30" height="30" fill="#FFF" stroke="#DC143C" stroke-width="2"/>
+    <circle cx="15" cy="15" r="10" fill="none" stroke="#DC143C" stroke-width="2"/>
+    <line x1="10" y1="10" x2="20" y2="20" stroke="#DC143C" stroke-width="2"/>
+    <!-- Basura tachada -->
+    <rect x="12" y="12" width="6" height="3" fill="#DC143C"/>
+  </g>
+  <rect x="57" y="120" width="16" height="15" fill="#8B4513"/>
+  
+  <!-- Árboles -->
+  <circle cx="30" cy="100" r="12" fill="#228B22"/>
+  <rect x="27" y="100" width="6" height="15" fill="#8B4513"/>
+  
+  <circle cx="250" cy="105" r="15" fill="#228B22"/>
+  <rect x="247" y="105" width="6" height="18" fill="#8B4513"/>
+  
+  <!-- Edificio municipal al fondo -->
+  <rect x="220" y="60" width="50" height="40" fill="#E6E6FA"/>
+  <rect x="235" y="40" width="20" height="20" fill="#E6E6FA"/>
+  <polygon points="220,60 245,45 270,60" fill="#8B4513"/>
+  <rect x="230" y="70" width="8" height="12" fill="#4A5568"/>
+  <rect x="250" y="70" width="8" height="12" fill="#4A5568"/>
+  
+  <text x="150" y="190" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold">Convivencia Ciudadana</text>
+</svg>

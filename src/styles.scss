@@ -1,0 +1,49 @@
+@use './tailwind.css';
+@use './assets/layout/layout.scss';
+@use 'primeicons/primeicons.css';
+@use './assets/demo/demo.scss';
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// 🔥 ESTILOS GLOBALES PARA PRIMENG 19 DROPDOWNS
+.p-select-overlay {
+  .p-select-list {
+    .p-select-option {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      line-height: 1.6 !important;
+      height: auto !important;
+      padding: 12px 16px !important;
+    }
+    
+    .p-select-option-label {
+      white-space: normal !important;
+      word-break: break-word !important;
+      display: block !important;
+    }
+  }
+}
+
+.p-select-label {
+  white-space: normal !important;
+  word-break: break-word !important;
+  display: block !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+}
+
+// Compatibilidad con nombres antiguos
+.p-dropdown-panel {
+  .p-dropdown-items {
+    .p-dropdown-item {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      max-width: 100% !important;
+      height: auto !important;
+      line-height: 1.6 !important;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+  [31morigin/HEAD[m -> origin/main
+  [31morigin/PaginaInicioModal[m
+  [31morigin/RAMA-DANIEL[m
+  [31morigin/Reorganizar[m
+  [31morigin/Reorganizar-Daniel[m
+  [31morigin/arregloModel[m
+  [31morigin/arregloModel11[m
+  [31morigin/cambios-de-dani[m
+  [31morigin/cambios-de-estructura-de-archivos[m
+  [31morigin/camilo[m
+  [31morigin/cor/anx-multas[m
+  [31morigin/cronograma[m
+  [31morigin/daniel[m
+  [31morigin/dante[m
+  [31morigin/filtros[m
+  [31morigin/ingrid[m
+  [31morigin/main[m
+  [31morigin/manual-de-usuario[m
+  [31morigin/rama-camilo-2.0[m
+  [31morigin/revert-6-main[m
+  [31morigin/smdlv[m
+  [31morigin/tesis[m
+  [31morigin/test-pruebas[m

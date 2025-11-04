@@ -1,0 +1,589 @@
+// ========================================
+// 🎨 VARIABLES DE COLORES ESTANDARIZADAS
+// ========================================
+$primary-color: #43a047;
+$success-color: #43a047;
+$danger-color: #e53935;
+$warning-color: #ff9800;
+$info-color: #2196f3;
+$light-gray: #f5f5f5;
+$medium-gray: #757575;
+$dark-gray: #424242;
+$border-color: #e0e0e0;
+$white: #ffffff;
+$shadow-light: rgba(0, 0, 0, 0.1);
+$shadow-medium: rgba(0, 0, 0, 0.15);
+$shadow-dark: rgba(0, 0, 0, 0.3);
+
+// ========================================
+// 🎨 MIXINS REUTILIZABLES
+// ========================================
+@mixin button-hover-effect {
+  transform: translateY(-1px);
+  transition: all 0.3s ease;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 2px 8px $shadow-light;
+  
+  &:hover {
+    box-shadow: 0 4px 16px $shadow-medium;
+  }
+}
+
+@mixin modal-animation {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+// ========================================
+// 📌 ESTILOS GLOBALES PARA MODALES 
+// ========================================
+// ⚠️ IMPORTANTE: Estos estilos están FUERA de .personas-container
+// porque los modales se renderizan fuera del contenedor en el HTML
+
+// Alertas modales (confirmaciones, éxito, error, etc.)
+.alert-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  pointer-events: auto !important;
+  @include modal-animation;
+}
+
+.alert-modal-content {
+  background: $white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  padding: 2rem !important;
+  min-width: 350px !important;
+  max-width: 500px !important;
+  min-height: 150px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  position: relative !important;
+  pointer-events: auto !important;
+  @include modal-animation;
+
+  &.creado {
+    border-left: 4px solid $success-color !important;
+  }
+  &.eliminado {
+    border-left: 4px solid $danger-color !important;
+  }
+  &.error {
+    border-left: 4px solid $danger-color !important;
+  }
+  &.info {
+    border-left: 4px solid $info-color !important;
+  }
+
+  .modal-actions {
+    display: flex !important;
+    gap: 1rem !important;
+    margin-top: 1rem !important;
+
+    .blue-btn {
+      background: #4caf50 !important;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 0.75rem 1.5rem !important;
+      font-weight: 500 !important;
+      font-size: 1rem !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2) !important;
+
+      &:hover {
+        background: #45a049 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3) !important;
+      }
+    }
+
+    .red-btn {
+      background: #2e7d32 !important;
+      color: #fff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 0.75rem 1.5rem !important;
+      font-weight: 500 !important;
+      font-size: 1rem !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2) !important;
+
+      &:hover {
+        background: #1b5e20 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3) !important;
+      }
+    }
+  }
+}
+
+.alert-icon {
+  font-size: 2rem !important;
+}
+
+.alert-msg {
+  font-size: 1rem !important;
+  color: #333 !important;
+  text-align: center !important;
+  font-weight: 500 !important;
+}
+
+// ========================================
+// 🔥 MODALES PRINCIPALES (CREAR Y EDITAR)
+// ========================================
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 10000 !important;
+  animation: fadeIn 0.3s ease-out !important;
+
+  .modal-content {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 2rem !important;
+    max-width: 500px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    animation: modalSlideIn 0.3s ease-out !important;
+
+    // 🔥 FORMULARIO MODAL (para crear y editar)
+    &.persona-form {
+      background: white !important;
+      
+      h2 {
+        color: $dark-gray !important;
+        margin-bottom: 1.5rem !important;
+        text-align: center !important;
+        font-size: 1.5rem !important;
+        font-weight: 600 !important;
+      }
+
+      form {
+        label {
+          display: block !important;
+          margin-bottom: 1rem !important;
+          font-weight: 500 !important;
+          color: $dark-gray !important;
+
+          input, textarea {
+            width: 100% !important;
+            padding: 0.75rem !important;
+            border: 2px solid $border-color !important;
+            border-radius: 8px !important;
+            font-size: 1rem !important;
+            margin-top: 0.25rem !important;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
+            box-sizing: border-box !important;
+            font-family: inherit !important;
+
+            &:focus {
+              outline: none !important;
+              border-color: $primary-color !important;
+              box-shadow: 0 0 0 3px rgba(67,160,71,0.1) !important;
+            }
+
+            &.ng-invalid.ng-touched {
+              border-color: $danger-color !important;
+              box-shadow: 0 0 0 3px rgba(220,53,69,0.1) !important;
+            }
+          }
+
+          textarea {
+            resize: vertical !important;
+            min-height: 100px !important;
+          }
+        }
+
+        .error-msg {
+          color: $danger-color !important;
+          font-size: 0.85rem !important;
+          margin-top: 0.25rem !important;
+          font-weight: 400 !important;
+        }
+      }
+    }
+
+    // Modal de confirmación
+    &.confirm-modal {
+      text-align: center !important;
+
+      h2 {
+        color: $danger-color !important;
+        margin-bottom: 1rem !important;
+        font-size: 1.4rem !important;
+      }
+
+      p {
+        color: $dark-gray !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 1rem !important;
+
+        &.warning-text {
+          color: $medium-gray !important;
+          font-size: 0.9rem !important;
+          font-style: italic !important;
+        }
+      }
+
+      strong {
+        color: $danger-color !important;
+      }
+    }
+
+    .modal-actions {
+      display: flex !important;
+      justify-content: flex-end !important;
+      gap: 1rem !important;
+      margin-top: 1.5rem !important;
+
+      button {
+        padding: 0.7rem 1.5rem !important;
+        border: none !important;
+        border-radius: 6px !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+
+        &[type="submit"], &:not([type="button"]):not(.btn-secundario):not(.btn-peligro) {
+          background: linear-gradient(135deg, $primary-color, darken($primary-color, 10%)) !important;
+          color: white !important;
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, darken($primary-color, 5%), darken($primary-color, 15%)) !important;
+            transform: translateY(-1px) !important;
+          }
+
+          &:disabled {
+            background: $medium-gray !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+          }
+        }
+
+        &[type="button"] {
+          background: $light-gray !important;
+          color: $medium-gray !important;
+          border: 2px solid $border-color !important;
+
+          &:hover {
+            background: darken($light-gray, 5%) !important;
+            color: $dark-gray !important;
+          }
+        }
+
+        &.btn-secundario {
+          background: $light-gray !important;
+          color: $medium-gray !important;
+          border: 2px solid $border-color !important;
+
+          &:hover {
+            background: darken($light-gray, 5%) !important;
+            color: $dark-gray !important;
+          }
+        }
+
+        &.btn-peligro {
+          background: linear-gradient(135deg, $danger-color, darken($danger-color, 10%)) !important;
+          color: white !important;
+
+          &:hover {
+            background: linear-gradient(135deg, darken($danger-color, 5%), darken($danger-color, 15%)) !important;
+            transform: translateY(-1px) !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ========================================
+// 📌 ANIMACIONES
+// ========================================
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes modalFadeIn {
+  from {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+// ========================================
+// 📌 CONTENEDOR PRINCIPAL
+// ========================================
+.personas-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: $dark-gray;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  // Botón agregar
+  .btn-agregar {
+    background: $primary-color;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+
+    &:hover {
+      background: #388e3c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(67, 160, 71, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  // 📌 Tarjetas de formularios
+  .persona-card {
+    background: white;
+    border: 1px solid $border-color;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .persona-info {
+      margin-bottom: 1rem;
+
+      .info-row {
+        display: flex;
+        margin-bottom: 0.5rem;
+        align-items: center;
+
+        .label {
+          font-weight: 600;
+          color: $medium-gray;
+          min-width: 120px;
+          font-size: 0.9rem;
+        }
+
+        .value {
+          color: $dark-gray;
+          font-size: 1rem;
+          word-break: break-word;
+        }
+      }
+    }
+
+    .persona-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+
+        i {
+          font-size: 0.8rem;
+        }
+
+        &.btn-editar {
+          background: linear-gradient(135deg, #4caf50, darken(#4caf50, 10%));
+          color: $white;
+          box-shadow: 0 2px 4px rgba(#4caf50, 0.2);
+
+          &:hover {
+            background: linear-gradient(135deg, darken(#4caf50, 5%), darken(#4caf50, 15%));
+            @include button-hover-effect;
+            box-shadow: 0 4px 8px rgba(#4caf50, 0.3);
+          }
+        }
+
+        &.btn-eliminar {
+          background: linear-gradient(135deg, #2e7d32, darken(#2e7d32, 10%));
+          color: $white;
+          box-shadow: 0 2px 4px rgba(#2e7d32, 0.2);
+
+          &:hover {
+            background: linear-gradient(135deg, darken(#2e7d32, 5%), darken(#2e7d32, 15%));
+            @include button-hover-effect;
+            box-shadow: 0 4px 8px rgba(#2e7d32, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // 📌 Mensaje sin datos
+  .no-data {
+    text-align: center;
+    padding: 3rem;
+    color: $medium-gray;
+    background: $light-gray;
+    border-radius: 12px;
+    border: 2px dashed $border-color;
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: lighten($medium-gray, 20%);
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    small {
+      font-size: 0.9rem;
+      color: lighten($medium-gray, 10%);
+    }
+  }
+}
+
+// ========================================
+// 📌 RESPONSIVE
+// ========================================
+@media (max-width: 768px) {
+  .personas-container {
+    padding: 1rem;
+
+    .page-title {
+      font-size: 1.5rem;
+    }
+
+    .persona-card {
+      padding: 1rem;
+
+      .persona-info {
+        .info-row {
+          flex-direction: column;
+          align-items: flex-start;
+
+          .label {
+            min-width: auto;
+            margin-bottom: 0.25rem;
+          }
+        }
+      }
+
+      .persona-actions {
+        flex-direction: column;
+        align-items: stretch;
+
+        button {
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  .modal-overlay {
+    .modal-content {
+      width: 95% !important;
+      padding: 1.5rem !important;
+
+      &.persona-form {
+        h2 {
+          font-size: 1.3rem !important;
+        }
+      }
+
+      .modal-actions {
+        flex-direction: column !important;
+
+        button {
+          width: 100% !important;
+        }
+      }
+    }
+  }
+
+  .alert-modal-overlay {
+    .alert-modal-content {
+      min-width: 300px !important;
+      width: 90% !important;
+      padding: 1.5rem !important;
+
+      .modal-actions {
+        flex-direction: column !important;
+
+        button {
+          width: 100% !important;
+        }
+      }
+    }
+  }
+}

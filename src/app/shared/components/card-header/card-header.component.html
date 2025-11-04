@@ -1,0 +1,12 @@
+<div class="header-section">
+  <div class="header-left" *ngIf="showBack">
+    <button mat-icon-button (click)="onBack()" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+  </div>
+
+  <div class="header-center">
+    <h2 class="header-title" *ngIf="title">{{ title }}</h2>
+    <p class="header-description" *ngIf="description">{{ maskDescription(description) }}</p>
+  </div>
+</div>

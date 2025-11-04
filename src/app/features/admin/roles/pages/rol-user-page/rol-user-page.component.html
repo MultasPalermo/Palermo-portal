@@ -1,0 +1,94 @@
+<div class="rol-user-container bg-gray-50 min-h-screen py-10 px-4 md:px-16">
+  <!-- Modal de alerta -->
+  <div *ngIf="showAlert" class="alert-modal-overlay">
+    <div class="alert-modal-content" [ngClass]="alertType">
+      <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
+      <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+      <span class="alert-icon" *ngIf="alertType === 'error'">❌</span>
+      <span class="alert-icon" *ngIf="alertType === 'info'">ℹ️</span>
+      <span class="alert-msg">{{ alertMsg }}</span>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="showConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">🗑️</span>
+      <span class="alert-msg">¿Estás seguro de que deseas eliminar esta relación rol-usuario?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarEliminar()">Cancelar</button>
+        <button class="red-btn" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rol-user-header flex items-center justify-between mb-8">
+    <div class="header-title flex items-center gap-2">
+      <span class="icon text-3xl text-blue-500"><i class="material-icons">group</i></span>
+      <span class="title text-2xl font-bold text-gray-700">Relación Rol-Usuario</span>
+    </div>
+    <button class="add-btn shadow-lg" (click)="abrirFormulario()">+ Agregar Relación</button>
+  </div>
+  <!-- Modal para agregar/editar -->
+  <div *ngIf="showForm" class="modal-overlay">
+    <div class="modal-content persona-form">
+      <h2>{{ rolUserEditando ? 'Actualizar' : 'Crear' }} Relación Rol-Usuario</h2>
+      <form [formGroup]="rolUserForm" (ngSubmit)="rolUserEditando ? actualizarRolUser() : crearRolUser()" autocomplete="off">
+        <label>
+          Usuario:
+          <select formControlName="userId" required>
+            <option value="0">-- Selecciona un usuario --</option>
+            <option *ngFor="let u of usuariosDisponibles" [value]="u.id">{{ u.email }}</option>
+          </select>
+          <div *ngIf="rolUserForm.get('userId')?.invalid && rolUserForm.get('userId')?.touched" class="error-msg">
+            Debe seleccionar un usuario válido
+          </div>
+        </label>
+
+        <label>
+          Rol:
+          <select formControlName="rolId" required>
+            <option value="0">-- Selecciona un rol --</option>
+            <option *ngFor="let r of roles" [value]="r.id">{{ r.name }}</option>
+          </select>
+          <div *ngIf="rolUserForm.get('rolId')?.invalid && rolUserForm.get('rolId')?.touched" class="error-msg">
+            Debe seleccionar un rol válido
+          </div>
+        </label>
+
+        <div class="modal-actions">
+          <button type="button" (click)="cerrarFormulario()">Cancelar</button>
+          <button type="submit" [disabled]="rolUserForm.invalid || loading">
+            {{ rolUserEditando ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="rol-user-list space-y-4">
+    <div
+      class="rol-user-row flex items-center justify-between p-4 rounded-lg shadow bg-white border-l-4 border-blue-400 hover:shadow-lg transition-all duration-200"
+      *ngFor="let ru of rolUsers">
+      <div class="rol-user-content">
+        <div class="rol-user-nombre text-lg font-semibold text-blue-700">Usuario: {{ ru.userName }} | Rol: {{ ru.rolName
+          || ru.rolId }}</div>
+      </div>
+      <div class="rol-user-actions flex gap-2">
+        <button class="edit-btn" (click)="confirmarActualizacion(ru)"><i class="material-icons">edit</i></button>
+        <button class="delete-btn" (click)="pedirConfirmacionEliminar(ru)"><i class="material-icons">delete</i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para actualizar -->
+<div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
+  <div class="alert-modal-content eliminado">
+    <span class="alert-icon">✏️</span>
+    <span class="alert-msg">¿Está seguro que desea actualizar esta relación rol-usuario?</span>
+    <div class="modal-actions">
+      <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
+      <button class="blue-btn" (click)="abrirModalEditar()">Sí, Editar</button>
+    </div>
+  </div>
+</div>

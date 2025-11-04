@@ -1,0 +1,224 @@
+// 📌 Alertas modales estandarizadas
+.alert-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000 !important;
+}
+
+.alert-modal-content {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+  min-width: 320px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  animation: modalFadeIn 0.3s ease-out;
+
+  &.bienvenida {
+    border-left: 4px solid #43a047;
+  }
+  &.creado {
+    border-left: 4px solid #43a047;
+  }
+  &.eliminado {
+    border-left: 4px solid #e53935;
+  }
+  &.error {
+    border-left: 4px solid #e53935;
+  }
+}
+
+.alert-icon {
+  font-size: 2rem;
+}
+
+.alert-msg {
+  font-size: 1rem;
+  color: #333;
+  text-align: center;
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.blue-btn {
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+
+  &:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  }
+}
+
+.red-btn {
+  background: #2e7d32;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+
+  &:hover {
+    background: #1b5e20;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+// Estilos estandarizados para rol-user
+.rol-user-container {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.rol-user-header .title {
+  letter-spacing: 0.5px;
+  color: #43a047;
+  font-weight: 600;
+}
+
+.modal-content {
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+}
+
+.rol-user-row {
+  border-left: 4px solid #43a047;
+  background: #fff;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.rol-user-row:hover {
+  box-shadow: 0 4px 12px rgba(67, 160, 71, 0.15);
+  transform: translateY(-1px);
+}
+
+.rol-user-nombre {
+  color: #43a047;
+  font-weight: 500;
+}
+
+.rol-user-actions .edit-btn, .rol-user-actions .delete-btn {
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.rol-user-actions .edit-btn {
+  background: #4caf50;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.2);
+  
+  &:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  }
+}
+
+.rol-user-actions .delete-btn {
+  background: #2e7d32;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+  
+  &:hover {
+    background: #1b5e20;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+  }
+}
+
+// Estilo para botón agregar estandarizado
+.add-btn {
+  background: #43a047;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: #388e3c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(67, 160, 71, 0.3);
+  }
+}
+
+// Mensajes estandarizados
+.success-message {
+  background: #43a047;
+  color: #fff;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(67, 160, 71, 0.2);
+  text-align: center;
+}
+
+.error-message {
+  background: #2e7d32;
+  color: #fff;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+  text-align: center;
+}

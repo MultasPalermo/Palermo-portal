@@ -1,0 +1,66 @@
+.layout-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 300px;
+  background: #2d8659;
+  color: #ffffff;
+  z-index: 999;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Ocultar scrollbar pero mantener funcionalidad */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.layout-sidebar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.layout-sidebar * {
+  color: #ffffff !important;
+}
+
+.layout-sidebar .layout-menu a {
+  color: #ffffff !important;
+}
+
+.layout-sidebar .layout-menuitem-root-text {
+  color: #ffffff !important;
+}
+
+.layout-sidebar .layout-menuitem-icon {
+  color: #ffffff !important;
+}
+
+.layout-sidebar .layout-menuitem-text {
+  color: #ffffff !important;
+}
+
+.layout-sidebar .layout-submenu-toggler {
+  color: #ffffff !important;
+}
+
+.layout-overlay .layout-sidebar,
+.layout-static-inactive .layout-sidebar {
+  transform: translateX(-100%);
+}
+
+.layout-overlay-active .layout-sidebar,
+.layout-mobile-active .layout-sidebar,
+.layout-static .layout-sidebar {
+  transform: translateX(0);
+}
+
+@media (max-width: 991px) {
+  .layout-sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .layout-overlay-active .layout-sidebar,
+  .layout-mobile-active .layout-sidebar {
+    transform: translateX(0);
+  }
+}

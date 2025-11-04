@@ -1,0 +1,27 @@
+<div class="topbar">
+  <button class="menu-btn" (click)="layoutService.onMenuToggle()">
+    <i class="pi pi-bars"></i>
+  </button>
+
+  <!-- Buscador central -->
+  <div class="search-box">
+    <i class="pi pi-search"></i>
+    <input type="text" placeholder="Buscar por tipo de multa o descripción" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
+  </div>
+
+  <!-- Notificaciones y Perfil -->
+  <div class="right-section">
+
+    <!-- <p-overlayPanel #op [showCloseIcon]="true">
+        <div class="menu-item" (click)="goToProfile()">
+          <i class="pi pi-user"></i> Ver Perfil
+        </div>
+        <div class="menu-item" (click)="openSettings()">
+          <i class="pi pi-cog"></i> Configuración
+        </div>
+        <div class="menu-item logout" (click)="logout()">
+          <i class="pi pi-sign-out"></i> Cerrar Sesión
+        </div>
+      </p-overlayPanel> -->
+  </div>
+</div>

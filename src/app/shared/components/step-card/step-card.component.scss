@@ -1,0 +1,123 @@
+:host { display: block; }
+
+/* contenedor general */
+.howto {
+  max-width: 1550px;       /* centra el bloque y limita el ancho */
+  margin: 0 auto;
+  padding: 32px 20px;      /* el padding que ya querías */
+  border-radius: 16px;
+
+}
+
+/* encabezado */
+.howto__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.howto__header h2 {
+  margin: 0 0 8px 0;
+  font-size: clamp(22px, 3.2vw, 36px);
+  font-weight: 800;
+}
+
+.howto__header h2 {
+  color: #2c3e50;
+}
+.howto__subtitle {
+  margin: 0;
+  font-size: clamp(14px, 2vw, 18px);
+  color: #495057;
+}
+
+/* grilla */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);        /* 3 columnas fijas cuando hay espacio */
+  gap: 28px;    
+  text-align: center;                               
+}
+
+
+/* ======= TARJETA ======= */
+.card {
+  --card-h: 300px;
+  height: var(--card-h);
+  padding: 40px 32px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;  /* contenido centrado verticalmente */
+
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+  border: 1px solid rgba(0, 0, 0, .05);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, .15);
+}
+
+/* número gigante de fondo, arriba a la derecha */
+.card::after {
+  content: attr(data-num);
+  position: absolute;
+  top: 12px;
+  right: 24px;
+  font-weight: 800;
+  font-size: clamp(56px, 8vw, 92px);
+  color: rgba(76, 175, 80, 0.08);
+  pointer-events: none;
+}
+
+
+/* icono dentro de una "pastilla" */
+.card__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+}
+.material-symbols-outlined { font-size: 30px; color: #ffffff; }
+
+/* título */
+.card__title {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 800;
+  margin: 8px 0 12px;
+  color: #2c3e50;
+}
+
+/* descripción – clamp de líneas para que no rompa el alto */
+.card__desc {
+  margin: 0;
+  color: #495057;
+  line-height: 1.6;
+  max-width: 36ch;
+  font-size: clamp(14px, 1.8vw, 16px);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;       /* máximo 3 líneas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* responsive: un poco más compacto en tablets */
+@media (max-width: 1024px) {
+  .card { --card-h: 240px; padding: 34px 28px; }
+}
+
+/* mobile: permitimos crecer si hace falta, pero mantenemos mínimo */
+@media (max-width: 640px) {
+  .card {
+    --card-h: auto;            /* deja que crezca si una línea adicional es necesaria */
+    min-height: 220px;
+  }
+}
