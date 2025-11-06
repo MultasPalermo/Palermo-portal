@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  # 🌐 Frontend alcaldiafetch - Producción
+  alcaldiafetch-front-prod:
+    container_name: ${CONTAINER_NAME}
+    build:
+      context: ../..               # raíz del proyecto Angular
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME}:latest
+    restart: always
+    ports:
+      - "4203:${PORT}"             # 4203 host → 80 contenedor
+    env_file:
+      - .env
+    networks:
+      - alcaldiafetch_network           # 🔗 red compartida con backend
+    labels:
+      - com.alcaldiafetch.environment=prod
+
+# 🔗 Red externa compartida con backend
+networks:
+  alcaldiafetch_network:
+    external: true
