@@ -4,15 +4,14 @@ pipeline {
     environment {
         PROJECT_DIR = '.'                                 // Proyecto en la raíz
         NETWORK_NAME = 'alcaldiafetch_network'            // Red compartida con backend
-        NODE_IMAGE = 'node:20-alpine'                     // Imagen ligera de Node
         BUILD_DIR = 'dist'                                // Carpeta de salida del build Angular
     }
 
     stages {
 
-        // =======================================================
+        // ===============================
         // 1️⃣ CHECKOUT
-        // =======================================================
+        // ===============================
         stage('Checkout código fuente') {
             steps {
                 echo "📥 Clonando repositorio PALERMO-PORTAL..."
@@ -21,12 +20,13 @@ pipeline {
             }
         }
 
-        // =======================================================
+        // ===============================
         // 2️⃣ DETECTAR ENTORNO
-        // =======================================================
+        // ===============================
         stage('Detectar entorno') {
             steps {
                 script {
+                    // Detección de entorno por rama
                     switch (env.BRANCH_NAME) {
                         case 'main':     env.ENVIRONMENT = 'prod'; break
                         case 'staging':  env.ENVIRONMENT = 'staging'; break
@@ -34,6 +34,18 @@ pipeline {
                         default:         env.ENVIRONMENT = 'develop'; break
                     }
 
+                    // Revisión de archivo .env global (si existe)
+                    def globalEnvFile = "${env.PROJECT_DIR}/.env"
+                    if (fileExists(globalEnvFile)) {
+                        echo "📄 Detectado archivo .env global en ${globalEnvFile}"
+                        def forcedEnv = sh(script: "grep '^ENVIRONMENT=' ${globalEnvFile} | cut -d '=' -f2", returnStdout: true).trim()
+                        if (forcedEnv) {
+                            env.ENVIRONMENT = forcedEnv
+                            echo "⚙️ Entorno forzado desde .env global: ${env.ENVIRONMENT}"
+                        }
+                    }
+
+                    // Variables derivadas del entorno
                     env.ENV_DIR = "DevOps/${env.ENVIRONMENT}"
                     env.COMPOSE_FILE = "${env.ENV_DIR}/docker-compose.yml"
                     env.ENV_FILE = "${env.ENV_DIR}/.env"
@@ -52,31 +64,9 @@ pipeline {
             }
         }
 
-        // =======================================================
-        // 3️⃣ COMPILAR FRONTEND DENTRO DE CONTENEDOR NODE
-        // =======================================================
-        stage('Compilar Frontend dentro de contenedor Node') {
-            steps {
-                script {
-                    docker.image(env.NODE_IMAGE).inside('-u root:root') {
-                        sh '''
-                            echo "📦 Instalando dependencias..."
-                            npm ci --legacy-peer-deps
-
-                            echo "🛠️ Compilando aplicación para entorno ${ENVIRONMENT}..."
-                            npm run build --if-present || npm run build:${ENVIRONMENT} || true
-
-                            echo "✅ Build completado. Archivos generados:"
-                            ls -lh ${BUILD_DIR} || true
-                        '''
-                    }
-                }
-            }
-        }
-
-        // =======================================================
-        // 4️⃣ VERIFICAR O CREAR RED DOCKER COMPARTIDA
-        // =======================================================
+        // ===============================
+        // 3️⃣ VERIFICAR RED DOCKER
+        // ===============================
         stage('Verificar red Docker') {
             steps {
                 sh '''
@@ -84,49 +74,62 @@ pipeline {
                         echo "⚙️ Creando red ${NETWORK_NAME}..."
                         docker network create ${NETWORK_NAME}
                     else
-                        echo "✅ Red ${NETWORK_NAME} ya existe."
+                        echo "✅ Red ${NETWORK_NAME} ya existente."
                     fi
                 '''
             }
         }
 
-        // =======================================================
-        // 5️⃣ CONSTRUIR IMAGEN DOCKER FRONTEND
-        // =======================================================
+        // ===============================
+        // 4️⃣ CONSTRUIR IMAGEN DOCKER FRONTEND
+        // ===============================
         stage('Construir imagen Docker Frontend') {
             steps {
-                sh '''
-                    echo "🐳 Construyendo imagen Docker para PALERMO-PORTAL (${ENVIRONMENT})..."
-                    docker build -t palermo-portal-front-${ENVIRONMENT}:latest -f Dockerfile .
-                '''
+                dir(env.PROJECT_DIR) {
+                    script {
+                        // Selecciona Dockerfile según entorno
+                        def dockerfileToUse = (env.ENVIRONMENT == 'develop') ? 'Dockerfile.dev' : 'Dockerfile'
+
+                        echo "🐳 Construyendo imagen Docker para PALERMO-PORTAL (${ENVIRONMENT}) usando ${dockerfileToUse}..."
+
+                        sh """
+                            docker build \
+                                -t palermo-portal-front-${ENVIRONMENT}:latest \
+                                -f ${dockerfileToUse} \
+                                --build-arg NG_ENV=${ENVIRONMENT} .
+                        """
+                    }
+                }
             }
         }
 
-        // =======================================================
-        // 6️⃣ DESPLEGAR CON DOCKER COMPOSE
-        // =======================================================
+        // ===============================
+        // 5️⃣ DESPLEGAR CON DOCKER COMPOSE
+        // ===============================
         stage('Desplegar PALERMO-PORTAL Frontend') {
             steps {
-                sh '''
-                    echo "🚀 Desplegando entorno Frontend: ${ENVIRONMENT}"
-                    docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --build
-                '''
+                dir(env.PROJECT_DIR) {
+                    sh '''
+                        echo "🚀 Desplegando entorno Frontend: ${ENVIRONMENT}"
+                        docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --build
+                    '''
+                }
             }
         }
     }
 
-    // =======================================================
+    // ===============================
     // 🎯 POST ACTIONS
-    // =======================================================
+    // ===============================
     post {
         success {
-            echo "🎉 Despliegue Frontend completado correctamente para ${env.ENVIRONMENT}"
+            echo "✅ Despliegue exitoso: PALERMO-PORTAL Frontend (${env.ENVIRONMENT})"
         }
         failure {
-            echo "💥 Error durante el despliegue del Frontend (${env.ENVIRONMENT})"
+            echo "💥 Error en el despliegue del Frontend (${env.ENVIRONMENT})"
         }
         always {
-            echo "🧹 Limpieza final del pipeline completada (${env.ENVIRONMENT})"
+            echo "🧹 Pipeline finalizado para entorno: ${env.ENVIRONMENT}"
         }
     }
 }
