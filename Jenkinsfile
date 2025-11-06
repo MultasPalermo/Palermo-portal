@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = 'alcaldiaFetch'                     // Carpeta raíz del proyecto frontend
+        PROJECT_DIR = '.'                                 // Proyecto en la raíz
         NETWORK_NAME = 'alcaldiafetch_network'            // Red compartida con backend
         NODE_IMAGE = 'node:20-alpine'                     // Imagen ligera de Node
-        BUILD_DIR = 'dist'                                // Carpeta de salida del build Angular/Vue/React
+        BUILD_DIR = 'dist'                                // Carpeta de salida del build Angular
     }
 
     stages {
@@ -15,9 +15,9 @@ pipeline {
         // =======================================================
         stage('Checkout código fuente') {
             steps {
-                echo "📥 Clonando repositorio alcaldiaFetch-portal..."
+                echo "📥 Clonando repositorio PALERMO-PORTAL..."
                 checkout scm
-                sh 'ls -R ${PROJECT_DIR} || true'
+                sh 'ls -R DevOps || true'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
                         default:         env.ENVIRONMENT = 'develop'; break
                     }
 
-                    env.ENV_DIR = "${PROJECT_DIR}/DevOps/${env.ENVIRONMENT}"
+                    env.ENV_DIR = "DevOps/${env.ENVIRONMENT}"
                     env.COMPOSE_FILE = "${env.ENV_DIR}/docker-compose.yml"
                     env.ENV_FILE = "${env.ENV_DIR}/.env"
 
@@ -53,24 +53,22 @@ pipeline {
         }
 
         // =======================================================
-        // 3️⃣ INSTALAR Y CONSTRUIR FRONTEND DENTRO DE CONTENEDOR NODE
+        // 3️⃣ COMPILAR FRONTEND DENTRO DE CONTENEDOR NODE
         // =======================================================
         stage('Compilar Frontend dentro de contenedor Node') {
             steps {
                 script {
                     docker.image(env.NODE_IMAGE).inside('-u root:root') {
-                        dir(env.PROJECT_DIR) {
-                            sh '''
-                                echo "📦 Instalando dependencias..."
-                                npm ci --legacy-peer-deps
+                        sh '''
+                            echo "📦 Instalando dependencias..."
+                            npm ci --legacy-peer-deps
 
-                                echo "🛠️ Compilando aplicación para entorno ${ENVIRONMENT}..."
-                                npm run build --if-present || npm run build:${ENVIRONMENT} || true
+                            echo "🛠️ Compilando aplicación para entorno ${ENVIRONMENT}..."
+                            npm run build --if-present || npm run build:${ENVIRONMENT} || true
 
-                                echo "✅ Build completado. Archivos en carpeta ${BUILD_DIR}"
-                                ls -lh ${BUILD_DIR} || true
-                            '''
-                        }
+                            echo "✅ Build completado. Archivos generados:"
+                            ls -lh ${BUILD_DIR} || true
+                        '''
                     }
                 }
             }
@@ -93,30 +91,26 @@ pipeline {
         }
 
         // =======================================================
-        // 5️⃣ CONSTRUIR IMAGEN DOCKER
+        // 5️⃣ CONSTRUIR IMAGEN DOCKER FRONTEND
         // =======================================================
         stage('Construir imagen Docker Frontend') {
             steps {
-                dir(env.PROJECT_DIR) {
-                    sh '''
-                        echo "🐳 Construyendo imagen Docker para el Frontend (${ENVIRONMENT})..."
-                        docker build -t alcaldiafetch-front-${ENVIRONMENT}:latest -f Dockerfile .
-                    '''
-                }
+                sh '''
+                    echo "🐳 Construyendo imagen Docker para PALERMO-PORTAL (${ENVIRONMENT})..."
+                    docker build -t palermo-portal-front-${ENVIRONMENT}:latest -f Dockerfile .
+                '''
             }
         }
 
         // =======================================================
         // 6️⃣ DESPLEGAR CON DOCKER COMPOSE
         // =======================================================
-        stage('Desplegar alcaldiaFetch Frontend') {
+        stage('Desplegar PALERMO-PORTAL Frontend') {
             steps {
-                dir(env.PROJECT_DIR) {
-                    sh '''
-                        echo "🚀 Desplegando entorno Frontend: ${ENVIRONMENT}"
-                        docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --build
-                    '''
-                }
+                sh '''
+                    echo "🚀 Desplegando entorno Frontend: ${ENVIRONMENT}"
+                    docker compose -f ${COMPOSE_FILE} --env-file ${ENV_FILE} up -d --build
+                '''
             }
         }
     }
