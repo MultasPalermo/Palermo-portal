@@ -110,8 +110,25 @@ export class AppMenu {
   ngOnInit() {
     this.authService.GetMe().subscribe((user: any) => {
       console.log("✅ Usuario cargado en sidebar:", user);
-      this.model = mapBackendMenuToPrimeNG(user.menu);
-      console.log("📌 Menu recibido del backend:", user.menu);
+      const backendMenu = mapBackendMenuToPrimeNG(user.menu);
+
+      // Agregar Dashboard como primera sección del menú
+      this.model = [
+        {
+          label: 'Dashboard',
+          icon: 'pi pi-fw pi-chart-line',
+          items: [
+            {
+              label: 'Vista General',
+              icon: 'pi pi-fw pi-home',
+              routerLink: ['/dashboard']
+            }
+          ]
+        },
+        ...backendMenu
+      ];
+
+      console.log("📌 Menu final con dashboard:", this.model);
     });
   }
 }
