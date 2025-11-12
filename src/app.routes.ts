@@ -36,7 +36,7 @@ export const routes: Routes = [
       { path: 'parameters', loadChildren: () => import('./app/features/admin/parameters/pages/parameters.routes').then(m => m.PARAMETERS_ROUTES) },
       { path: 'permisos', loadChildren: () => import('./app/features/admin/permissions/permissions.routes').then(m => m.PERMISOS_ROUTES) },
       { path: 'home', loadChildren: () => import('./app/features/home/pages/password/home.routes').then(m => m.HOMEPASSWORD_ROUTES) },
-       { path: 'seguimiento', loadChildren: () => import('./app/features/seguimiento/Seguimiento.routes').then(m => m.SEGUIMIENTO_ROUTES) },
+       { path: 'Seguimiento', loadChildren: () => import('./app/features/seguimiento/Seguimiento.routes').then(m => m.SEGUIMIENTO_ROUTES) },
     ]
   },
   { path: 'contenido-documento', loadChildren: () => import('./app/features/home/pages/document/documento.routes').then(m => m.DOCUMENT_ROUTES) },
