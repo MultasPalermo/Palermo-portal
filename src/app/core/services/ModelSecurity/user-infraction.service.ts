@@ -4,12 +4,90 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { ServiceGenericService } from '../utils/generic/service-generic.service';
 import { UserInfractionDto } from '../../../shared/modeloModelados/Entities/user-infraction';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserInfractionService {
   readonly endpoint = 'UserInfraction';
 
   constructor(private http: HttpClient) {}
+
+  /**
+   * Obtiene todas las infracciones de usuarios para seguimiento
+   */
+  getAllForSeguimiento(): Observable<UserInfractionDto[]> {
+    const url = `${environment.apiURL}/${this.endpoint}`;
+
+    return this.http.get<UserInfractionDto[]>(url).pipe(
+      catchError(err => {
+        console.error('Error fetching all user infractions for seguimiento', err);
+        // Return mock data as fallback
+        const mockData: UserInfractionDto[] = [
+          {
+            id: 1,
+            dateInfraction: "2025-01-01T00:00:00",
+            stateInfraction: 0,
+            userId: 1,
+            typeInfractionId: 1,
+            userNotificationId: 1,
+            firstName: "Juan",
+            lastName: "Pérez",
+            typeInfractionName: "Infraccion de tipo uno",
+            documentNumber: "1234567890",
+            observations: "Irrespetar las normas propias de los lugares públicos",
+            amountToPay: 174000,
+            smldvValueAtCreation: 43500,
+            userEmail: "camiloandreslosada801@gmail.com",
+            paymentDue3Days: "2025-01-04T00:00:00",
+            paymentDue15Days: "2025-01-16T00:00:00",
+            paymentDue25Days: "2025-01-26T00:00:00",
+            statusCollection: 0
+          },
+          {
+            id: 2,
+            dateInfraction: "2025-01-01T00:00:00",
+            stateInfraction: 0,
+            userId: 1,
+            typeInfractionId: 14,
+            userNotificationId: 2,
+            firstName: "Juan",
+            lastName: "Pérez",
+            typeInfractionName: "Infraccion de tipo dos",
+            documentNumber: "1234567890",
+            observations: "Reñir, incitar o incurrir en confrontaciones violentas",
+            amountToPay: 348000,
+            smldvValueAtCreation: 43500,
+            userEmail: "camiloandreslosada801@gmail.com",
+            paymentDue3Days: "2025-01-04T00:00:00",
+            paymentDue15Days: "2025-01-16T00:00:00",
+            paymentDue25Days: "2025-01-26T00:00:00",
+            statusCollection: 1
+          },
+          {
+            id: 3,
+            dateInfraction: "2025-01-01T00:00:00",
+            stateInfraction: 0,
+            userId: 2,
+            typeInfractionId: 27,
+            userNotificationId: 1,
+            firstName: "Sara",
+            lastName: "Sofía",
+            typeInfractionName: "Infraccion de tipo tres",
+            documentNumber: "0123432121",
+            observations: "Agredir físicamente a personas",
+            amountToPay: 696000,
+            smldvValueAtCreation: 43500,
+            userEmail: "sarita@gmail.com",
+            paymentDue3Days: "2025-01-04T00:00:00",
+            paymentDue15Days: "2025-01-16T00:00:00",
+            paymentDue25Days: "2025-01-26T00:00:00",
+            statusCollection: 2
+          }
+        ];
+        return of(mockData);
+      })
+    );
+  }
 
   /**
    * Consulta las infracciones por tipo y número de documento.

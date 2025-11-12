@@ -1,0 +1,215 @@
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-6 text-center">Seguimiento de Multas</h1>
+
+  <div *ngIf="loading" class="text-center py-8">
+    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    <p class="mt-2 text-gray-600">Cargando datos...</p>
+  </div>
+
+  <!-- Kanban Board -->
+  <div *ngIf="!loading" class="kanban-board flex flex-col gap-6">
+    <!-- Grupo Prejuridico -->
+    <div class="prejudicial-group flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <!-- Columna Cobro Prejuridico 0-3 días -->
+      <div class="kanban-column flex-1 min-w-80">
+        <div class="column-header bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 0-3 días</h2>
+          <span class="text-sm text-yellow-600">{{ prejudicial0to3.length }} multas</span>
+        </div>
+        <div class="column-body bg-yellow-50 p-4 rounded-b-lg min-h-96 space-y-3">
+          <div *ngIf="prejudicial0to3.length === 0" class="text-center text-gray-500 py-8">
+            No hay multas en esta etapa
+          </div>
+          <div *ngFor="let item of prejudicial0to3" class="kanban-card bg-white shadow-sm rounded-lg p-4 border-l-4 border-yellow-500">
+            <h3 class="font-semibold text-gray-900 mb-3">{{ getFullName(item) }}</h3>
+
+            <div class="card-section">
+              <div class="section-title">Fechas</div>
+              <div class="info-row">
+                <span class="info-label">Notificación:</span>
+                <span class="info-value">{{ formatDate(item.dateInfraction!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">+3 días:</span>
+                <span class="info-value">{{ formatDate(item.paymentDue3Days!) }}</span>
+              </div>
+            </div>
+
+            <div class="card-section">
+              <div class="section-title">Valores</div>
+              <div class="info-row">
+                <span class="info-label">Multa:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Antes 3 días (50%):</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay! * 0.5) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Cobro Prejuridico 3-15 días -->
+      <div class="kanban-column flex-1 min-w-80">
+        <div class="column-header bg-yellow-200 border-l-4 border-yellow-600 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 3-15 días</h2>
+          <span class="text-sm text-yellow-700">{{ prejudicial3to15.length }} multas</span>
+        </div>
+        <div class="column-body bg-yellow-50 p-4 rounded-b-lg min-h-96 space-y-3">
+          <div *ngIf="prejudicial3to15.length === 0" class="text-center text-gray-500 py-8">
+            No hay multas en esta etapa
+          </div>
+          <div *ngFor="let item of prejudicial3to15" class="kanban-card bg-white shadow-sm rounded-lg p-4 border-l-4 border-yellow-600">
+            <h3 class="font-semibold text-gray-900 mb-3">{{ getFullName(item) }}</h3>
+
+            <div class="card-section">
+              <div class="section-title">Fechas</div>
+              <div class="info-row">
+                <span class="info-label">Notificación:</span>
+                <span class="info-value">{{ formatDate(item.dateInfraction!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">+3 días:</span>
+                <span class="info-value">{{ formatDate(item.paymentDue3Days!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">+15 días:</span>
+                <span class="info-value">{{ formatDate(item.paymentDue15Days!) }}</span>
+              </div>
+            </div>
+
+            <div class="card-section">
+              <div class="section-title">Valores</div>
+              <div class="info-row">
+                <span class="info-label">Multa:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Después 3 días:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay!) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Cobro Prejuridico 15-25 días -->
+      <div class="kanban-column flex-1 min-w-80">
+        <div class="column-header bg-yellow-300 border-l-4 border-yellow-700 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold text-yellow-900">Prejuridico 15-25 días</h2>
+          <span class="text-sm text-yellow-800">{{ prejudicial15to25.length }} multas</span>
+        </div>
+        <div class="column-body bg-yellow-50 p-4 rounded-b-lg min-h-96 space-y-3">
+          <div *ngIf="prejudicial15to25.length === 0" class="text-center text-gray-500 py-8">
+            No hay multas en esta etapa
+          </div>
+          <div *ngFor="let item of prejudicial15to25" class="kanban-card bg-white shadow-sm rounded-lg p-4 border-l-4 border-yellow-700">
+            <h3 class="font-semibold text-gray-900 mb-3">{{ getFullName(item) }}</h3>
+
+            <div class="card-section">
+              <div class="section-title">Fechas</div>
+              <div class="info-row">
+                <span class="info-label">Notificación:</span>
+                <span class="info-value">{{ formatDate(item.dateInfraction!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">+15 días:</span>
+                <span class="info-value">{{ formatDate(item.paymentDue15Days!) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">+25 días:</span>
+                <span class="info-value">{{ formatDate(item.paymentDue25Days!) }}</span>
+              </div>
+            </div>
+
+            <div class="card-section">
+              <div class="section-title">Valores</div>
+              <div class="info-row">
+                <span class="info-label">Multa:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay!) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grupo Jurídico y Coactivo -->
+    <div class="juridico-coactivo-group flex flex-col lg:flex-row gap-4 lg:gap-6">
+      <!-- Columna Cobro Jurídico -->
+      <div class="kanban-column flex-1 min-w-80">
+        <div class="column-header bg-blue-100 border-l-4 border-blue-500 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold text-blue-800">Cobro Jurídico</h2>
+          <span class="text-sm text-blue-600">{{ juridico.length }} multas</span>
+        </div>
+        <div class="column-body bg-blue-50 p-4 rounded-b-lg min-h-96 space-y-3">
+          <div *ngIf="juridico.length === 0" class="text-center text-gray-500 py-8">
+            No hay multas en esta etapa
+          </div>
+          <div *ngFor="let item of juridico" class="kanban-card bg-white shadow-sm rounded-lg p-3 border-l-4 border-blue-500">
+            <h3 class="font-medium text-gray-900">{{ getFullName(item) }}</h3>
+            <div class="mt-2 text-sm text-gray-600 space-y-1">
+              <p><strong>Fecha:</strong> {{ formatDate(item.dateInfraction!) }}</p>
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs download-btn">
+                PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Cobro Coactivo -->
+      <div class="kanban-column flex-1 min-w-80">
+        <div class="column-header bg-red-100 border-l-4 border-red-500 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold text-red-800">Cobro Coactivo</h2>
+          <span class="text-sm text-red-600">{{ coactivo.length }} multas</span>
+        </div>
+        <div class="column-body bg-red-50 p-4 rounded-b-lg min-h-96 space-y-3">
+          <div *ngIf="coactivo.length === 0" class="text-center text-gray-500 py-8">
+            No hay multas en esta etapa
+          </div>
+          <div *ngFor="let item of coactivo" class="kanban-card bg-white shadow-sm rounded-lg p-4 border-l-4 border-red-500">
+            <h3 class="font-semibold text-gray-900 mb-3">{{ getFullName(item) }}</h3>
+
+            <div class="card-section">
+              <div class="section-title">Multa Base</div>
+              <div class="info-row">
+                <span class="info-label">Valor:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay!) }}</span>
+              </div>
+            </div>
+
+            <div class="card-section">
+              <div class="section-title">Cálculo Mora</div>
+              <div class="info-row">
+                <span class="info-label">Tasa:</span>
+                <span class="info-value">2% mensual</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Diaria:</span>
+                <span class="info-value">0.0667%</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Días:</span>
+                <span class="info-value">{{ calculateDaysMora(item) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Valor Mora:</span>
+                <span class="info-value">{{ formatCurrency(calculateMoraValue(item)) }}</span>
+              </div>
+            </div>
+
+            <div class="card-section">
+              <div class="section-title">Total</div>
+              <div class="info-row">
+                <span class="info-label">Con Mora:</span>
+                <span class="info-value">{{ formatCurrency(item.amountToPay! + calculateMoraValue(item)) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
