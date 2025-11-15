@@ -16,5 +16,7 @@ export interface UserInfractionDto {
   paymentDue3Days?: string;
   paymentDue15Days?: string;
   paymentDue25Days?: string;
+  paymentDue30Days?: string;
+  paymentDue40Days?: string;
   statusCollection?: number;
 }

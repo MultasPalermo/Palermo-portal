@@ -17,191 +17,74 @@ export class UserInfractionService {
    */
   getAllForSeguimiento(): Observable<UserInfractionDto[]> {
     const url = `${environment.apiURL}/${this.endpoint}`;
-
-    return this.http.get<UserInfractionDto[]>(url).pipe(
-      catchError(err => {
-        console.error('Error fetching all user infractions for seguimiento', err);
-        // Return mock data as fallback
-        const mockData: UserInfractionDto[] = [
-          {
-            id: 1,
-            dateInfraction: "2025-01-01T00:00:00",
-            stateInfraction: 0,
-            userId: 1,
-            typeInfractionId: 1,
-            userNotificationId: 1,
-            firstName: "Juan",
-            lastName: "Pérez",
-            typeInfractionName: "Infraccion de tipo uno",
-            documentNumber: "1234567890",
-            observations: "Irrespetar las normas propias de los lugares públicos",
-            amountToPay: 174000,
-            smldvValueAtCreation: 43500,
-            userEmail: "camiloandreslosada801@gmail.com",
-            paymentDue3Days: "2025-01-04T00:00:00",
-            paymentDue15Days: "2025-01-16T00:00:00",
-            paymentDue25Days: "2025-01-26T00:00:00",
-            statusCollection: 0
-          },
-          {
-            id: 2,
-            dateInfraction: "2025-01-01T00:00:00",
-            stateInfraction: 0,
-            userId: 1,
-            typeInfractionId: 14,
-            userNotificationId: 2,
-            firstName: "Juan",
-            lastName: "Pérez",
-            typeInfractionName: "Infraccion de tipo dos",
-            documentNumber: "1234567890",
-            observations: "Reñir, incitar o incurrir en confrontaciones violentas",
-            amountToPay: 348000,
-            smldvValueAtCreation: 43500,
-            userEmail: "camiloandreslosada801@gmail.com",
-            paymentDue3Days: "2025-01-04T00:00:00",
-            paymentDue15Days: "2025-01-16T00:00:00",
-            paymentDue25Days: "2025-01-26T00:00:00",
-            statusCollection: 1
-          },
-          {
-            id: 3,
-            dateInfraction: "2025-01-01T00:00:00",
-            stateInfraction: 0,
-            userId: 2,
-            typeInfractionId: 27,
-            userNotificationId: 1,
-            firstName: "Sara",
-            lastName: "Sofía",
-            typeInfractionName: "Infraccion de tipo tres",
-            documentNumber: "0123432121",
-            observations: "Agredir físicamente a personas",
-            amountToPay: 696000,
-            smldvValueAtCreation: 43500,
-            userEmail: "sarita@gmail.com",
-            paymentDue3Days: "2025-01-04T00:00:00",
-            paymentDue15Days: "2025-01-16T00:00:00",
-            paymentDue25Days: "2025-01-26T00:00:00",
-            statusCollection: 2
-          }
-        ];
-        return of(mockData);
-      })
-    );
+    return this.http.get<UserInfractionDto[]>(url);
   }
 
   /**
    * Consulta las infracciones por tipo y número de documento.
-   * Ejemplo: /api/UserInfraction/by-document?documentTypeId=1&documentNumber=123
+   * Endpoint: GET /api/UserInfraction/by-document?documentTypeId=1&documentNumber=123
+   * Respuesta: { isSuccess: boolean, count: number, data: UserInfractionDto[] }
    */
   getByDocument(documentTypeId: number | string, documentNumber: string | number): Observable<UserInfractionDto[]> {
-    const url = `/api/${this.endpoint}/by-document`;
-
-    // Normalizar documentTypeId: si viene una cadena no numérica (ej. 'cc') intentar mapearla.
-    const normalizedTypeId = this.normalizeDocumentTypeId(documentTypeId);
-
-    const httpParams = new HttpParams()
-      .set('documentTypeId', String(normalizedTypeId))
+    const url = `${environment.apiURL}/${this.endpoint}/by-document`;
+    const params = new HttpParams()
+      .set('documentTypeId', String(documentTypeId))
       .set('documentNumber', String(documentNumber));
 
-    // Pedimos la respuesta completa (headers + body) como texto para diagnosticar
-    // por qué el backend puede devolver 200 pero con contenido que Angular no parsea como JSON.
-    return this.http.get(url, { params: httpParams, responseType: 'text', observe: 'response' as const }).pipe(
-      switchMap((resp) => {
-        const text = resp.body ?? '';
-        const contentType = resp.headers.get('content-type') ?? '';
-        // Log para depuración en consola (puedes retirar en producción)
-        console.debug('UserInfraction response headers:', resp.headers);
-        console.debug('UserInfraction response content-type:', contentType);
-        console.debug('UserInfraction response body (trim):', (text || '').slice(0, 500));
-
-        if (!text) return of([] as UserInfractionDto[]);
-
-        // Si la respuesta parece HTML (p. ej. el dev server devolvió index.html),
-        // reintentar usando la URL absoluta del backend.
-        const trimmed = (text || '').trim();
-        if (trimmed.startsWith('<')) {
-          console.warn('UserInfraction: la respuesta parece HTML. Reintentando con la URL absoluta del backend.');
-          // Construir parámetros ya normalizados
-          const absoluteUrl = `https://localhost:7286//api/${this.endpoint}/by-document`;
-          return this.retryWithAbsoluteUrl(absoluteUrl, httpParams as HttpParams);
-        }
-
-        // Intentar parseo directo
-        try {
-          const parsed = JSON.parse(text);
-          if (Array.isArray(parsed)) return of(parsed as UserInfractionDto[]);
-          if (parsed && Array.isArray(parsed.data)) return of(parsed.data as UserInfractionDto[]);
-          console.warn('UserInfraction: respuesta inesperada, se esperaba array', parsed);
-          return of([] as UserInfractionDto[]);
-        } catch (e) {
-          // A veces el backend devuelve HTML que envuelve el JSON; intentar extraer el fragmento JSON
-          const maybeJson = this.extractJsonFromString(text);
-          if (maybeJson) {
-            try {
-              const parsed2 = JSON.parse(maybeJson);
-              if (Array.isArray(parsed2)) return of(parsed2 as UserInfractionDto[]);
-              if (parsed2 && Array.isArray(parsed2.data)) return of(parsed2.data as UserInfractionDto[]);
-            } catch (e2) {
-              console.error('UserInfraction: fallo al parsear JSON extraído', e2);
-            }
-          }
-          console.error('UserInfraction: fallo al parsear JSON de la respuesta', e);
-          return of([] as UserInfractionDto[]);
-        }
-      }),
-      catchError(err => {
-        // Si HttpClient generó HttpErrorResponse con status 200, aún cae aquí; registrar completo
-        console.error('Error fetching UserInfraction by document', err);
-        return of([]);
-      })
-    );
+    return this.http.get<{ isSuccess: boolean; count: number; data: UserInfractionDto[] }>(url, { params })
+      .pipe(
+        map(response => response.data || [])
+      );
   }
 
-  private retryWithAbsoluteUrl(absoluteUrl: string, httpParams: HttpParams) {
-    return this.http.get(absoluteUrl, { params: httpParams, responseType: 'text', observe: 'response' as const }).pipe(
-      map((resp) => {
-        const text = resp.body ?? '';
-        try {
-          const parsed = JSON.parse(text);
-          if (Array.isArray(parsed)) return parsed as UserInfractionDto[];
-          if (parsed && Array.isArray(parsed.data)) return parsed.data as UserInfractionDto[];
-          console.warn('UserInfraction retry: respuesta inesperada en absoluteUrl', parsed);
-          return [] as UserInfractionDto[];
-        } catch (e) {
-          console.error('UserInfraction retry: fallo al parsear JSON desde absoluteUrl', e, text);
-          return [] as UserInfractionDto[];
-        }
-      }),
-      catchError(err => {
-        console.error('UserInfraction retry error using absoluteUrl', err);
-        return of([]);
-      })
-    );
+
+  /**
+   * Descarga PDF de recordatorio de 3 días
+   */
+  downloadReminder3DaysPdf(id: number): Observable<Blob> {
+    const url = `${environment.apiURL}/${this.endpoint}/${id}/pdf/3dias`;
+    return this.http.get(url, {
+      responseType: 'blob'
+    });
   }
 
   /**
-   * Intenta normalizar identificadores de tipo de documento.
-   * Asume mapeo por convención: 'cc' => 1, 'ti' => 2, 'ce' => 3.
-   * Si tu backend usa otros ids, actualiza este mapeo.
+   * Descarga PDF de recordatorio de 15 días
    */
-  private normalizeDocumentTypeId(documentTypeId: number | string): number | string {
-    if (typeof documentTypeId === 'number') return documentTypeId;
-    const maybeNum = Number(documentTypeId);
-    if (!isNaN(maybeNum)) return maybeNum;
-
-    const map: Record<string, number> = { cc: 1, ti: 2, ce: 3 };
-    const key = String(documentTypeId).toLowerCase();
-    return map[key] ?? documentTypeId;
+  downloadReminder15DaysPdf(id: number): Observable<Blob> {
+    const url = `${environment.apiURL}/${this.endpoint}/${id}/pdf/15dias`;
+    return this.http.get(url, {
+      responseType: 'blob'
+    });
   }
 
-  /** Extrae el primer fragmento JSON válido que encuentre dentro de un string (si existe) */
-  private extractJsonFromString(s: string): string | null {
-    const start = s.indexOf('{');
-    const end = s.lastIndexOf('}');
-    if (start === -1 || end === -1 || end <= start) return null;
-    const candidate = s.substring(start, end + 1);
-    // Básico: si contiene corchetes o llaves, devolver candidato
-    if (candidate.trim().length > 2) return candidate;
-    return null;
+  /**
+   * Descarga PDF de recordatorio de 25 días
+   */
+  downloadReminder25DaysPdf(id: number): Observable<Blob> {
+    const url = `${environment.apiURL}/${this.endpoint}/${id}/pdf/25dias`;
+    return this.http.get(url, {
+      responseType: 'blob'
+    });
+  }
+
+  /**
+   * Descarga PDF de contrato (para multas muy recientes)
+   */
+  downloadContractPdf(id: number): Observable<Blob> {
+    const url = `${environment.apiURL}/${this.endpoint}/${id}/pdf`;
+    return this.http.get(url, {
+      responseType: 'blob'
+    });
+  }
+
+  /**
+   * Descarga PDF de cobro jurídico (30 días)
+   */
+  downloadReminder30DaysPdf(id: number): Observable<Blob> {
+    const url = `${environment.apiURL}/${this.endpoint}/${id}/pdf/cobroJuridico`;
+    return this.http.get(url, {
+      responseType: 'blob'
+    });
   }
 }
