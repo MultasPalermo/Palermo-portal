@@ -84,7 +84,14 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
     const now = new Date();
 
     data.forEach((item) => {
-      // El backend envía statusCollection como string, convertir a string para comparar
+      // VERIFICAR PRIMERO SI TIENE MORA - Si tiene días de mora, va directo a cobro coactivo
+      if (item.daysOfDelay && item.daysOfDelay > 0) {
+        console.log(`🚨 Multa ${item.id} tiene mora de ${item.daysOfDelay} días -> va a cobro coactivo`);
+        this.coactivo.push(item);
+        return;
+      }
+
+      // Si no tiene mora, categorizar por estado normal
       const status = String(item.statusCollection).toLowerCase();
 
       switch (status) {
@@ -172,21 +179,6 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('es-CO');
-  }
-
-  calculateDaysMora(item: UserInfractionDto): number {
-    if (!item.dateInfraction) return 0;
-    const infractionDate = new Date(item.dateInfraction);
-    const now = new Date();
-    const diffTime = now.getTime() - infractionDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
-  }
-
-  calculateMoraValue(item: UserInfractionDto): number {
-    const days = this.calculateDaysMora(item);
-    const dailyRate = 0.02 / 30; // 2% monthly / 30 days
-    return Math.round(item.amountToPay! * dailyRate * days);
   }
 
   openModal(item: UserInfractionDto) {

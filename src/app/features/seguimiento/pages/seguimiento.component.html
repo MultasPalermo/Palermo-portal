@@ -16,7 +16,8 @@
           <h2 class="text-lg font-semibold text-green-800">Multas Recientes</h2>
           <span class="text-sm text-green-600">{{ prejudicialVeryRecent.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicialVeryRecent" borderColor="border-green-500" backgroundColor="bg-green-50" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="prejudicialVeryRecent" borderColor="border-green-500" backgroundColor="bg-green-50"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Columna Cobro Prejuridico 0-3 días -->
@@ -25,7 +26,8 @@
           <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 3 días</h2>
           <span class="text-sm text-yellow-600">{{ prejudicial0to3.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicial0to3" borderColor="border-yellow-500" backgroundColor="bg-yellow-50" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="prejudicial0to3" borderColor="border-yellow-500" backgroundColor="bg-yellow-50"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Columna Cobro Prejuridico 3-15 días -->
@@ -34,33 +36,32 @@
           <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 15 días</h2>
           <span class="text-sm text-yellow-700">{{ prejudicial3to15.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicial3to15" borderColor="border-yellow-600" backgroundColor="bg-orange-50" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="prejudicial3to15" borderColor="border-yellow-600" backgroundColor="bg-orange-50"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
-    
+
       <!-- Modal de Detalles -->
-      <p-dialog
-        [(visible)]="visible"
-        [modal]="true"
-        [closable]="true"
-        [style]="{width: '90vw', maxWidth: '600px'}"
-        header="Detalles de la Multa"
-        (onHide)="closeModal()">
-    
+      <p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [style]="{width: '90vw', maxWidth: '600px'}"
+        header="Detalles de la Multa" (onHide)="closeModal()">
+
         <div *ngIf="selectedItem" class="modal-content">
 
           <div class="space-y-4">
             <!-- Información -->
             <app-generic-card title="Información" icon="pi pi-info-circle" iconColor="text-blue-500">
               <div class="grid grid-cols-1 gap-2">
-                <p class="text-sm"><strong class="text-gray-600">Tipo de Infracción:</strong> <span class="text-gray-900">{{ selectedItem.typeInfractionName || 'N/A' }}</span></p>
+                <p class="text-sm"><strong class="text-gray-600">Tipo de Infracción:</strong> <span
+                    class="text-gray-900">{{ selectedItem.typeInfractionName || 'N/A' }}</span></p>
                 <p class="text-sm"><strong class="text-gray-600">Estado de Cobro:</strong>
-                  <span class="ml-2 px-2 py-1 rounded text-xs font-medium {{ getStatusColor(selectedItem.statusCollection) }}">
+                  <span
+                    class="ml-2 px-2 py-1 rounded text-xs font-medium {{ getStatusColor(selectedItem.statusCollection) }}">
                     {{ selectedItem.statusCollection || 'Desconocido' }}
                   </span>
                 </p>
                 <div class="mt-2">
                   <p class="text-sm"><strong class="text-gray-600">Observaciones:</strong></p>
-                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded mt-1">{{ selectedItem.observations || 'Sin observaciones' }}</p>
+                  <p class="text-sm text-gray-900 bg-gray-50 p-2 rounded mt-1">{{ selectedItem.observations || 'Sin
+                    observaciones' }}</p>
                 </div>
               </div>
             </app-generic-card>
@@ -70,12 +71,14 @@
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div class="bg-yellow-50 border border-yellow-200 rounded p-3 text-center">
                   <div class="text-xs font-medium text-yellow-700">3 días</div>
-                  <div class="text-sm font-semibold text-yellow-900">{{ formatDate(selectedItem.paymentDue3Days!) }}</div>
+                  <div class="text-sm font-semibold text-yellow-900">{{ formatDate(selectedItem.paymentDue3Days!) }}
+                  </div>
                   <div class="text-xs text-yellow-600">Descuento 50%</div>
                 </div>
                 <div class="bg-orange-50 border border-orange-200 rounded p-3 text-center">
                   <div class="text-xs font-medium text-orange-700">15 días</div>
-                  <div class="text-sm font-semibold text-orange-900">{{ formatDate(selectedItem.paymentDue15Days!) }}</div>
+                  <div class="text-sm font-semibold text-orange-900">{{ formatDate(selectedItem.paymentDue15Days!) }}
+                  </div>
                   <div class="text-xs text-orange-600">Valor completo</div>
                 </div>
                 <div class="bg-red-50 border border-red-200 rounded p-3 text-center">
@@ -85,12 +88,14 @@
                 </div>
                 <div class="bg-pink-50 border border-pink-200 rounded p-3 text-center">
                   <div class="text-xs font-medium text-pink-700">30 días</div>
-                  <div class="text-sm font-semibold text-pink-900">{{ formatDate(selectedItem.paymentDue30Days!) }}</div>
+                  <div class="text-sm font-semibold text-pink-900">{{ formatDate(selectedItem.paymentDue30Days!) }}
+                  </div>
                   <div class="text-xs text-pink-600">Recordatorio adicional</div>
                 </div>
                 <div class="bg-purple-50 border border-purple-200 rounded p-3 text-center">
                   <div class="text-xs font-medium text-purple-700">40 días</div>
-                  <div class="text-sm font-semibold text-purple-900">{{ formatDate(selectedItem.paymentDue40Days!) }}</div>
+                  <div class="text-sm font-semibold text-purple-900">{{ formatDate(selectedItem.paymentDue40Days!) }}
+                  </div>
                   <div class="text-xs text-purple-600">Último aviso</div>
                 </div>
               </div>
@@ -102,46 +107,61 @@
                 <div class="space-y-2">
                   <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <span class="text-sm text-gray-600">Multa Original:</span>
-                    <span class="text-sm font-semibold text-gray-900">{{ formatCurrency(selectedItem.amountToPay!) }}</span>
+                    <span class="text-sm font-semibold text-gray-900">
+                      {{ formatCurrency(selectedItem.initialAmount!) }}
+                    </span>
                   </div>
+
                   <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
                     <span class="text-sm text-blue-600">Valor SMMLV:</span>
-                    <span class="text-sm font-semibold text-blue-900">{{ formatCurrency(selectedItem.smldvValueAtCreation!) }}</span>
+                    <span class="text-sm font-semibold text-blue-900">
+                      {{ formatCurrency(selectedItem.smldvValueAtCreation!) }}
+                    </span>
                   </div>
                 </div>
+
                 <div class="space-y-2">
                   <div class="flex justify-between items-center p-2 bg-red-50 rounded">
                     <span class="text-sm text-red-600">Días de Mora:</span>
-                    <span class="text-sm font-semibold text-red-900">{{ calculateDaysMora(selectedItem) }}</span>
+                    <span class="text-sm font-semibold text-red-900">
+                      {{ selectedItem.daysOfDelay }}
+                    </span>
                   </div>
+
                   <div class="flex justify-between items-center p-2 bg-red-50 rounded">
                     <span class="text-sm text-red-600">Valor Mora:</span>
-                    <span class="text-sm font-semibold text-red-900">{{ formatCurrency(calculateMoraValue(selectedItem)) }}</span>
+                    <span class="text-sm font-semibold text-red-900">
+                      {{ formatCurrency(selectedItem.accruedInterest!) }}
+                    </span>
+                  </div>
+
+                  <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                    <span class="text-sm text-green-600">Total a Pagar:</span>
+                    <span class="text-sm font-semibold text-green-900">
+                      {{ formatCurrency(selectedItem.totalToPay!) }}
+                    </span>
                   </div>
                 </div>
               </div>
+
               <div class="mt-4 p-3 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-lg">
                 <div class="flex justify-between items-center">
                   <span class="text-sm font-medium text-emerald-700">Total con Mora:</span>
-                  <span class="text-lg font-bold text-emerald-900">{{ formatCurrency(selectedItem.amountToPay! + calculateMoraValue(selectedItem)) }}</span>
+                  <span class="text-lg font-bold text-emerald-900">
+                    {{ formatCurrency(selectedItem.amountToPay!) }}
+                  </span>
                 </div>
               </div>
             </app-generic-card>
           </div>
         </div>
-    
+
         <ng-template pTemplate="footer">
           <div class="flex justify-between w-full">
-            <p-button
-              *ngIf="getStatusString(selectedItem?.statusCollection) !== 'cobrocoactivo'"
-              label="Descargar PDF"
-              icon="pi pi-download"
-              styleClass="p-button-primary"
-              (onClick)="downloadPdf()">
+            <p-button *ngIf="getStatusString(selectedItem?.statusCollection) !== 'cobrocoactivo'" label="Descargar PDF"
+              icon="pi pi-download" styleClass="p-button-primary" (onClick)="downloadPdf()">
             </p-button>
-            <p-button
-              label="Cerrar"
-              icon="pi pi-times"
+            <p-button label="Cerrar" icon="pi pi-times"
               [styleClass]="getStatusString(selectedItem?.statusCollection) === 'cobrocoactivo' ? 'p-button-danger' : 'p-button-text'"
               (onClick)="closeModal()">
             </p-button>
@@ -158,7 +178,8 @@
           <h2 class="text-lg font-semibold text-yellow-900">Prejuridico 25 días</h2>
           <span class="text-sm text-yellow-800">{{ prejudicial15to25.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicial15to25" borderColor="border-yellow-700" backgroundColor="bg-yellow-100" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="prejudicial15to25" borderColor="border-yellow-700" backgroundColor="bg-yellow-100"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Columna Cobro Jurídico -->
@@ -167,7 +188,8 @@
           <h2 class="text-lg font-semibold text-blue-800">Cobro Jurídico</h2>
           <span class="text-sm text-blue-600">{{ juridico.length }} multas</span>
         </div>
-        <app-generic-card [items]="juridico" borderColor="border-blue-500" backgroundColor="bg-blue-50" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="juridico" borderColor="border-blue-500" backgroundColor="bg-blue-50"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Columna Cobro Coactivo -->
@@ -176,7 +198,8 @@
           <h2 class="text-lg font-semibold text-red-800">Cobro Coactivo</h2>
           <span class="text-sm text-red-600">{{ coactivo.length }} multas</span>
         </div>
-        <app-generic-card [items]="coactivo" borderColor="border-red-500" backgroundColor="bg-red-50" (cardClick)="openModal($event)"></app-generic-card>
+        <app-generic-card [items]="coactivo" borderColor="border-red-500" backgroundColor="bg-red-50"
+          (cardClick)="openModal($event)"></app-generic-card>
       </div>
     </div>
   </div>
