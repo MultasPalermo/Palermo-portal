@@ -25,5 +25,10 @@ export const PARAMETERS_ROUTES: Routes = [
     path: 'smdlv',
     loadComponent: () =>
       import('../pages/smdlv/smdlv/smdlv.component').then(m => m.SmdlvComponent)
+  },
+  {
+    path: 'recordatorios',
+    loadComponent: () =>
+      import('../pages/recordatorio/recordatorio.component').then(m => m.RecordatorioComponent)
   }
 ];

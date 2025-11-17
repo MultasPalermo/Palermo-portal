@@ -1,0 +1,482 @@
+
+<mat-card>
+  <app-card-header
+    title="Recordatorios de Notificación"
+    [description]="'Gestión de recordatorios para notificaciones (máximo 5 registros).'">
+  </app-card-header>
+
+  <mat-card-content>
+    <ng-container *ngIf="!loading && !errorMsg; else estado">
+      <!-- Tabla personalizada para recordatorios -->
+      <div class="table-container">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Días</th>
+              <th>Descripción</th>
+              <th>Unidad de Tiempo</th>
+              <th>Activo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let recordatorio of paginatedRecordatorios">
+              <td>{{ recordatorio.name }}</td>
+              <td>{{ recordatorio.days }}</td>
+              <td>{{ recordatorio.description }}</td>
+              <td>{{ getTimeUnitText(recordatorio.timeUnit) }}</td>
+              <td>
+                <span [class]="recordatorio.active ? 'badge-success' : 'badge-danger'">
+                  {{ getActiveText(recordatorio.active) }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button
+                  class="btn btn-sm btn-success"
+                  (click)="confirmarActualizacion(recordatorio)"
+                  title="Editar recordatorio">
+                  Editar
+                </button>
+                <button
+                  class="btn btn-sm btn-success-dark ml-2"
+                  (click)="confirmarEliminacion(recordatorio)"
+                  title="Eliminar recordatorio">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="paginatedRecordatorios.length === 0 && !loading">
+              <td colspan="6" class="text-center">No hay recordatorios para mostrar</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+          <div class="pagination-info">
+            <span>Página {{ currentPage }} de {{ totalPages }} ({{ recordatorios.length }} elementos)</span>
+          </div>
+          <div class="pagination-controls">
+            <button
+              class="pagination-btn"
+              (click)="prevPage()"
+              [disabled]="currentPage === 1"
+              title="Página anterior">
+              « Anterior
+            </button>
+
+            <button
+              *ngFor="let page of getVisiblePages()"
+              class="pagination-btn"
+              [class.active]="page === currentPage"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+
+            <button
+              class="pagination-btn"
+              (click)="nextPage()"
+              [disabled]="currentPage === totalPages"
+              title="Página siguiente">
+              Siguiente »
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #estado>
+      <div *ngIf="loading">Cargando recordatorios...</div>
+      <div *ngIf="!loading && errorMsg" class="text-red-600">{{ errorMsg }}</div>
+    </ng-template>
+  </mat-card-content>
+
+  <div *ngIf="canCreateRecordatorio()">
+    <app-button
+      texto="Agregar nuevo recordatorio"
+      color="accent"
+      (clicked)="abrirFormulario()">
+    </app-button>
+  </div>
+  
+  <div *ngIf="!canCreateRecordatorio()" class="warning-message">
+    <p>⚠️ Has alcanzado el límite máximo de 5 recordatorios. Elimina uno para poder crear otro.</p>
+  </div>
+</mat-card>
+
+<!-- Mensajes de éxito y error -->
+<div *ngIf="successMsg" class="alert alert-success">
+  {{ successMsg }}
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-error">
+  {{ errorMsg }}
+</div>
+
+<!-- Modal para crear recordatorio -->
+<div *ngIf="showForm" class="modal-overlay" (click)="cerrarFormulario()">
+  <div class="modal-content modern-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon create-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h3>Crear Nuevo Recordatorio</h3>
+          <p>Ingresa la información del nuevo recordatorio</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="cerrarFormulario()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="recordatorioForm" (ngSubmit)="crearRecordatorio()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1L14 4V12L8 15L2 12V4L8 1Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              Nombre del Recordatorio
+            </label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('name')"
+              placeholder="Ej: Recordatorio 30 días"
+              maxlength="100">
+            <div *ngIf="isFieldInvalid('name')" class="invalid-feedback">
+              {{ getFieldError('name') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="days">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              Cantidad (Días o Segundos)
+            </label>
+            <input
+              type="number"
+              id="days"
+              formControlName="days"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('days')"
+              placeholder="Ej: 30"
+              min="1">
+            <div *ngIf="isFieldInvalid('days')" class="invalid-feedback">
+              {{ getFieldError('days') }}
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="description">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Descripción
+            </label>
+            <textarea
+              id="description"
+              formControlName="description"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('description')"
+              placeholder="Ej: Primer recordatorio después de la infracción"
+              maxlength="500"
+              rows="3"></textarea>
+            <div *ngIf="isFieldInvalid('description')" class="invalid-feedback">
+              {{ getFieldError('description') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="timeUnit">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M8 4V8L11 11" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Unidad de Tiempo
+            </label>
+            <select
+              id="timeUnit"
+              formControlName="timeUnit"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('timeUnit')">
+              <option value="DAYS">Días</option>
+              <option value="SECONDS">Segundos</option>
+            </select>
+            <div *ngIf="isFieldInvalid('timeUnit')" class="invalid-feedback">
+              {{ getFieldError('timeUnit') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="active">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Estado
+            </label>
+            <select
+              id="active"
+              formControlName="active"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('active')">
+              <option [value]="true">Activo</option>
+              <option [value]="false">Inactivo</option>
+            </select>
+            <div *ngIf="isFieldInvalid('active')" class="invalid-feedback">
+              {{ getFieldError('active') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormulario()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary modern-btn" [disabled]="loading || recordatorioForm.invalid">
+            <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div *ngIf="loading" class="loading-spinner"></div>
+            <span *ngIf="loading">Creando...</span>
+            <span *ngIf="!loading">Crear Recordatorio</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para actualizar recordatorio -->
+<div *ngIf="showUpdateForm" class="modal-overlay" (click)="cerrarFormularioActualizar()">
+  <div class="modal-content modern-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon edit-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 2.5C18.8978 2.10218 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10218 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10218 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <h3>Actualizar Recordatorio</h3>
+          <p>Modifica la información del recordatorio</p>
+        </div>
+      </div>
+      <button class="close-btn" (click)="cerrarFormularioActualizar()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="updateForm" (ngSubmit)="actualizarRecordatorio()">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="update-name">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1L14 4V12L8 15L2 12V4L8 1Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              Nombre del Recordatorio
+            </label>
+            <input
+              type="text"
+              id="update-name"
+              formControlName="name"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('name', updateForm)"
+              placeholder="Ej: Recordatorio 30 días"
+              maxlength="100">
+            <div *ngIf="isFieldInvalid('name', updateForm)" class="invalid-feedback">
+              {{ getFieldError('name', updateForm) }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="update-days">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              </svg>
+              Cantidad (Días o Segundos)
+            </label>
+            <input
+              type="number"
+              id="update-days"
+              formControlName="days"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('days', updateForm)"
+              placeholder="Ej: 30"
+              min="1">
+            <div *ngIf="isFieldInvalid('days', updateForm)" class="invalid-feedback">
+              {{ getFieldError('days', updateForm) }}
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="update-description">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Descripción
+            </label>
+            <textarea
+              id="update-description"
+              formControlName="description"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('description', updateForm)"
+              placeholder="Ej: Primer recordatorio después de la infracción"
+              maxlength="500"
+              rows="3"></textarea>
+            <div *ngIf="isFieldInvalid('description', updateForm)" class="invalid-feedback">
+              {{ getFieldError('description', updateForm) }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="update-timeUnit">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M8 4V8L11 11" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              Unidad de Tiempo
+            </label>
+            <select
+              id="update-timeUnit"
+              formControlName="timeUnit"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('timeUnit', updateForm)">
+              <option value="DAYS">Días</option>
+              <option value="SECONDS">Segundos</option>
+            </select>
+            <div *ngIf="isFieldInvalid('timeUnit', updateForm)" class="invalid-feedback">
+              {{ getFieldError('timeUnit', updateForm) }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="update-active">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Estado
+            </label>
+            <select
+              id="update-active"
+              formControlName="active"
+              class="form-control modern-input"
+              [class.is-invalid]="isFieldInvalid('active', updateForm)">
+              <option [value]="true">Activo</option>
+              <option [value]="false">Inactivo</option>
+            </select>
+            <div *ngIf="isFieldInvalid('active', updateForm)" class="invalid-feedback">
+              {{ getFieldError('active', updateForm) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormularioActualizar()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary modern-btn" [disabled]="loading || updateForm.invalid">
+            <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div *ngIf="loading" class="loading-spinner"></div>
+            <span *ngIf="loading">Actualizando...</span>
+            <span *ngIf="!loading">Actualizar Recordatorio</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div *ngIf="showConfirm" class="modal-overlay">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h3>Confirmar Eliminación</h3>
+    </div>
+
+    <div class="modal-body">
+      <div class="warning-content">
+        <div class="warning-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="warning-text">
+          <h4>¿Está seguro que desea eliminar?</h4>
+          <p>Va a eliminar permanentemente el recordatorio <strong>"{{ recordatorioAEliminar?.name }}"</strong></p>
+          <p class="text-warning"><strong>⚠️ Esta acción no se puede deshacer.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelarEliminacion()">
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-danger" (click)="eliminarRecordatorio()" [disabled]="loading">
+        <span *ngIf="loading">Eliminando...</span>
+        <span *ngIf="!loading">Eliminar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para actualizar -->
+<div *ngIf="showUpdateConfirm" class="modal-overlay">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h3>Confirmar Actualización</h3>
+    </div>
+
+    <div class="modal-body">
+      <div class="warning-content">
+        <div class="warning-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 2.5C18.8978 2.10218 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10218 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10218 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="warning-text">
+          <h4>¿Desea actualizar este recordatorio?</h4>
+          <p>Va a editar la información del recordatorio <strong>"{{ recordatorioAActualizar?.name }}"</strong></p>
+          <p class="text-info"><strong>📝 Se abrirá el formulario de edición.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelarActualizacion()">
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-primary" (click)="abrirFormularioActualizar()">
+        Sí, Editar
+      </button>
+    </div>
+  </div>
+</div>
