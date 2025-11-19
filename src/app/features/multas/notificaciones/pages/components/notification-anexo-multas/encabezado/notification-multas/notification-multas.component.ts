@@ -6,6 +6,8 @@ import Swal from 'sweetalert2';
 import { CardMultasComponent } from '../../contenido/card-multas/card-multas.component';
 import { ServiceGenericService } from '../../../../../../../../core/services/utils/generic/service-generic.service';
 import { UserInfractionSelectDto } from '../../../../../../../../shared/modeloModelados/Entities/select/UserInfractionSelectDto';
+import { SignalrService } from '../../../../../../../../core/services/realtime/signalr.service';
+
 
 @Component({
   selector: 'app-notification-multas',
@@ -23,36 +25,36 @@ export class NotificationMultasComponent implements OnInit, OnDestroy {
 
   constructor(
     private serviceGeneric: ServiceGenericService,
+    private signalrService: SignalrService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.cargarMultas();
 
-    // 👇 Suscribirse al evento que lanza el backend cuando aplica descuento
-    // SignalR functionality commented out due to missing service
-    // this.wsSub = this.signalrService.on<UserInfractionSelectDto>('ReceiveDiscount')
-    //   .subscribe((infractionActualizada: any) => {
-    //     console.log('📩 Multa actualizada con descuento:', infractionActualizada);
+  // 👇 Suscribirse al evento que lanza el backend cuando aplica descuento
+    this.wsSub = this.signalrService.on<UserInfractionSelectDto>('ReceiveDiscount')
+      .subscribe((infractionActualizada) => {
+        console.log('📩 Multa actualizada con descuento:', infractionActualizada);
 
-    //     // Reemplazar en la lista la infracción actualizada
-    //     const index = this.multas.findIndex(m => m.id === infractionActualizada.id);
-    //     if (index !== -1) {
-    //       this.multas[index] = infractionActualizada;
-    //     } else {
-    //       this.multas.unshift(infractionActualizada); // si es nueva, agregar
-    //     }
+        // Reemplazar en la lista la infracción actualizada
+        const index = this.multas.findIndex(m => m.id === infractionActualizada.id);
+        if (index !== -1) {
+          this.multas[index] = infractionActualizada;
+        } else {
+          this.multas.unshift(infractionActualizada); // si es nueva, agregar
+        }
 
-    //     this.cdr.detectChanges();
+        this.cdr.detectChanges();
 
-    //     Swal.fire({
-    //       icon: 'info',
-    //       title: 'Descuento aplicado',
-    //       text: `Se actualizó el monto de la multa de ${infractionActualizada.firstName} ${infractionActualizada.lastName}`,
-    //       timer: 4000,
-    //       showConfirmButton: false
-    //     });
-    //   });
+        Swal.fire({
+          icon: 'info',
+          title: 'Descuento aplicado',
+          text: `Se actualizó el monto de la multa de ${infractionActualizada.firstName} ${infractionActualizada.lastName}`,
+          timer: 4000,
+          showConfirmButton: false
+        });
+      });
   }
 
   cargarMultas(): void {

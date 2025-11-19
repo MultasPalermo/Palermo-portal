@@ -1,0 +1,137 @@
+.bell-button {
+  position: relative;
+}
+
+.notification-menu {
+  width: 360px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 0;
+  background: #fff;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+
+  .header-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .mark-all-btn {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1976d2;
+    letter-spacing: 0.3px;
+
+    &:disabled {
+      color: #bdbdbd;
+    }
+  }
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+
+  .notification-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    color: #757575;
+    font-size: 13px;
+  }
+
+  .notification-empty {
+    text-align: center;
+    color: #9e9e9e;
+    padding: 20px 10px;
+
+    mat-icon {
+      display: block;
+      margin: 0 auto 8px auto;
+      font-size: 32px;
+      color: #bdbdbd;
+    }
+  }
+
+  .notification-list {
+    max-height: 360px;
+    overflow-y: auto;
+
+    .notification-item {
+      cursor: pointer;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s ease;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+
+      &:hover {
+        background-color: #f9f9f9;
+      }
+
+      &.unread {
+        background-color: #e3f2fd;
+      }
+
+      .notification-type-section {
+        .notification-type-badge {
+          padding: 2px 6px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          white-space: nowrap;
+
+          &.priority-info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+          }
+
+          &.priority-warning {
+            background-color: #fff3e0;
+            color: #ef6c00;
+          }
+
+          &.priority-critical {
+            background-color: #ffebee;
+            color: #c62828;
+          }
+        }
+      }
+
+      .notification-details {
+        flex: 1;
+        margin-left: 8px;
+
+        .notification-title {
+          font-weight: 600;
+          margin-bottom: 4px;
+          font-size: 13px;
+          color: #212121;
+        }
+
+        .notification-message {
+          font-size: 13px;
+          color: #616161;
+          line-height: 1.3;
+        }
+
+        .notification-meta {
+          font-size: 11px;
+          color: #9e9e9e;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+}

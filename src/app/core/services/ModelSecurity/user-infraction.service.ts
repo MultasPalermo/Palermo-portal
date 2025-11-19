@@ -37,6 +37,15 @@ export class UserInfractionService {
       );
   }
 
+        // Si la respuesta parece HTML (p. ej. el dev server devolvió index.html),
+        // reintentar usando la URL absoluta del backend.
+        const trimmed = (text || '').trim();
+        if (trimmed.startsWith('<')) {
+          console.warn('UserInfraction: la respuesta parece HTML. Reintentando con la URL absoluta del backend.');
+          // Construir parámetros ya normalizados
+          const absoluteUrl = `${environment.apiURL}/api/${this.endpoint}/by-document`;
+          return this.retryWithAbsoluteUrl(absoluteUrl, httpParams as HttpParams);
+        }
 
   /**
    * Descarga PDF de recordatorio de 3 días
