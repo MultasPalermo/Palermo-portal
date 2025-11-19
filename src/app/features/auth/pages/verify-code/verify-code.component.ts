@@ -64,28 +64,50 @@ export class VerifyCodeComponent {
   }
 
   verifyCode() {
-    if (!this.code?.trim()) {
-      Swal.fire('Error', 'Debes ingresar el código de verificación.', 'error');
-      return;
-    }
-
-    this.http.post<any>(`${environment.apiURL}/verificacion/validate`, {
-      email: this.email.trim(),
-      code: this.code.trim()
-    }).subscribe({
-      next: (res) => {
-        if (res.valid) {
-          Swal.fire('¡Éxito!', 'Correo verificado correctamente.', 'success')
-            .then(() => this.router.navigate(['auth/login']));
-        } else {
-          Swal.fire('Error', res.message || 'Código incorrecto o expirado.', 'error');
-        }
-      },
-      error: (err) => {
-        Swal.fire('Error', err.error?.message || 'No se pudo verificar el código.', 'error');
-      }
-    });
+  if (!this.code?.trim()) {
+    Swal.fire('Error', 'Debes ingresar el código de verificación.', 'error');
+    return;
   }
+
+  this.http.post<any>(`${environment.apiURL}/verificacion/validate`, {
+    email: this.email.trim(),
+    code: this.code.trim()
+  }).subscribe({
+    next: (res) => {
+      if (!res.valid) {
+        Swal.fire('Error', res.message || 'Código incorrecto o expirado.', 'error');
+        return;
+      }
+
+      //obtener datos pasados desde el registro
+      const firstName = this.route.snapshot.queryParamMap.get('firstName') ?? '';
+      const lastName = this.route.snapshot.queryParamMap.get('lastName') ?? '';
+      const password = this.route.snapshot.queryParamMap.get('password') ?? '';
+
+      const dto = {
+        firstName,
+        lastName,
+        email: this.email.trim(),
+        password,
+        verificationCode: this.code.trim()
+      };
+
+      // llamar al registro REAL
+      this.http.post(`${environment.apiURL}/auth/register`, dto).subscribe({
+        next: () => {
+          Swal.fire('¡Éxito!', 'Registro completado correctamente.', 'success')
+            .then(() => this.router.navigate(['auth/login']));
+        },
+        error: err => {
+          Swal.fire('Error', err.error?.message || 'No se pudo crear el usuario.', 'error');
+        }
+      });
+    },
+    error: (err) => {
+      Swal.fire('Error', err.error?.message || 'No se pudo verificar el código.', 'error');
+    }
+  });
+}
 
   exit() {
     Swal.fire({
