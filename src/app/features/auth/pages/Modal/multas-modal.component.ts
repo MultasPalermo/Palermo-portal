@@ -7,6 +7,7 @@ import { ChipModule } from 'primeng/chip';
 import { PaymentService } from '../../../../core/services/payments/payment.service';
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import Swal from 'sweetalert2';
+import { ButtonPayComponent } from '../../../../shared/components/button-pay/button-pay.component';
 
 interface MultaTableRow {
   id?: number;
@@ -21,7 +22,7 @@ interface MultaTableRow {
 @Component({
   selector: 'app-multas-modal',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule],
+  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule, ButtonPayComponent],
   templateUrl: './multas-modal.component.html',
   styleUrls: ['./multas-modal.component.scss']
 })

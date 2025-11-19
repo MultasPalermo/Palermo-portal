@@ -55,7 +55,6 @@ import { validateRegisterEmail, validateRegisterFullName, validateRegisterPasswo
       (click)="onRegister()">
     </button>
 
-
       <div class="login-links">
         <a [routerLink]="'/auth/login'">¿Ya tienes cuenta?</a>
         <a (click)="goToHome($event)" [class.loading]="navigatingHome">
@@ -81,7 +80,11 @@ export class Registrar {
   @ViewChild('emailInput') emailRef!: ElementRef<HTMLInputElement>;
   @ViewChild('passwordInput') passwordRef!: ElementRef<HTMLInputElement>;
 
-  constructor(private authService: AuthService, private emailService: EmailVerificationService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private emailService: EmailVerificationService,
+    private router: Router
+  ) {}
 
   canSubmit(): boolean {
     return !!(this.fullName.trim() && this.email.trim() && this.password.length >= 6);
@@ -102,45 +105,30 @@ export class Registrar {
     const [firstName, ...rest] = this.fullName.trim().split(' ');
     const lastName = rest.join(' ');
 
-    const payload = {
-      email: this.email.trim(),
-      password: this.password,
-      firstName: firstName || '',
-      lastName: lastName || ''
-    };
-
-    this.authService.registrar(payload).subscribe({
+    // 1️⃣ enviar el código antes de registrar
+    this.emailService.sendVerification(firstName, this.email).subscribe({
       next: () => {
-        // ✅ Mandamos verificación en segundo plano
-        this.emailService.sendVerification(firstName, this.email).subscribe();
-
-        // ✅ Mostramos alerta y redirigimos
         Swal.fire({
           icon: 'success',
-          title: '¡Registro exitoso!',
-          text: 'Te enviamos un código de verificación a tu correo.'
+          title: 'Código enviado',
+          text: 'Revisa tu correo y escribe el código para continuar.'
         }).then(() => {
           this.router.navigate(['/auth/verify-code'], {
-            queryParams: { email: this.email }
+            queryParams: {
+              email: this.email,
+              firstName,
+              lastName,
+              password: this.password
+            }
           });
         });
       },
       error: (err: HttpErrorResponse) => {
-        const errorMsg =
-          err?.error?.message ||
-          err?.message ||
-          'Ocurrió un error inesperado al registrar.';
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Error en el registro',
-          text: errorMsg
-        });
+        Swal.fire('Error', err.error?.message || 'No se pudo enviar el código', 'error');
       },
-      complete: () => (this.loading = false)
+      complete: () => this.loading = false
     });
   }
-
 
   goToHome(e?: Event) {
     e?.preventDefault();
@@ -153,5 +141,3 @@ export class Registrar {
     }, 500);
   }
 }
-
-

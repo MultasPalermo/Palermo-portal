@@ -3,4 +3,5 @@ export interface RegisterRequestDto {
   password: string;
   firstName: string;
   lastName: string;
+  verificationCode: string; 
 }
