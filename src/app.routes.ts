@@ -18,6 +18,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./app/layout/app.layout').then(m => m.AppLayout),
     children: [
+      { path: 'dashboard', loadChildren: () => import('./app/features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES) },
       { path: 'consultar-ingresar', loadChildren: () => import('./app/features/multas/consultas/consultar.routes').then(m => m.CONSULTAR_ROUTES) },
       { path: 'perfil', loadChildren: () => import('./app/features/profile/perfil.routes').then(m => m.PERFIL_ROUTES) },
       { path: 'notificaciones', loadChildren: () => import('./app/features/multas/notificaciones/pages/notificacion-multas.routes').then(m => m.NOTIFICACION_ROUTES) },
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'parameters', loadChildren: () => import('./app/features/admin/parameters/pages/parameters.routes').then(m => m.PARAMETERS_ROUTES) },
       { path: 'permisos', loadChildren: () => import('./app/features/admin/permissions/permissions.routes').then(m => m.PERMISOS_ROUTES) },
       { path: 'home', loadChildren: () => import('./app/features/home/pages/password/home.routes').then(m => m.HOMEPASSWORD_ROUTES) },
+       { path: 'Seguimiento', loadChildren: () => import('./app/features/seguimiento/Seguimiento.routes').then(m => m.SEGUIMIENTO_ROUTES) },
     ]
   },
   { path: 'contenido-documento', loadChildren: () => import('./app/features/home/pages/document/documento.routes').then(m => m.DOCUMENT_ROUTES) },

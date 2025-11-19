@@ -1,0 +1,166 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Vista general de multas y usuarios del sistema</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-container">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <!-- Error State (solo si hay error crítico) -->
+  <div *ngIf="error() && !loading() && stats().totalMultas === 0" class="error-container">
+    <i class="pi pi-exclamation-triangle"></i>
+    <p>{{ error() }}</p>
+    <button (click)="refrescarDatos()">Reintentar</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading()" class="dashboard-content">
+    
+    <!-- Mensaje informativo -->
+    <div class="info-banner" *ngIf="stats().totalMultas > 0 && !error()">
+      <i class="pi pi-info-circle"></i>
+      <span *ngIf="usandoDatosReales()">Mostrando datos en tiempo real del sistema</span>
+      <span *ngIf="!usandoDatosReales()"> Mostrando datos de ejemplo (Backend no disponible)</span>
+    </div>
+    
+    <!-- Estadísticas principales -->
+    <div class="stats-grid">
+      <app-stat-card
+        icon="pi pi-file"
+        [value]="stats().totalMultas"
+        label="Total de Multas"
+        colorClass="green-light"
+      ></app-stat-card>
+
+      <app-stat-card
+        icon="pi pi-clock"
+        [value]="stats().multasPendientes"
+        label="Multas Pendientes"
+        colorClass="green-medium"
+      ></app-stat-card>
+
+      <app-stat-card
+        icon="pi pi-check-circle"
+        [value]="stats().multasPagadas"
+        label="Multas Pagadas"
+        colorClass="green-dark"
+      ></app-stat-card>
+
+      <app-stat-card
+        icon="pi pi-exclamation-circle"
+        [value]="stats().multasVencidas"
+        label="Multas Vencidas"
+        colorClass="green-darker"
+      ></app-stat-card>
+
+      <app-stat-card
+        icon="pi pi-users"
+        [value]="stats().totalUsuarios"
+        label="Total de Usuarios"
+        colorClass="green-medium"
+      ></app-stat-card>
+
+      <app-stat-card
+        icon="pi pi-calendar"
+        [value]="stats().multasDelMes"
+        label="Multas del Mes"
+        colorClass="green-light"
+      ></app-stat-card>
+    </div>
+
+    <!-- Gráficos y detalles -->
+    <div class="charts-grid">
+      
+      <!-- Multas por Estado -->
+      <div class="chart-card">
+        <h3 class="chart-title">
+          <i class="pi pi-chart-pie"></i>
+          Distribución por Estado
+        </h3>
+        <div class="chart-content">
+          <div class="estado-list">
+            <div *ngFor="let item of multasPorEstado()" class="estado-item">
+              <div class="estado-info">
+                <span class="estado-nombre">{{ item.estado }}</span>
+                <span class="estado-cantidad">{{ item.cantidad }}</span>
+              </div>
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="item.porcentaje"
+                  [ngClass]="{
+                    'bg-green-light': item.estado === 'Pendiente',
+                    'bg-green-medium': item.estado === 'Pagada',
+                    'bg-green-dark': item.estado === 'Vencida'
+                  }"
+                ></div>
+              </div>
+              <span class="estado-porcentaje">{{ item.porcentaje }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multas por Mes -->
+      <div class="chart-card">
+        <h3 class="chart-title">
+          <i class="pi pi-chart-line"></i>
+          Multas por Mes (Últimos 6 meses)
+        </h3>
+        <div class="chart-content">
+          <div class="bar-chart">
+            <div *ngFor="let item of multasPorMes(); let i = index" class="bar-item">
+              <div class="bar-container">
+                <div 
+                  class="bar" 
+                  [style.height.%]="(item.cantidad / 60) * 100"
+                  [title]="item.cantidad + ' multas'"
+                  [attr.data-index]="i"
+                >
+                  <span class="bar-value">{{ item.cantidad }}</span>
+                </div>
+              </div>
+              <span class="bar-label">{{ item.mes }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen Financiero -->
+      <div class="chart-card financial-summary">
+        <h3 class="chart-title">
+          <i class="pi pi-dollar"></i>
+          Resumen Financiero
+        </h3>
+        <div class="chart-content">
+          <div class="financial-item">
+            <span class="financial-label">Monto Total en Multas</span>
+            <span class="financial-value">{{ stats().montoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          <div class="financial-item">
+            <span class="financial-label">Promedio por Multa</span>
+            <span class="financial-value">
+              {{ stats().totalMultas > 0 ? (stats().montoTotal / stats().totalMultas) : 0 | currency:'COP':'symbol-narrow':'1.0-0' }}
+            </span>
+          </div>
+          <div class="financial-item">
+            <span class="financial-label">Multas Pagadas (%)</span>
+            <span class="financial-value success-text">{{ calcularPorcentajePagadas() | number:'1.1-1' }}%</span>
+          </div>
+          <div class="financial-item">
+            <span class="financial-label">Multas Pendientes (%)</span>
+            <span class="financial-value warning-text">{{ calcularPorcentajePendientes() | number:'1.1-1' }}%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
