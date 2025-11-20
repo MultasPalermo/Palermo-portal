@@ -1,27 +1,40 @@
 <div class="topbar">
-  <button class="menu-btn" (click)="layoutService.onMenuToggle()">
+
+  <!-- BOTÓN MENÚ -->
+  <button class="icon-btn" (click)="layoutService.toggleMenu()">
     <i class="pi pi-bars"></i>
   </button>
 
-  <!-- Buscador central -->
-  <div class="search-box">
-    <i class="pi pi-search"></i>
-    <input type="text" placeholder="Buscar por tipo de multa o descripción" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
+  <div class="flex-spacer"></div>
+
+  <!-- FULLSCREEN -->
+  <button class="icon-btn" pButton icon="pi pi-window-maximize" (click)="toggleFullscreen()"></button>
+
+  <!-- DARK MODE -->
+  <button class="icon-btn" pButton [icon]="darkMode ? 'pi pi-sun' : 'pi pi-moon'" (click)="toggleDark()"></button>
+
+  <!-- NOTIFICACIONES -->
+  <button class="icon-btn" pButton icon="pi pi-bell" badge="2" severity="danger"></button>
+
+  <!-- PERFIL -->
+  <div class="profile-container" (click)="menu.toggle($event)">
+
+    <p-avatar
+      styleClass="avatar"
+      shape="circle"
+      [label]="currentUser?.initial"
+      [pTooltip]="currentUser?.fullName">
+    </p-avatar>
+
+    <div class="profile-info">
+      <span class="name">{{ currentUser?.fullName }}</span>
+      <span class="role">{{ currentUser?.role }}</span>
+    </div>
+
+    <i class="pi pi-chevron-down"></i>
   </div>
 
-  <!-- Notificaciones y Perfil -->
-  <div class="right-section">
+  <!-- MENÚ -->
+  <p-menu #menu [model]="items" [popup]="true" [appendTo]="'body'"></p-menu>
 
-    <!-- <p-overlayPanel #op [showCloseIcon]="true">
-        <div class="menu-item" (click)="goToProfile()">
-          <i class="pi pi-user"></i> Ver Perfil
-        </div>
-        <div class="menu-item" (click)="openSettings()">
-          <i class="pi pi-cog"></i> Configuración
-        </div>
-        <div class="menu-item logout" (click)="logout()">
-          <i class="pi pi-sign-out"></i> Cerrar Sesión
-        </div>
-      </p-overlayPanel> -->
-  </div>
 </div>
