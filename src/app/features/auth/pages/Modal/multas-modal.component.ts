@@ -4,10 +4,13 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ChipModule } from 'primeng/chip';
+import { TabViewModule } from 'primeng/tabview';
 import { PaymentService } from '../../../../core/services/payments/payment.service';
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import Swal from 'sweetalert2';
 import { ButtonPayComponent } from '../../../../shared/components/button-pay/button-pay.component';
+import { PaymentAgreementSelectDto } from '../../../../shared/modeloModelados/Entities/select/PaymentAgreementSelectDto';
+import { AcuerdoCardComponent } from '../../../multas/notificaciones/pages/components/contenido/acuerdo-card/acuerdo-card.component';
 
 interface MultaTableRow {
   id?: number;
@@ -22,13 +25,14 @@ interface MultaTableRow {
 @Component({
   selector: 'app-multas-modal',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule, ButtonPayComponent],
+  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule, TabViewModule, ButtonPayComponent, AcuerdoCardComponent],
   templateUrl: './multas-modal.component.html',
   styleUrls: ['./multas-modal.component.scss']
 })
 export class MultasModalComponent {
   @Input() visible = false;
   @Input() multas: MultaTableRow[] = [];
+  @Input() acuerdosPago: PaymentAgreementSelectDto[] = [];
   @Input() ciudadano = '';
   @Output() visibleChange = new EventEmitter<boolean>();
 
@@ -49,6 +53,11 @@ export class MultasModalComponent {
     } else if (multa.estado === 'Con acuerdo') {
       this.downloadAcuerdoPdf(multa);
     }
+  }
+
+  onAcuerdoClick(acuerdo: PaymentAgreementSelectDto) {
+    console.log('Clic en acuerdo:', acuerdo);
+    this.downloadAcuerdoPdfById(acuerdo);
   }
 
   private downloadMultaPdf(multa: MultaTableRow) {
@@ -152,6 +161,30 @@ export class MultasModalComponent {
     });
   }
 
+  private downloadAcuerdoPdfById(acuerdo: PaymentAgreementSelectDto) {
+    if (!acuerdo.id) return;
+
+    console.log('Descargando PDF de acuerdo de pago ID:', acuerdo.id);
+
+    // Usar el servicio de pagos para descargar PDF de acuerdo directamente por ID
+    this.paymentService.downloadPaymentAgreementPdf(acuerdo.id).subscribe({
+      next: (blob: any) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `AcuerdoPago_${acuerdo.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err: any) => {
+        console.error('Error descargando PDF de acuerdo:', err);
+        this.showErrorAlert('Error al descargar el PDF del acuerdo de pago');
+      }
+    });
+  }
+
   private showErrorAlert(message: string) {
     // Usar setTimeout para asegurar que se muestre encima del modal
     setTimeout(() => {
@@ -175,6 +208,10 @@ export class MultasModalComponent {
   }
 
   trackByFn(index: number, item: MultaTableRow): any {
+    return item.id || index;
+  }
+
+  trackByAcuerdoFn(index: number, item: PaymentAgreementSelectDto): any {
     return item.id || index;
   }
 

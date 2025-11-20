@@ -172,7 +172,20 @@ app-button-pay ::ng-deep button:hover {
     }
   }
 
-  .no-multas {
+  .acuerdos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+    padding: 0 8px;
+
+    app-acuerdo-card {
+      max-width: 100%;
+      overflow: hidden;
+    }
+  }
+
+  .no-multas, .no-acuerdos {
     text-align: center;
     padding: 40px 20px;
     color: #6c757d;

@@ -4,48 +4,68 @@
     [closable]="true"
     [draggable]="false"
     [resizable]="false"
-    [style]="{ width: '90vw', maxWidth: '1000px', maxHeight: '90vh' }"
+    [style]="{ width: '90vw', maxWidth: '1200px', maxHeight: '90vh' }"
     [contentStyle]="{ 'max-height': '70vh', overflow: 'auto' }"
-    header="Multas de convivencia ciudadana"
+    header="Multas y Acuerdos de Pago"
     (onHide)="onClose()"
 >
     <div class="multas-container">
         <div class="ciudadano-info" *ngIf="ciudadano">
             <h4>Ciudadano: {{ maskCitizenName(ciudadano) }}</h4>
-            <p class="description">Al seleccionar alguna multa podrá descargar el PDF correspondiente.</p>
+            <p class="description">Consulta tus multas y acuerdos de pago. Al seleccionar una multa podrás descargar el PDF correspondiente.</p>
         </div>
 
-        <div class="multas-grid">
-            <p-card *ngFor="let multa of multas; trackBy: trackByFn" class="multa-card" (click)="onMultaClick(multa)">
-                <ng-template pTemplate="header">
-                    <div class="card-header">
-                        <h5>{{ multa.tipo }}</h5>
-                        <p-chip [label]="multa.estado" [styleClass]="getEstadoSeverity(multa.estado)"> </p-chip>
-                    </div>
-                </ng-template>
+        <p-tabView>
+            <!-- Pestaña de Multas -->
+            <p-tabPanel header="Multas">
+                <div class="multas-grid">
+                    <p-card *ngFor="let multa of multas; trackBy: trackByFn" class="multa-card" (click)="onMultaClick(multa)">
+                        <ng-template pTemplate="header">
+                            <div class="card-header">
+                                <h5>{{ multa.tipo }}</h5>
+                                <p-chip [label]="multa.estado" [styleClass]="getEstadoSeverity(multa.estado)"> </p-chip>
+                            </div>
+                        </ng-template>
 
-                <ng-template pTemplate="content">
-                    <div class="multa-content">
-                        <div class="multa-detail"><strong>Fecha de infracción:</strong> {{ multa.fecha }}</div>
-                        <div class="multa-detail"><strong>Descripción:</strong> {{ multa.descripcion }}</div>
+                        <ng-template pTemplate="content">
+                            <div class="multa-content">
+                                <div class="multa-detail"><strong>Fecha de infracción:</strong> {{ multa.fecha }}</div>
+                                <div class="multa-detail"><strong>Descripción:</strong> {{ multa.descripcion }}</div>
 
-                        <!-- Contenedor conjunto para descarga + botón de pago -->
-                        <div class="multa-actions" *ngIf="multa.estado === 'Pendiente' || multa.estado === 'Con acuerdo'">
-                            <small class="click-hint">
-                                <i class="pi pi-download"></i>
-                                {{ multa.estado === 'Pendiente' ? 'Descargar PDF de multa' : 'Descargar acuerdo de pago' }}
-                            </small>
+                                <!-- Contenedor conjunto para descarga + botón de pago -->
+                                <div class="multa-actions" *ngIf="multa.estado === 'Pendiente' || multa.estado === 'Con acuerdo'">
+                                    <small class="click-hint">
+                                        <i class="pi pi-download"></i>
+                                        {{ multa.estado === 'Pendiente' ? 'Descargar PDF de multa' : 'Descargar acuerdo de pago' }}
+                                    </small>
 
-                            <app-button-pay></app-button-pay>
-                        </div>
-                    </div>
-                </ng-template>
-            </p-card>
-        </div>
+                                     <app-button-pay></app-button-pay>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-card>
+                </div>
 
-        <div *ngIf="multas.length === 0" class="no-multas">
-            <p>No hay multas disponibles para mostrar.</p>
-        </div>
+                <div *ngIf="multas.length === 0" class="no-multas">
+                    <p>No hay multas disponibles para mostrar.</p>
+                </div>
+            </p-tabPanel>
+
+            <!-- Pestaña de Acuerdos de Pago -->
+            <p-tabPanel header="Acuerdos de Pago">
+                <div class="acuerdos-grid">
+                    <app-acuerdo-card
+                        *ngFor="let acuerdo of acuerdosPago; trackBy: trackByAcuerdoFn"
+                        [acuerdo]="acuerdo"
+                        (cardClick)="onAcuerdoClick($event)">
+                    </app-acuerdo-card>
+                </div>
+
+                <div *ngIf="acuerdosPago.length === 0" class="no-acuerdos">
+                    <p>No hay acuerdos de pago disponibles para mostrar.</p>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
     </div>
 
     <ng-template pTemplate="footer">

@@ -1,0 +1,317 @@
+.acuerdo-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-color: var(--primary-color);
+  }
+
+  .acuerdo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+
+    .header-main {
+      flex: 1;
+
+      strong {
+        display: block;
+        font-size: 1rem;
+        color: #333;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+      }
+
+      .tipo-acuerdo {
+        font-size: 0.8rem;
+        color: #666;
+        font-weight: 500;
+        background: #f8f9fa;
+        color: #495057;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    .estado {
+      padding: 0.3rem 0.75rem;
+      border-radius: 16px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.success {
+        background-color: #4caf50;
+      }
+      &.warning {
+        background-color: #ff9800;
+      }
+      &.danger {
+        background-color: #f44336;
+      }
+      &.info {
+        background-color: #2196f3;
+      }
+    }
+  }
+
+  .acuerdo-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+
+    .persona-info {
+      margin-bottom: 0.75rem;
+
+      p:first-child {
+        margin: 0 0 0.1rem 0;
+        color: #333;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      p.documento {
+        margin: 0;
+        color: #666;
+        font-size: 0.75rem;
+        font-weight: 500;
+      }
+    }
+
+    .acuerdo-details {
+      background-color: #f8f9fa;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+
+      .detail-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .label {
+          font-weight: 600;
+          color: #666;
+          font-size: 0.7rem;
+          margin-bottom: 0.1rem;
+        }
+
+        .value {
+          font-weight: 500;
+          color: #333;
+          font-size: 0.8rem;
+          line-height: 1.2;
+        }
+      }
+    }
+
+    .contacto-info {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+
+      p {
+        margin: 0;
+        color: #555;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+
+        strong {
+          color: #333;
+          font-weight: 600;
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .acuerdo-actions {
+      margin-top: auto;
+      padding-top: 0.75rem;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+
+      .click-hint {
+        cursor: pointer;
+        font-size: 0.75rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: all 0.2s ease;
+        background: #f8f9fa;
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        border: 1px solid #e9ecef;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &:hover {
+          color: #0056b3;
+          background: #e9ecef;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        i {
+          font-size: 0.75rem;
+        }
+
+        span {
+          font-weight: 700;
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .acuerdo-card {
+    padding: 1.25rem;
+    height: 300px;
+
+    .acuerdo-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+
+      .header-main {
+        strong {
+          font-size: 0.95rem;
+        }
+      }
+
+      .estado {
+        align-self: flex-start;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    .acuerdo-body {
+      .persona-info {
+        margin-bottom: 0.5rem;
+
+        p {
+          font-size: 0.75rem;
+        }
+      }
+
+      .acuerdo-details {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+        padding: 0.6rem;
+
+        .detail-row {
+          .label {
+            font-size: 0.65rem;
+          }
+
+          .value {
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .contacto-info {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+
+        p {
+          font-size: 0.7rem;
+        }
+      }
+
+      .acuerdo-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .click-hint {
+          padding: 0.4rem 0.6rem;
+          font-size: 0.7rem;
+
+          i {
+            font-size: 0.7rem;
+          }
+
+          span {
+            font-size: 0.65rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .acuerdo-card {
+    padding: 1rem;
+    height: 280px;
+
+    .acuerdo-header {
+      .header-main {
+        strong {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    .acuerdo-body {
+      .acuerdo-details {
+        padding: 0.5rem;
+
+        .detail-row {
+          .value {
+            font-size: 0.7rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Estilos específicos para el modal
+:host-context(.multas-container) .acuerdo-card {
+  height: 320px;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  :host-context(.multas-container) .acuerdo-card {
+    height: 280px;
+  }
+}

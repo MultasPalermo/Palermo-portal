@@ -1,3 +1,5 @@
+import { PaymentAgreementSelectDto } from './PaymentAgreementSelectDto';
+
 export interface UserInfractionSelectDto {
   id?: number;
   dateInfraction?: string;
@@ -33,4 +35,7 @@ export interface UserInfractionSelectDto {
   numer_smldv?: number;
   smldvValueAtCreation?: number;
   initialAmount?: number;
+
+  // Acuerdos de pago relacionados
+  paymentAgreements?: PaymentAgreementSelectDto[];
 }
