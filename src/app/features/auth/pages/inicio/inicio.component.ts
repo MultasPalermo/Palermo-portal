@@ -41,6 +41,7 @@ export class InicioComponent implements OnInit {
   // modal de multas
   modalVisible = false;
   multas: any[] = [];
+  acuerdosPago: any[] = [];
   ciudadano = '';
 
   steps: StepCard[] = [
@@ -115,8 +116,9 @@ export class InicioComponent implements OnInit {
     this.router.navigate(['/auth/login']);
   }
 
-  onMultasConsultadas(multas: any[], ciudadano: string): void {
+  onMultasConsultadas(multas: any[], acuerdosPago: any[], ciudadano: string): void {
     this.multas = multas;
+    this.acuerdosPago = acuerdosPago;
     this.ciudadano = ciudadano;
     this.modalVisible = true;
   }
@@ -124,6 +126,7 @@ export class InicioComponent implements OnInit {
   onModalClose(): void {
     this.modalVisible = false;
     this.multas = [];
+    this.acuerdosPago = [];
     this.ciudadano = '';
   }
 }

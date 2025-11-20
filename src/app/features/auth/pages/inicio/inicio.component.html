@@ -27,7 +27,7 @@
         <app-identification
           [layout]="'embedded'"
           [mode]="'modal'"
-          (loginSuccess)="onMultasConsultadas($event.multas, $event.ciudadano)">
+          (loginSuccess)="onMultasConsultadas($event.multas, $event.acuerdosPago, $event.ciudadano)">
         </app-identification>
       </div>
     </div>
@@ -180,6 +180,7 @@
   <app-multas-modal
     [(visible)]="modalVisible"
     [multas]="multas"
+    [acuerdosPago]="acuerdosPago"
     [ciudadano]="ciudadano"
     (visibleChange)="onModalClose()">
   </app-multas-modal>
