@@ -13,10 +13,14 @@ export class MultaCardComponent {
   @Input() multa!: PaymentAgreementSelectDto;   // 👈 ahora recibe PaymentAgreementSelectDto
 
   get estadoClass(): string {
-    return this.multa.isPaid ? 'estado-abierto' : 'estado-pendiente';
+    if (this.multa.isPaid) return 'estado-pagado';
+    if (this.multa.isCoactive) return 'estado-coactivo';
+    return 'estado-pendiente';
   }
 
   get estadoTexto(): string {
-    return this.multa.isPaid ? 'PAGADO' : 'PENDIENTE';
+    if (this.multa.isPaid) return 'PAGADO';
+    if (this.multa.isCoactive) return 'COACTIVO';
+    return 'PENDIENTE';
   }
 }

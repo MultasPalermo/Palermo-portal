@@ -5,6 +5,16 @@
     Notificación de nuevos acuerdos de pago
   </div>
 
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filters">
+      <input type="text" [(ngModel)]="phoneNumber" (input)="aplicarFiltros()" placeholder="Teléfono" class="filter-input">
+      <input type="text" [(ngModel)]="address" (input)="aplicarFiltros()" placeholder="Dirección" class="filter-input">
+      <input type="text" [(ngModel)]="neighborhood" (input)="aplicarFiltros()" placeholder="Barrio" class="filter-input">
+      <input type="email" [(ngModel)]="email" (input)="aplicarFiltros()" placeholder="Correo electrónico" class="filter-input">
+    </div>
+  </div>
+
   <!-- Datos del usuario -->
   <!-- <div class="usuario-card">
     <div class="usuario-nombre">{{ usuario.nombre }}</div>

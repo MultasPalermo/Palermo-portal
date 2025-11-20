@@ -86,4 +86,17 @@ export class UserInfractionService {
       responseType: 'blob'
     });
   }
+
+  /**
+   * Filtrar multas por tipo de documento, tipo de infracción y estado
+   */
+  filterMultas(documentTypeId?: number, typeInfractionId?: number, stateInfraction?: number): Observable<UserInfractionDto[]> {
+    const url = `${environment.apiURL}/${this.endpoint}/filter`;
+    let params = new HttpParams();
+    if (documentTypeId !== undefined) params = params.set('documentTypeId', documentTypeId.toString());
+    if (typeInfractionId !== undefined) params = params.set('typeInfractionId', typeInfractionId.toString());
+    if (stateInfraction !== undefined) params = params.set('stateInfraction', stateInfraction.toString());
+
+    return this.http.get<UserInfractionDto[]>(url, { params });
+  }
 }

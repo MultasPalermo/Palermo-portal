@@ -5,6 +5,26 @@
     Notificación de nuevas multas
   </div>
 
+  <!-- Filtros -->
+  <div class="filters-section">
+    <div class="filters">
+      <select [(ngModel)]="documentTypeId" (change)="aplicarFiltros()" class="filter-select">
+        <option [ngValue]="undefined">Todos los tipos de documento</option>
+        <option *ngFor="let doc of documentTypes" [ngValue]="doc.id">{{ doc.name }}</option>
+      </select>
+
+      <select [(ngModel)]="typeInfractionId" (change)="aplicarFiltros()" class="filter-select">
+        <option [ngValue]="undefined">Todos los tipos de infracción</option>
+        <option *ngFor="let type of typeInfractions" [ngValue]="type.id">{{ type.name }}</option>
+      </select>
+
+      <select [(ngModel)]="stateInfraction" (change)="aplicarFiltros()" class="filter-select">
+        <option [ngValue]="undefined">Todos los estados</option>
+        <option *ngFor="let estado of estados" [ngValue]="estado.value">{{ estado.label }}</option>
+      </select>
+    </div>
+  </div>
+
   <!-- Loader -->
   <div *ngIf="cargando" class="loader">
     <p>🔄 Cargando multas...</p>
