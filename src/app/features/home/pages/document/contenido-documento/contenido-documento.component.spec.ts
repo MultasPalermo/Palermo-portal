@@ -8,24 +8,24 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { ServiceGenericService } from '../../../../../core/services/servicesGeneric/service-generic.service';
-import { SessionPingService } from '../../../../../core/services/session-ping.service';
+import { DocumentSessionService } from '../../../../../core/services/documents/document-session.service';
+import { SessionPingService } from '../../../../../core/services/utils/session-ping.service';
 
 describe('ContenidoDocumentoComponent', () => {
   let fixture: ComponentFixture<ContenidoDocumentoComponent>;
-  let apiStub: jasmine.SpyObj<ServiceGenericService>;
+  let apiStub: jasmine.SpyObj<DocumentSessionService>;
   let pingStub: jasmine.SpyObj<SessionPingService>;
   let router: Router;
   let alertSpy: jasmine.Spy<(msg?: any) => void>;
 
   beforeEach(async () => {
-    apiStub  = jasmine.createSpyObj('ServiceGenericService', ['getMultasByDocument', 'logout']);
+    apiStub  = jasmine.createSpyObj('DocumentSessionService', ['getMultasByDocument', 'logout']);
     pingStub = jasmine.createSpyObj('SessionPingService', ['start', 'stop']);
 
     await TestBed.configureTestingModule({
       imports: [ContenidoDocumentoComponent, RouterTestingModule, HttpClientTestingModule, NoopAnimationsModule],
       providers: [
-        { provide: ServiceGenericService, useValue: apiStub },
+        { provide: DocumentSessionService, useValue: apiStub },
         { provide: SessionPingService,  useValue: pingStub }
       ]
     }).compileComponents();

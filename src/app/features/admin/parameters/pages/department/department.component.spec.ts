@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { DepartmentComponent } from './department.component';
-import { ServiceGenericService } from '../../../core/services/utils/generic/service-generic.service';
+import { ServiceGenericService } from '../../../../../core/services/utils/generic/service-generic.service';
 
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';

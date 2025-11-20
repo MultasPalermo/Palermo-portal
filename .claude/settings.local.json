@@ -10,7 +10,8 @@
       "Bash(npx tsc:*)",
       "Bash(timeout 10 bash -c 'while true; do curl -s http://localhost:4200 > /dev/null && echo \"\"Servidor listo\"\" && break; sleep 1; done')",
       "Bash(find:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }
