@@ -74,7 +74,7 @@ export class Identificacion implements OnInit {
   @Input() redirectTo: string = '/contenido-documento/document';
   @Input() showLogoutButton = false;
   @Input() mode: 'modal' | 'redirect' = 'redirect'; // Nuevo input para controlar el comportamiento
-  @Output() loginSuccess = new EventEmitter<{multas: any[], ciudadano: string}>();
+  @Output() loginSuccess = new EventEmitter<{multas: any[], acuerdosPago: any[], ciudadano: string}>();
   @Output() logoutClick = new EventEmitter<void>();
 
   constructor(
@@ -94,7 +94,7 @@ export class Identificacion implements OnInit {
   docTypesError = '';
 
   showTermsModal = false;
-  pendingData: { multas: any[], ciudadano: string } | null = null;
+  pendingData: { multas: any[], acuerdosPago: any[], ciudadano: string } | null = null;
 
   ngOnInit(): void {
     this.loadDocumentTypes();
@@ -151,7 +151,7 @@ export class Identificacion implements OnInit {
         return;
       }
 
-      // 4) Mapear a la interfaz de la tabla (usando la misma función que el componente de tabla)
+      // 4) Extraer multas y acuerdos de pago
       const multas = data.map((x: any) => ({
         id: x.id,
         userId: x.userId,
@@ -163,6 +163,9 @@ export class Identificacion implements OnInit {
         documentNumber: x.documentNumber
       }));
 
+      // Extraer acuerdos de pago de todas las infracciones
+      const acuerdosPago = data.flatMap((x: any) => x.paymentAgreements || []);
+
       const first = data[0];
       const ciudadano = [first?.firstName, first?.lastName].filter(Boolean).join(' ');
 
@@ -170,7 +173,7 @@ export class Identificacion implements OnInit {
       this.sessionPing.start(60000);
 
       // 6) Guardar datos pendientes y mostrar términos y condiciones
-      this.pendingData = { multas, ciudadano };
+      this.pendingData = { multas, acuerdosPago, ciudadano };
       this.showTermsModal = true;
 
     } catch (err: any) {
@@ -238,15 +241,15 @@ export class Identificacion implements OnInit {
   // =========================
   onTermsAccepted() {
     if (this.pendingData) {
-      const { multas, ciudadano } = this.pendingData;
+      const { multas, acuerdosPago, ciudadano } = this.pendingData;
 
       if (this.mode === 'modal') {
         // Emitir datos para mostrar modal
-        this.loginSuccess.emit({ multas, ciudadano });
+        this.loginSuccess.emit({ multas, acuerdosPago, ciudadano });
       } else {
         // Navegar con state (comportamiento original)
         if (this.redirectTo) {
-          this.router.navigate([this.redirectTo], { state: { multas, ciudadano } });
+          this.router.navigate([this.redirectTo], { state: { multas, acuerdosPago, ciudadano } });
         }
         this.loginSuccess.emit();
       }

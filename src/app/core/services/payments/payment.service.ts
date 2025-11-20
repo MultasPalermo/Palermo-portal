@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from '../base/api.service';
 import { PaymentAgreementCreateResponse } from '../../../shared/modeloModelados/Entities/PaymentAgreementCreateResponse';
 import { PaymentAgreementInitDto } from '../../../shared/modeloModelados/init/PaymentAgreementInitDto';
+import { PaymentAgreementSelectDto } from '../../../shared/modeloModelados/Entities/select/PaymentAgreementSelectDto';
 
 // Models
 
@@ -42,5 +43,16 @@ export class PaymentService extends ApiService {
       ...this.optsJwt(),
       responseType: 'blob' as 'json'
     });
+  }
+
+  getFiltered(phoneNumber?: string, address?: string, neighborhood?: string, email?: string) {
+    const url = this.url('PaymentAgreement', 'filter');
+    let params = new URLSearchParams();
+    if (phoneNumber) params.set('phoneNumber', phoneNumber);
+    if (address) params.set('address', address);
+    if (neighborhood) params.set('neighborhood', neighborhood);
+    if (email) params.set('email', email);
+
+    return this.http.get<PaymentAgreementSelectDto[]>(`${url}?${params.toString()}`, this.optsJwt());
   }
 }

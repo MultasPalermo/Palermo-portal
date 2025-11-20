@@ -1,0 +1,46 @@
+<div class="acuerdo-card" (click)="onCardClick()">
+  <div class="acuerdo-header">
+    <div class="header-main">
+      <strong>{{ acuerdo.infringement || 'Acuerdo de Pago' }}</strong>
+      <span class="tipo-acuerdo">{{ acuerdo.typeFine || 'ACUERDO' }}</span>
+    </div>
+    <span class="estado" [ngClass]="estadoClass">
+      {{ estadoTexto }}
+    </span>
+  </div>
+
+  <div class="acuerdo-body">
+    <div class="persona-info">
+      <p><strong>{{ acuerdo.personName || 'No disponible' }}</strong></p>
+      <p class="documento">{{ acuerdo.documentNumber || 'N/A' }}</p>
+    </div>
+
+    <div class="acuerdo-details">
+      <div class="detail-row">
+        <span class="label">Monto pendiente:</span>
+        <span class="value">{{ acuerdo.outstandingAmount ? (acuerdo.outstandingAmount | currency:'COP':'symbol-narrow') : 'N/A' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="acuerdo.installments">
+        <span class="label">Cuotas:</span>
+        <span class="value">{{ acuerdo.installments }} x {{ acuerdo.monthlyFee | currency:'COP':'symbol-narrow' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="acuerdo.agreementStart">
+        <span class="label">Vigencia:</span>
+        <span class="value">{{ acuerdo.agreementStart | date:'dd/MM/yyyy' }} - {{ acuerdo.agreementEnd | date:'dd/MM/yyyy' }}</span>
+      </div>
+    </div>
+
+    <div class="contacto-info">
+      <p><strong>📞</strong> {{ acuerdo.phoneNumber || 'No disponible' }}</p>
+      <p><strong>📧</strong> {{ acuerdo.email || 'No disponible' }}</p>
+    </div>
+
+    <div class="acuerdo-actions">
+      <div class="click-hint">
+        <i class="pi pi-download"></i>
+        <span>PDF</span>
+      </div>
+      <app-button-pay></app-button-pay>
+    </div>
+  </div>
+</div>

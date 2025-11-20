@@ -1,23 +1,32 @@
 <div class="multa-card">
   <div class="multa-header">
-    <strong>{{ multa.typeInfractionName }}</strong>
+    <div class="header-main">
+      <span class="tipo-infraccion">{{ multa.typeInfractionName }}</span>
+    </div>
+    <span class="estado" [ngClass]="estadoClass">
+      {{ estadoTexto }}
+    </span>
   </div>
 
   <div class="multa-body">
-    <p><strong>Persona:</strong> {{ multa.firstName }} {{ multa.lastName }}</p>
-    <p><strong>Documento:</strong> {{ multa.documentNumber }}</p>
-
-    <div class="multa-info">
-      <span class="fecha">📅 {{ multa.dateInfraction | date:'dd/MM/yyyy' }}</span>
-      <span class="estado" [ngClass]="estadoClass">
-        {{ estadoTexto }}
-      </span>
+    <div class="persona-info">
+      <p><strong>📄 Documento:</strong> {{ multa.documentNumber || 'N/A' }}</p>
+      <p *ngIf="multa.firstName || multa.lastName"><strong>👤 Persona:</strong> {{ multa.firstName || '' }} {{ multa.lastName || '' }}</p>
     </div>
 
-    <div class="multa-location">
-      💰 {{ multa.amountToPay | currency:'COP':'symbol-narrow' }}
+    <div class="multa-details">
+      <div class="detail-row">
+        <span class="label">💰 Monto:</span>
+        <span class="value">{{ multa.amountToPay ? (multa.amountToPay | currency:'COP':'symbol-narrow') : 'No disponible' }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="label">📅 Fecha:</span>
+        <span class="value">{{ multa.dateInfraction ? (multa.dateInfraction | date:'dd/MM/yyyy') : 'No disponible' }}</span>
+      </div>
     </div>
 
-    <p><strong>Observaciones:</strong> {{ multa.observations }}</p>
+    <div class="observaciones" *ngIf="multa.observations">
+      <p><strong>📋 Detalle:</strong> {{ multa.observations }}</p>
+    </div>
   </div>
 </div>

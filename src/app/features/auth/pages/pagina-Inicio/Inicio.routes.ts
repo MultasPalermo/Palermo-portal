@@ -4,6 +4,6 @@ export const INICIO_ROUTES: Routes = [
   {
     path: 'inicio',
     loadComponent: () =>
-      import('./inicio/inicio.component').then(m => m.InicioComponent)
+      import('../inicio/inicio.component').then(m => m.InicioComponent)
   }
 ];

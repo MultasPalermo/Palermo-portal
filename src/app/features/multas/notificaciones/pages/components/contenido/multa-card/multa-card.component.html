@@ -1,26 +1,46 @@
 <div class="multa-card">
   <div class="multa-header">
-    <strong>{{ multa.infringement }}</strong>
-    <span class="tipo">{{ multa.typeFine }}</span>
+    <div class="header-main">
+      <strong>{{ multa.infringement || 'Acuerdo de pago' }}</strong>
+      <span class="tipo-infraccion">{{ multa.typeFine || 'N/A' }}</span>
+    </div>
+    <span class="estado" [ngClass]="estadoClass">
+      {{ estadoTexto }}
+    </span>
   </div>
 
   <div class="multa-body">
-    <p><strong>Persona:</strong> {{ multa.personName }}</p>
-    <p><strong>Documento:</strong> {{ multa.documentType }} - {{ multa.documentNumber }}</p>
-
-    <div class="multa-info">
-      <!-- <span class="fecha">📅 Inicio: {{ multa.agreementStart | date:'dd/MM/yyyy' }}</span>
-      <span class="fecha">📅 Fin: {{ multa.agreementEnd | date:'dd/MM/yyyy' }}</span> -->
-      <span class="estado" [ngClass]="estadoClass">
-        {{ estadoTexto }}
-      </span>
+    <div class="persona-info">
+      <p><strong>👤 Persona:</strong> {{ multa.personName || 'No disponible' }}</p>
+      <p><strong>📄 Documento:</strong> {{ multa.documentType ? multa.documentType + ' - ' : '' }}{{ multa.documentNumber || 'N/A' }}</p>
     </div>
 
-    <div class="multa-location">
-      💰 {{ multa.baseAmount | currency:'COP':'symbol-narrow' }}
-      <span *ngIf="multa.installments"> | {{ multa.installments }} cuotas de {{ multa.monthlyFee | currency:'COP':'symbol-narrow' }}</span>
+    <div class="multa-details">
+      <div class="detail-row">
+        <span class="label">💰 Monto:</span>
+        <span class="value">{{ multa.outstandingAmount ? (multa.outstandingAmount | currency:'COP':'symbol-narrow') : 'No disponible' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="multa.installments">
+        <span class="label">📅 Cuotas:</span>
+        <span class="value">{{ multa.installments }} x {{ multa.monthlyFee | currency:'COP':'symbol-narrow' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="multa.agreementStart">
+        <span class="label">📅 Inicio:</span>
+        <span class="value">{{ multa.agreementStart | date:'dd/MM/yyyy' }}</span>
+      </div>
+      <div class="detail-row" *ngIf="multa.agreementEnd">
+        <span class="label">📅 Fin:</span>
+        <span class="value">{{ multa.agreementEnd | date:'dd/MM/yyyy' }}</span>
+      </div>
     </div>
 
-    <p><strong>Método pago:</strong> {{ multa.paymentMethod }} ({{ multa.frequencyPayment }})</p>
+    <div class="contacto-info">
+      <p><strong>📞 Teléfono:</strong> {{ multa.phoneNumber || 'No disponible' }}</p>
+      <p><strong>📧 Email:</strong> {{ multa.email || 'No disponible' }}</p>
+      <p><strong>🏠 Dirección:</strong> {{ multa.address || 'No disponible' }}</p>
+      <p><strong>📍 Barrio:</strong> {{ multa.neighborhood || 'No disponible' }}</p>
+      <p *ngIf="multa.paymentMethod"><strong>💳 Pago:</strong> {{ multa.paymentMethod }}</p>
+      <p *ngIf="multa.frequencyPayment"><strong>📊 Frecuencia:</strong> {{ multa.frequencyPayment }}</p>
+    </div>
   </div>
 </div>
