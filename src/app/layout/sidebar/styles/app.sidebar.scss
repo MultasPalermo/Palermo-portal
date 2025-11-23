@@ -1,3 +1,4 @@
+/* ===== CONTENEDOR PRINCIPAL DEL SIDEBAR ===== */
 .layout-sidebar {
   position: fixed;
   left: 0;
@@ -7,18 +8,55 @@
   background: #2d8659;
   color: #ffffff;
   z-index: 999;
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   overflow-x: hidden;
-  /* Ocultar scrollbar pero mantener funcionalidad */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+
+  /* Firefox scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
 }
 
+/* Borde decorativo derecho */
+.layout-sidebar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255,255,255,0.2) 20%,
+    rgba(255,255,255,0.2) 80%,
+    transparent 100%);
+  z-index: 1;
+}
+
+/* Scrollbar personalizado (Chrome, Safari, Edge) */
 .layout-sidebar::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  width: 6px;
 }
 
+.layout-sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.layout-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.layout-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== ESTILOS GLOBALES DEL SIDEBAR ===== */
 .layout-sidebar * {
   color: #ffffff !important;
 }
@@ -43,24 +81,44 @@
   color: #ffffff !important;
 }
 
+/* ===== ESTADOS Y COMPORTAMIENTO ===== */
 .layout-overlay .layout-sidebar,
 .layout-static-inactive .layout-sidebar {
   transform: translateX(-100%);
+  box-shadow: none;
 }
 
 .layout-overlay-active .layout-sidebar,
 .layout-mobile-active .layout-sidebar,
 .layout-static .layout-sidebar {
   transform: translateX(0);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 991px) {
   .layout-sidebar {
     transform: translateX(-100%);
+    box-shadow: none;
   }
-  
+
   .layout-overlay-active .layout-sidebar,
   .layout-mobile-active .layout-sidebar {
     transform: translateX(0);
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.25);
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-sidebar {
+    width: 280px;
+  }
+}
+
+/* ===== MODO OSCURO / TEMA (Opcional) ===== */
+@media (prefers-color-scheme: dark) {
+  .layout-sidebar {
+    background: #2d8659;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
   }
 }
