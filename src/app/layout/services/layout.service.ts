@@ -53,7 +53,17 @@ export class LayoutService {
     this.stateSubject.next({ ...currentState, ...updates });
   }
 
-  onMenuToggle() {
-    this.updateState({ overlayMenuActive: !this.stateSubject.value.overlayMenuActive });
+
+
+  toggleMenu() {
+  const state = this.layoutState();
+
+  if (this.layoutConfig().menuMode === 'overlay') {
+      this.updateState({ overlayMenuActive: !state.overlayMenuActive });
+  } else {
+      this.updateState({ staticMenuDesktopInactive: !state.staticMenuDesktopInactive });
   }
+}
+
+
 }
