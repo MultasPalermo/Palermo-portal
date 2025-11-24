@@ -14,7 +14,7 @@
   <button class="icon-btn" pButton [icon]="darkMode ? 'pi pi-sun' : 'pi pi-moon'" (click)="toggleDark()"></button>
 
   <!-- NOTIFICACIONES -->
-  <button class="icon-btn" pButton icon="pi pi-bell" badge="2" severity="danger"></button>
+   <app-notification-bell></app-notification-bell>
 
   <!-- PERFIL -->
   <div class="profile-container" (click)="menu.toggle($event)">
@@ -28,7 +28,6 @@
 
     <div class="profile-info">
       <span class="name">{{ currentUser?.fullName }}</span>
-      <span class="role">{{ currentUser?.role }}</span>
     </div>
 
     <i class="pi pi-chevron-down"></i>
@@ -36,5 +35,6 @@
 
   <!-- MENÚ -->
   <p-menu #menu [model]="items" [popup]="true" [appendTo]="'body'"></p-menu>
+
 
 </div>

@@ -7,6 +7,7 @@ import { filter, Subscription } from 'rxjs';
 import { LayoutService } from './services/layout.service';
 import { AppSidebar } from './sidebar/app.sidebar';
 import { AppTopbar } from './header/topbar.component';
+import { ProfileService } from '../core/services/profile/profile.service';
 
 @Component({
   selector: 'app-layout',
@@ -15,14 +16,11 @@ import { AppTopbar } from './header/topbar.component';
   template: `
     <div class="layout-wrapper" [ngClass]="containerClass">
 
-      <!-- SIDEBAR -->
       <app-sidebar></app-sidebar>
 
-      <!-- TOPBAR FIJO -->
-      <app-topbar></app-topbar>
+      <app-topbar (topbarHidden)="onTopbarHidden($event)"></app-topbar>
 
-      <!-- CONTENIDO PRINCIPAL -->
-      <div class="layout-main">
+      <div class="layout-main" [class.topbar-hidden]="hideTopbar">
         <router-outlet></router-outlet>
       </div>
 
@@ -40,6 +38,7 @@ import { AppTopbar } from './header/topbar.component';
       height:100vh;
       width:100vw;
       overflow:hidden;
+      display: flex;
     }
 
     .layout-wrapper {
@@ -50,36 +49,36 @@ import { AppTopbar } from './header/topbar.component';
       overflow:hidden;
     }
 
-    /* SIDEBAR */
     app-sidebar {
       width:169px;
       min-width:169px;
       z-index:1000;
     }
 
-    /* TOPBAR FIJO */
     app-topbar {
-      position:fixed;
-      top:0;
-      left:300px;
-      right:0;
-      height:70px;
-      z-index:1200;
-      left: unset !important;
+      position: fixed;
+      top: 0;
+      left: 169px;
+      width: calc(100% - 169px);
+      height: 70px;
+      z-index: 1200;
     }
 
-    /* CONTENIDO */
     .layout-main {
-      flex:1;
-      height:100vh;
-      margin-left:169px;
-      padding-top:70px;
-      overflow-y:auto;
-      background:#f3f4f6;
-      transition:margin-left .3s ease;
+      flex: 1;
+      height: 100vh;
+      margin-left: 169px;
+      margin-top: 70px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #f3f4f6;
+      transition: margin-top .3s ease;
     }
 
-    /* SIDEBAR CERRADO */
+    .layout-main.topbar-hidden {
+      margin-top: 0;
+    }
+
     .layout-static-inactive app-sidebar {
       width:0 !important;
       min-width:0 !important;
@@ -93,7 +92,6 @@ import { AppTopbar } from './header/topbar.component';
       margin-left:0 !important;
     }
 
-    /* MASK */
     .layout-mask {
       position:fixed;
       inset:0;
@@ -109,6 +107,13 @@ import { AppTopbar } from './header/topbar.component';
   `]
 })
 export class AppLayout {
+
+  hideTopbar: boolean = false;
+
+  onTopbarHidden(hidden: boolean) {
+    this.hideTopbar = hidden;
+  }
+
   overlayMenuOpenSubscription: Subscription;
   menuOutsideClickListener: any;
 
@@ -118,20 +123,28 @@ export class AppLayout {
   constructor(
     public layoutService: LayoutService,
     public renderer: Renderer2,
-    public router: Router
+    public router: Router,
+    private profileService: ProfileService
   ) {
     this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
+
       if (!this.menuOutsideClickListener) {
         this.menuOutsideClickListener = this.renderer.listen('document', 'click', (event) => {
           if (this.isOutsideClicked(event)) this.hideMenu();
         });
       }
+
       if (this.layoutService.layoutState().staticMenuMobileActive)
         this.blockBodyScroll();
     });
 
     this.router.events.pipe(filter(evt => evt instanceof NavigationEnd))
       .subscribe(() => this.hideMenu());
+  }
+
+
+  ngOnInit() {
+    this.profileService.getMyProfile().subscribe();  // <-- CARGA EL PERFIL
   }
 
   isOutsideClicked(event: MouseEvent) {

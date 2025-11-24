@@ -1,14 +1,22 @@
 import { MenuModule } from 'primeng/menu';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, HostListener, HostBinding, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
-import { LayoutService } from '../services/layout.service';
 import { TooltipModule } from 'primeng/tooltip';
+
+import { LayoutService } from '../services/layout.service';
+import { ProfileService } from '../../core/services/profile/profile.service';
+import { NotificationBellComponent } from '../../shared/notificacion/notificacion.component';
+
+
 
 @Component({
   selector: 'app-topbar',
@@ -23,42 +31,75 @@ import { TooltipModule } from 'primeng/tooltip';
     ButtonModule,
     MenuModule,
     RippleModule,
-    TooltipModule
+    TooltipModule,
+    DialogModule,
+    InputTextModule,
+     NotificationBellComponent
   ]
 })
 export class AppTopbar implements OnInit, OnDestroy {
 
-    darkMode: boolean = false;
+  private profileService = inject(ProfileService);
 
+  darkMode: boolean = false;
   currentUser: any = null;
 
   items: any[] = [];
+
+  // Scroll hide
+  lastScrollTop = 0;
+  isHidden = false;
+
+  @Output() topbarHidden = new EventEmitter<boolean>();
+
+  // Modal
+  showPasswordModal = false;
+  newPassword = '';
+  confirmPassword = '';
 
   constructor(
     public layoutService: LayoutService,
     private router: Router
   ) {}
 
+
+  @HostBinding('class.hidden')
+  get hiddenClass() {
+    return this.isHidden;
+  }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    const y = window.scrollY;
+
+    if (y > this.lastScrollTop) {
+      this.isHidden = true;
+      this.topbarHidden.emit(true);
+    } else {
+      this.isHidden = false;
+      this.topbarHidden.emit(false);
+    }
+
+    this.lastScrollTop = y <= 0 ? 0 : y;
+  }
+
+
+  // Cargar perfil real
   ngOnInit() {
-    this.loadUser();
-    this.buildMenu();
+    this.profileService.profile$
+      .subscribe(profile => {
+        if (profile) {
+          this.currentUser = {
+            fullName: `${profile.firstName} ${profile.lastName}`,
+            role: 'Usuario',
+            initial: profile.firstName.charAt(0).toUpperCase()
+          };
+
+          this.buildMenu();
+        }
+      });
   }
 
-  loadUser() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    const decoded: any = jwtDecode(token);
-
-    const fullName = decoded.fullName || decoded.name || "Usuario";
-    const role = decoded.role || decoded.rolName || "Sin Rol";
-
-    this.currentUser = {
-      fullName,
-      role,
-      initial: fullName[0].toUpperCase()
-    };
-  }
 
   buildMenu() {
     this.items = [
@@ -69,11 +110,6 @@ export class AppTopbar implements OnInit, OnDestroy {
       },
       { separator: true },
       {
-        label: 'Cambiar contraseña',
-        icon: 'pi pi-lock',
-        command: () => this.changePassword()
-      },
-      {
         label: 'Cerrar sesión',
         icon: 'pi pi-sign-out',
         command: () => this.logout()
@@ -81,9 +117,7 @@ export class AppTopbar implements OnInit, OnDestroy {
     ];
   }
 
-  changePassword() {
-    this.router.navigate(['/cambiar-contrasena']);
-  }
+
 
   logout() {
     localStorage.clear();
@@ -91,7 +125,8 @@ export class AppTopbar implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-    toggleDark() {
+
+  toggleDark() {
     this.darkMode = !this.darkMode;
     document.documentElement.classList.toggle('app-dark', this.darkMode);
   }
@@ -105,7 +140,3 @@ export class AppTopbar implements OnInit, OnDestroy {
 
   ngOnDestroy() {}
 }
-function jwtDecode(token: string): any {
-    throw new Error('Function not implemented.');
-}
-
