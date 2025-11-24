@@ -20,7 +20,7 @@ export class CardMultasComponent {
       case 0: return 'PENDIENTE';
       case 1: return 'EN PROCESO';
       case 2: return 'PAGADA';
-      case 3: return 'ABIERTA';
+      case 3: return 'CON ACUERDO';
       default: return 'DESCONOCIDO';
     }
   }
