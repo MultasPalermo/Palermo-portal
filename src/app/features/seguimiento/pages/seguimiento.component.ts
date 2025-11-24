@@ -73,6 +73,9 @@ export class SeguimientoComponent implements OnInit, OnDestroy {
   }
 
   private categorizeData(data: UserInfractionDto[]) {
+    // Filtrar multas que tienen acuerdo de pago (stateInfraction = 3)
+    data = data.filter(item => item.stateInfraction !== 3);
+
     // Reset arrays
     this.prejudicialVeryRecent = [];
     this.prejudicial0to3 = [];
