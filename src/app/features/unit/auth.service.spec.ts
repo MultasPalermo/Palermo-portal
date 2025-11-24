@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
-import { AuthService } from '../../src/app/core/services/auth/auth.service';
-import { UserStore } from '../../src/app/core/services/User.Store';
-import { environment } from '../../src/environments/environment';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { UserStore } from '../../core/services/User.Store';
+import { environment } from '../../../environments/environment';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -72,7 +72,7 @@ describe('AuthService', () => {
   it('should handle logout correctly', () => {
     service.logout().subscribe();
 
-    const req = httpMock.expectOne(`${environment.apiURL}/Auth/logout`);
+    const req = httpMock.expectOne(`${environment.apiURL}/Login/logout`);
     expect(req.request.method).toBe('POST');
     req.flush({});
   });
@@ -80,9 +80,10 @@ describe('AuthService', () => {
   it('should get current user info', () => {
     const mockUser = {
       id: 1,
+      fullName: 'Test User',
       email: 'test@test.com',
-      firstName: 'Test',
-      lastName: 'User'
+      roles: ['USER'],
+      menu: []
     };
 
     service.GetMe().subscribe(user => {
