@@ -1,55 +1,119 @@
-// src/app/layout/shell/app.layout.ts  ← mantienes el nombre de archivo que ya tienes
+// src/app/layout/shell/app.layout.ts
 import { Component, Renderer2, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 
-                // ← ojo al nombre del archivo
 import { LayoutService } from './services/layout.service';
 import { AppSidebar } from './sidebar/app.sidebar';
 import { AppTopbar } from './header/topbar.component';
-                     // ← topbar dentro de layout/nav
+import { ProfileService } from '../core/services/profile/profile.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, AppSidebar],              
+  imports: [CommonModule, RouterModule, AppSidebar, AppTopbar],
   template: `
-  <div class="layout-wrapper" [ngClass]="containerClass">
-    <app-sidebar></app-sidebar>
-    <div class="layout-main-container">                                            <!-- ← USADO: quita el warning -->
-      <div class="layout-main">
+    <div class="layout-wrapper" [ngClass]="containerClass">
+
+      <app-sidebar></app-sidebar>
+
+      <app-topbar (topbarHidden)="onTopbarHidden($event)"></app-topbar>
+
+      <div class="layout-main" [class.topbar-hidden]="hideTopbar">
         <router-outlet></router-outlet>
       </div>
-    </div>
 
-    <div
-      class="layout-mask animate-fadein"
-      *ngIf="layoutService.layoutState().overlayMenuActive || layoutService.layoutState().staticMenuMobileActive"
-      (click)="hideMenu()"
-    ></div>
-  </div>
+      <div
+        class="layout-mask animate-fadein"
+        *ngIf="layoutService.layoutState().overlayMenuActive || layoutService.layoutState().staticMenuMobileActive"
+        (click)="hideMenu()">
+      </div>
+
+    </div>
   `,
   styles: [`
-    :host { display:block; height:100vh; width:100vw; overflow:hidden; }
-    .layout-wrapper { display:flex; height:100vh; width:100vw; position:relative; overflow:hidden; }
-    .layout-main-container { flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden; margin-left:0; transition: margin-left .3s ease; }
-    .layout-main-container app-topbar { flex-shrink:0; z-index:997; }
-    .layout-main { flex:1; background:#f3f4f6; overflow-y:auto; overflow-x:hidden; padding:0; }
-    .layout-mask { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:998; display:none; }
-    .layout-static .layout-main-container { margin-left:300px; }
-    .layout-static-inactive .layout-main-container { margin-left:0; }
-    .layout-overlay .layout-main-container { margin-left:0; }
-    .layout-overlay-active .layout-mask, .layout-mobile-active .layout-mask { display:block; }
-    @media (max-width: 991px) {
-      .layout-static .layout-main-container,
-      .layout-static-inactive .layout-main-container { margin-left:0; }
+    :host {
+      display:block;
+      height:100vh;
+      width:100vw;
+      overflow:hidden;
+      display: flex;
     }
-    .animate-fadein { animation: fadein .15s; }
-    @keyframes fadein { from{opacity:0} to{opacity:1} }
+
+    .layout-wrapper {
+      display:flex;
+      height:100vh;
+      width:100vw;
+      position:relative;
+      overflow:hidden;
+    }
+
+    app-sidebar {
+      width:169px;
+      min-width:169px;
+      z-index:1000;
+    }
+
+    app-topbar {
+      position: fixed;
+      top: 0;
+      left: 169px;
+      width: calc(100% - 169px);
+      height: 70px;
+      z-index: 1200;
+    }
+
+    .layout-main {
+      flex: 1;
+      height: 100vh;
+      margin-left: 169px;
+      margin-top: 70px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #f3f4f6;
+      transition: margin-top .3s ease;
+    }
+
+    .layout-main.topbar-hidden {
+      margin-top: 0;
+    }
+
+    .layout-static-inactive app-sidebar {
+      width:0 !important;
+      min-width:0 !important;
+    }
+
+    .layout-static-inactive app-topbar {
+      left:0 !important;
+    }
+
+    .layout-static-inactive .layout-main {
+      margin-left:0 !important;
+    }
+
+    .layout-mask {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.4);
+      z-index:1400;
+      display:none;
+    }
+
+    .layout-overlay-active .layout-mask,
+    .layout-mobile-active .layout-mask {
+      display:block;
+    }
   `]
 })
 export class AppLayout {
+
+  hideTopbar: boolean = false;
+
+  onTopbarHidden(hidden: boolean) {
+    this.hideTopbar = hidden;
+  }
+
   overlayMenuOpenSubscription: Subscription;
   menuOutsideClickListener: any;
 
@@ -59,26 +123,34 @@ export class AppLayout {
   constructor(
     public layoutService: LayoutService,
     public renderer: Renderer2,
-    public router: Router
+    public router: Router,
+    private profileService: ProfileService
   ) {
     this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
+
       if (!this.menuOutsideClickListener) {
         this.menuOutsideClickListener = this.renderer.listen('document', 'click', (event) => {
           if (this.isOutsideClicked(event)) this.hideMenu();
         });
       }
-      if (this.layoutService.layoutState().staticMenuMobileActive) this.blockBodyScroll();
+
+      if (this.layoutService.layoutState().staticMenuMobileActive)
+        this.blockBodyScroll();
     });
 
     this.router.events.pipe(filter(evt => evt instanceof NavigationEnd))
       .subscribe(() => this.hideMenu());
   }
 
+
+  ngOnInit() {
+    this.profileService.getMyProfile().subscribe();  // <-- CARGA EL PERFIL
+  }
+
   isOutsideClicked(event: MouseEvent) {
     const sidebarEl = document.querySelector('.layout-sidebar');
-    const topbarEl  = document.querySelector('.layout-menu-button');
     const t = event.target as Node;
-    return !(sidebarEl?.isSameNode(t) || sidebarEl?.contains(t) || topbarEl?.isSameNode(t) || topbarEl?.contains(t));
+    return !(sidebarEl?.contains(t));
   }
 
   hideMenu() {
@@ -87,28 +159,31 @@ export class AppLayout {
       staticMenuMobileActive: false,
       menuHoverActive: false
     });
-    if (this.menuOutsideClickListener) { this.menuOutsideClickListener(); this.menuOutsideClickListener = null; }
+
+    if (this.menuOutsideClickListener) {
+      this.menuOutsideClickListener();
+      this.menuOutsideClickListener = null;
+    }
+
     this.unblockBodyScroll();
   }
 
   blockBodyScroll() {
-    if (document.body.classList) document.body.classList.add('blocked-scroll');
-    else document.body.className += ' blocked-scroll';
+    document.body.classList.add('blocked-scroll');
   }
 
   unblockBodyScroll() {
-    if (document.body.classList) document.body.classList.remove('blocked-scroll');
-    else document.body.className = document.body.className.replace(/(^|\\b)blocked-scroll(\\b|$)/gi, ' ');
+    document.body.classList.remove('blocked-scroll');
   }
 
   get containerClass() {
     return {
       'layout-overlay': this.layoutService.layoutConfig().menuMode === 'overlay',
       'layout-static': this.layoutService.layoutConfig().menuMode === 'static',
-      'layout-static-inactive': this.layoutService.layoutState().staticMenuDesktopInactive
-                               && this.layoutService.layoutConfig().menuMode === 'static',
+      'layout-static-inactive': this.layoutService.layoutState().staticMenuDesktopInactive &&
+                                this.layoutService.layoutConfig().menuMode === 'static',
       'layout-overlay-active': this.layoutService.layoutState().overlayMenuActive,
-      'layout-mobile-active':  this.layoutService.layoutState().staticMenuMobileActive
+      'layout-mobile-active': this.layoutService.layoutState().staticMenuMobileActive
     };
   }
 
