@@ -1,7 +1,6 @@
 export interface PaymentFrequency {
   id?: number;
-  name: string;
-  code: string;
-  description?: string;
-  daysInterval: number;
+  intervalPage: string;
+  IntervalType: string; // "Days", "Months", "Years", "Hours", "Minutes"
+  IntervalValue: number; // Cantidad del intervalo
 }

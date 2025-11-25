@@ -12,15 +12,17 @@
         <table class="custom-table">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Intervalo en días</th>
+              <th>frecuencia de pago</th>
+              <th>Tipo Intervalo</th>
+              <th>Valor Intervalo</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let frecuencia of frecuencias">
-              <td>{{ frecuencia.name }}</td>
-              <td>{{ frecuencia.daysInterval }}</td>
+              <td>{{ frecuencia.intervalPage }}</td>
+              <td>{{ frecuencia.IntervalType }}</td>
+              <td>{{ frecuencia.IntervalValue }}</td>
               <td class="actions-cell">
                 <button
                   class="btn btn-sm btn-success"
@@ -91,67 +93,67 @@
     <div class="modal-body">
       <form [formGroup]="paymentFrequencyForm" (ngSubmit)="crearPaymentFrequency()">
         <div class="form-grid">
-          <div class="form-group">
-            <label for="name">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="currentColor"/>
-                <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="currentColor"/>
-              </svg>
-              Nombre
-            </label>
-            <input
-              type="text"
-              id="name"
-              formControlName="name"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('name')"
-              placeholder="Ej: Mensual">
-            <div *ngIf="isFieldInvalid('name')" class="invalid-feedback">
-              {{ getFieldError('name') }}
-            </div>
-          </div>
+           <div class="form-group">
+             <label for="intervalPage">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="currentColor"/>
+                 <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="currentColor"/>
+               </svg>
+               Frecuencia de Pago
+             </label>
+             <input
+               type="text"
+               id="intervalPage"
+               formControlName="intervalPage"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('intervalPage')"
+               placeholder="Ej: Mensual">
+             <div *ngIf="isFieldInvalid('intervalPage')" class="invalid-feedback">
+               {{ getFieldError('intervalPage') }}
+             </div>
+           </div>
 
-          <div class="form-group">
-            <label for="code">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 2H14V14H2V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-              Código
-            </label>
-            <input
-              type="text"
-              id="code"
-              formControlName="code"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('code')"
-              placeholder="Ej: MENSUAL">
-            <div *ngIf="isFieldInvalid('code')" class="invalid-feedback">
-              {{ getFieldError('code') }}
-            </div>
-          </div>
+           <div class="form-group">
+             <label for="IntervalType">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M2 2H14V14H2V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+               </svg>
+               Tiempo
+             </label>
+             <select
+               id="IntervalType"
+               formControlName="IntervalType"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('IntervalType')">
+               <option *ngFor="let option of intervalTypeOptions" [value]="option.value">{{ option.label }}</option>
+             </select>
+             <div *ngIf="isFieldInvalid('IntervalType')" class="invalid-feedback">
+               {{ getFieldError('IntervalType') }}
+             </div>
+           </div>
 
-          <div class="form-group">
-            <label for="daysInterval">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Intervalo en días
-            </label>
-            <input
-              type="number"
-              id="daysInterval"
-              formControlName="daysInterval"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('daysInterval')"
-              placeholder="Ej: 30"
-              min="1"
-              max="365">
-            <div *ngIf="isFieldInvalid('daysInterval')" class="invalid-feedback">
-              {{ getFieldError('daysInterval') }}
-            </div>
-          </div>
-        </div>
+           <div class="form-group">
+             <label for="IntervalValue">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                 <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
+               </svg>
+               Valor De Frencuencia
+             </label>
+             <input
+               type="number"
+               id="IntervalValue"
+               formControlName="IntervalValue"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('IntervalValue')"
+               placeholder="Ej: 1"
+               min="1">
+             <div *ngIf="isFieldInvalid('IntervalValue')" class="invalid-feedback">
+               {{ getFieldError('IntervalValue') }}
+             </div>
+           </div>
+
+         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormulario()">
@@ -200,67 +202,67 @@
     <div class="modal-body">
       <form [formGroup]="updateForm" (ngSubmit)="actualizarPaymentFrequency()">
         <div class="form-grid">
-          <div class="form-group">
-            <label for="update-name">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="currentColor"/>
-                <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="currentColor"/>
-              </svg>
-              Nombre
-            </label>
-            <input
-              type="text"
-              id="update-name"
-              formControlName="name"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('name', updateForm)"
-              placeholder="Ej: Mensual">
-            <div *ngIf="isFieldInvalid('name', updateForm)" class="invalid-feedback">
-              {{ getFieldError('name', updateForm) }}
-            </div>
-          </div>
+           <div class="form-group">
+             <label for="update-intervalPage">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" fill="currentColor"/>
+                 <path d="M8 10C3.58172 10 0 12.6863 0 16H16C16 12.6863 12.4183 10 8 10Z" fill="currentColor"/>
+               </svg>
+               Frencuencia de Pago
+             </label>
+             <input
+               type="text"
+               id="update-intervalPage"
+               formControlName="intervalPage"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('intervalPage', updateForm)"
+               placeholder="Ej: Mensual">
+             <div *ngIf="isFieldInvalid('intervalPage', updateForm)" class="invalid-feedback">
+               {{ getFieldError('intervalPage', updateForm) }}
+             </div>
+           </div>
 
-          <div class="form-group">
-            <label for="update-code">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 2H14V14H2V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-              Código
-            </label>
-            <input
-              type="text"
-              id="update-code"
-              formControlName="code"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('code', updateForm)"
-              placeholder="Ej: MENSUAL">
-            <div *ngIf="isFieldInvalid('code', updateForm)" class="invalid-feedback">
-              {{ getFieldError('code', updateForm) }}
-            </div>
-          </div>
+           <div class="form-group">
+             <label for="update-IntervalType">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M2 2H14V14H2V2Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+               </svg>
+               Tiempo
+             </label>
+             <select
+               id="update-IntervalType"
+               formControlName="IntervalType"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('IntervalType', updateForm)">
+               <option *ngFor="let option of intervalTypeOptions" [value]="option.value">{{ option.label }}</option>
+             </select>
+             <div *ngIf="isFieldInvalid('IntervalType', updateForm)" class="invalid-feedback">
+               {{ getFieldError('IntervalType', updateForm) }}
+             </div>
+           </div>
 
-          <div class="form-group">
-            <label for="update-daysInterval">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Intervalo en días
-            </label>
-            <input
-              type="number"
-              id="update-daysInterval"
-              formControlName="daysInterval"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('daysInterval', updateForm)"
-              placeholder="Ej: 30"
-              min="1"
-              max="365">
-            <div *ngIf="isFieldInvalid('daysInterval', updateForm)" class="invalid-feedback">
-              {{ getFieldError('daysInterval', updateForm) }}
-            </div>
-          </div>
-        </div>
+           <div class="form-group">
+             <label for="update-IntervalValue">
+               <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                 <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                 <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
+               </svg>
+               Valor De Frecuencia
+             </label>
+             <input
+               type="number"
+               id="update-IntervalValue"
+               formControlName="IntervalValue"
+               class="form-control modern-input"
+               [class.is-invalid]="isFieldInvalid('IntervalValue', updateForm)"
+               placeholder="Ej: 1"
+               min="1">
+             <div *ngIf="isFieldInvalid('IntervalValue', updateForm)" class="invalid-feedback">
+               {{ getFieldError('IntervalValue', updateForm) }}
+             </div>
+           </div>
+
+         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormularioActualizar()">
@@ -291,7 +293,7 @@
     </div>
 
     <div class="modal-body">
-      <p>¿Está seguro que desea eliminar la frecuencia de pago con nombre <strong>{{ paymentFrequencyAEliminar?.name }}</strong>?</p>
+      <p>¿Está seguro que desea eliminar la frecuencia de pago con intervalo <strong>{{ paymentFrequencyAEliminar?.intervalPage }}</strong>?</p>
       <p class="text-warning">Esta acción no se puede deshacer.</p>
     </div>
 

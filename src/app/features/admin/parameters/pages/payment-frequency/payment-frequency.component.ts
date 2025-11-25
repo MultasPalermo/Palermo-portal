@@ -38,28 +38,36 @@ export class PaymentFrequencyComponent implements OnInit {
   paymentFrequencyAEliminar: PaymentFrequency | null = null;
   paymentFrequencySeleccionado: PaymentFrequency | null = null;
 
+  // Opciones para IntervalType
+  intervalTypeOptions = [
+    { value: 'Days', label: 'Días' },
+    { value: 'Months', label: 'Meses' },
+    { value: 'Years', label: 'Años' }
+  ];
+
   // Formularios reactivos
   paymentFrequencyForm: FormGroup;
   updateForm: FormGroup;
 
   columns: ColumnDef[] = [
-    { key: 'name',          header: 'Nombre',         type: 'text' },
-    { key: 'daysInterval',  header: 'Intervalo días', type: 'text' },
-    { key: 'actions',       header: 'Acciones',       type: 'actions' }
+    { key: 'intervalPage',    header: 'Intervalo Página', type: 'text' },
+    { key: 'IntervalType',    header: 'Tipo Intervalo',   type: 'text' },
+    { key: 'IntervalValue',   header: 'Valor Intervalo',  type: 'text' },
+    { key: 'actions',         header: 'Acciones',         type: 'actions' }
   ];
 
   constructor() {
     // Inicializar formularios reactivos
     this.paymentFrequencyForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      daysInterval: ['', [Validators.required, Validators.min(1), Validators.max(365)]],
-      code: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]]
+      intervalPage: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      IntervalType: ['Months', [Validators.required]],
+      IntervalValue: ['', [Validators.required, Validators.min(1)]]
     });
 
     this.updateForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
-      daysInterval: ['', [Validators.required, Validators.min(1), Validators.max(365)]],
-      code: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(50)]]
+      intervalPage: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      IntervalType: ['Months', [Validators.required]],
+      IntervalValue: ['', [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -75,14 +83,12 @@ export class PaymentFrequencyComponent implements OnInit {
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (r: any[]) => {
-          // El backend puede devolver un DTO diferente (p.e. intervalPage/dueDayOfMonth).
-          // Normalizamos los objetos para que la UI maneje name/daysInterval/code.
+          // El backend devuelve intervalPage, dueDayOfMonth, IntervalType, IntervalValue.
           this.frecuencias = (r || []).map(item => ({
             id: item.id,
-            name: item.name ?? item.intervalPage ?? item.code ?? '',
-            code: item.code ?? item.intervalPage ?? '',
-            description: item.description,
-            daysInterval: item.daysInterval ?? item.dueDayOfMonth ?? 0
+            intervalPage: item.intervalPage ?? '',
+            IntervalType: item.IntervalType ?? 'Months',
+            IntervalValue: item.IntervalValue ?? 1
           } as PaymentFrequency));
         },
         error: (e: any) => { this.errorMsg = 'No fue posible cargar las frecuencias de pago.'; }
@@ -111,12 +117,11 @@ export class PaymentFrequencyComponent implements OnInit {
 
       const paymentFrequencyData = this.paymentFrequencyForm.value;
 
-      // Construir payload compatible con el backend: algunos controladores esperan
-      // intervalPage (ej. 'MENSUAL') y dueDayOfMonth (número) en lugar de name/daysInterval.
+      // Construir payload compatible con el backend
       const payload = {
-        ...paymentFrequencyData,
-        intervalPage: paymentFrequencyData.code ?? paymentFrequencyData.name,
-        dueDayOfMonth: paymentFrequencyData.daysInterval
+        intervalPage: paymentFrequencyData.intervalPage,
+        IntervalType: paymentFrequencyData.IntervalType,
+        IntervalValue: paymentFrequencyData.IntervalValue
       };
 
       console.debug('Crear PaymentFrequency payload:', payload);
@@ -145,9 +150,9 @@ export class PaymentFrequencyComponent implements OnInit {
   abrirFormularioActualizar(paymentFrequency: PaymentFrequency): void {
     this.paymentFrequencySeleccionado = { ...paymentFrequency };
     this.updateForm.patchValue({
-      name: paymentFrequency.name,
-      daysInterval: paymentFrequency.daysInterval,
-      code: paymentFrequency.code
+      intervalPage: paymentFrequency.intervalPage,
+      IntervalType: paymentFrequency.IntervalType,
+      IntervalValue: paymentFrequency.IntervalValue
     });
     this.showUpdateForm = true;
     this.errorMsg = '';
@@ -173,8 +178,9 @@ export class PaymentFrequencyComponent implements OnInit {
 
       const updatePayload = {
         ...paymentFrequencyActualizado,
-        intervalPage: (this.updateForm.value.code ?? this.updateForm.value.name ?? paymentFrequencyActualizado.code ?? paymentFrequencyActualizado.name),
-        dueDayOfMonth: this.updateForm.value.daysInterval ?? paymentFrequencyActualizado.daysInterval
+        intervalPage: this.updateForm.value.intervalPage,
+        IntervalType: this.updateForm.value.IntervalType,
+        IntervalValue: this.updateForm.value.IntervalValue
       };
 
       console.debug('Update PaymentFrequency payload:', updatePayload);
@@ -243,7 +249,12 @@ export class PaymentFrequencyComponent implements OnInit {
   getFieldError(fieldName: string, form: FormGroup = this.paymentFrequencyForm): string {
     const field = form.get(fieldName);
     if (field && field.errors) {
-      if (field.errors['required']) return `El campo ${fieldName} es requerido.`;
+      if (field.errors['required']) {
+        if (fieldName === 'intervalPage') return 'El campo frecuencia de pago es requerido.';
+        if (fieldName === 'IntervalType') return 'El campo Tiempo es requerido.';
+        if (fieldName === 'IntervalValue') return 'El campo Valor Intervalo es requerido.';
+        return `El campo ${fieldName} es requerido.`;
+      }
       if (field.errors['minlength']) return `El campo ${fieldName} debe tener al menos ${field.errors['minlength'].requiredLength} caracteres.`;
       if (field.errors['maxlength']) return `El campo ${fieldName} no puede exceder ${field.errors['maxlength'].requiredLength} caracteres.`;
       if (field.errors['min']) return `El valor mínimo es ${field.errors['min'].min}.`;
