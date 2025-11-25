@@ -5,19 +5,6 @@
       <span class="icon">🔔</span>
       <h1 class="title">Recordatorios</h1>
     </div>
-    <button
-      class="add-btn"
-      (click)="abrirFormulario()"
-      [disabled]="!canCreateRecordatorio()">
-      <span class="btn-icon">➕</span>
-      Agregar Recordatorio
-    </button>
-  </div>
-
-  <!-- Mensaje de advertencia de límite -->
-  <div class="warning-message" *ngIf="!canCreateRecordatorio()">
-    <span class="warning-icon">⚠️</span>
-    <p>Ha alcanzado el límite máximo de 5 recordatorios. Elimine uno para poder crear otro.</p>
   </div>
 
   <!-- Barra de búsqueda -->
@@ -89,13 +76,6 @@
           <span class="btn-icon">✏️</span>
           Editar
         </button>
-        <button
-          class="action-btn delete-btn"
-          (click)="confirmarEliminacion(recordatorio)"
-          title="Eliminar recordatorio">
-          <span class="btn-icon">🗑️</span>
-          Eliminar
-        </button>
       </div>
     </div>
   </div>
@@ -111,7 +91,7 @@
   <div class="empty-state" *ngIf="!loading && recordatorios.length === 0">
     <span class="empty-icon">📭</span>
     <h3>No hay recordatorios</h3>
-    <p>Comienza agregando tu primer recordatorio.</p>
+    <p>No hay recordatorios disponibles.</p>
   </div>
 
   <!-- Paginación -->
@@ -125,117 +105,6 @@
   </app-pagination>
 </div>
 
-<!-- Modal para crear recordatorio -->
-<div class="modal-overlay" *ngIf="showForm" (click)="cerrarFormulario()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2 class="modal-title">
-        <span class="modal-icon">➕</span>
-        Crear Recordatorio
-      </h2>
-      <button class="close-btn" (click)="cerrarFormulario()">✕</button>
-    </div>
-
-    <form [formGroup]="recordatorioForm" (ngSubmit)="crearRecordatorio()">
-      <div class="form-grid">
-        <!-- Nombre -->
-        <div class="form-group">
-          <label for="name" class="form-label">
-            Nombre <span class="required">*</span>
-          </label>
-          <input
-            type="text"
-            id="name"
-            class="form-input"
-            formControlName="name"
-            placeholder="Ingrese el nombre"
-            [class.invalid]="isFieldInvalid('name')"
-          />
-          <span class="error-message" *ngIf="isFieldInvalid('name')">
-            {{ getFieldError('name') }}
-          </span>
-        </div>
-
-        <!-- Días -->
-        <div class="form-group">
-          <label for="days" class="form-label">
-            Días <span class="required">*</span>
-          </label>
-          <input
-            type="number"
-            id="days"
-            class="form-input"
-            formControlName="days"
-            placeholder="Ingrese los días"
-            min="1"
-            [class.invalid]="isFieldInvalid('days')"
-          />
-          <span class="error-message" *ngIf="isFieldInvalid('days')">
-            {{ getFieldError('days') }}
-          </span>
-        </div>
-
-        <!-- Unidad de tiempo -->
-        <div class="form-group">
-          <label for="timeUnit" class="form-label">
-            Unidad de Tiempo <span class="required">*</span>
-          </label>
-          <select
-            id="timeUnit"
-            class="form-input"
-            formControlName="timeUnit"
-            [class.invalid]="isFieldInvalid('timeUnit')">
-            <option *ngFor="let option of timeUnitOptions" [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-          <span class="error-message" *ngIf="isFieldInvalid('timeUnit')">
-            {{ getFieldError('timeUnit') }}
-          </span>
-        </div>
-
-        <!-- Activo -->
-        <div class="form-group checkbox-group">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              formControlName="active"
-              class="checkbox-input"
-            />
-            <span class="checkbox-text">Activo</span>
-          </label>
-        </div>
-
-        <!-- Descripción -->
-        <div class="form-group full-width">
-          <label for="description" class="form-label">
-            Descripción <span class="required">*</span>
-          </label>
-          <textarea
-            id="description"
-            class="form-input textarea"
-            formControlName="description"
-            placeholder="Ingrese la descripción"
-            rows="4"
-            [class.invalid]="isFieldInvalid('description')">
-          </textarea>
-          <span class="error-message" *ngIf="isFieldInvalid('description')">
-            {{ getFieldError('description') }}
-          </span>
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" (click)="cerrarFormulario()">
-          Cancelar
-        </button>
-        <button type="submit" class="btn-primary" [disabled]="recordatorioForm.invalid || loading">
-          {{ loading ? 'Creando...' : 'Crear Recordatorio' }}
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- Modal para editar recordatorio -->
 <div class="modal-overlay" *ngIf="showUpdateForm" (click)="cerrarFormularioActualizar()">
@@ -349,25 +218,6 @@
   </div>
 </div>
 
-<!-- Modal de confirmación para eliminar -->
-<div class="modal-overlay" *ngIf="showConfirm" (click)="cancelarEliminacion()">
-  <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
-    <div class="confirm-icon">⚠️</div>
-    <h2 class="confirm-title">¿Eliminar Recordatorio?</h2>
-    <p class="confirm-message">
-      ¿Está seguro de que desea eliminar el recordatorio <strong>{{ recordatorioAEliminar?.name }}</strong>?
-      Esta acción no se puede deshacer.
-    </p>
-    <div class="modal-actions">
-      <button class="btn-secondary" (click)="cancelarEliminacion()" [disabled]="loading">
-        Cancelar
-      </button>
-      <button class="btn-danger" (click)="eliminarRecordatorio()" [disabled]="loading">
-        {{ loading ? 'Eliminando...' : 'Eliminar' }}
-      </button>
-    </div>
-  </div>
-</div>
 
 <!-- Modal de confirmación para actualizar -->
 <div class="modal-overlay" *ngIf="showUpdateConfirm" (click)="cancelarActualizacion()">
