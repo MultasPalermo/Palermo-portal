@@ -18,10 +18,14 @@ import { FormModule } from '../../../../../shared/modeloModelados/modelSecurity/
 export class FormModulePageComponent implements OnInit {
   formModules: FormModule[] = [];
   paginatedFormModules: FormModule[] = [];
+  filteredFormModules: FormModule[] = [];
   isLoading: boolean = false;
   forms: any[] = [];
   modules: any[] = [];
   formModuleOriginal: FormModule | null = null;
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
   paginationConfig: PaginationConfig = {
@@ -86,6 +90,7 @@ export class FormModulePageComponent implements OnInit {
     this.formModuleService.genericService.getAll<FormModule>(this.formModuleService.endpoint).subscribe({
       next: (formModules: FormModule[]) => {
         this.formModules = formModules;
+        this.filteredFormModules = formModules;
         this.updatePagination();
         this.isLoading = false;
       },
@@ -257,16 +262,36 @@ export class FormModulePageComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.formModules.length);
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredFormModules.length);
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    this.paginatedFormModules = this.paginationService.getPaginatedItems(this.formModules, this.paginationConfig);
+    this.paginatedFormModules = this.paginationService.getPaginatedItems(this.filteredFormModules, this.paginationConfig);
   }
 
   onPageChange(page: number): void {
     this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
     this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterFormModules(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredFormModules = [...this.formModules];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredFormModules = this.formModules.filter(fm =>
+        fm.formName?.toLowerCase().includes(term) ||
+        fm.moduleName?.toLowerCase().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterFormModules();
   }
 }

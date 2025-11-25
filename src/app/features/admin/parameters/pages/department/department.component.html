@@ -1,344 +1,260 @@
+<div class="department-container">
+  <!-- Modal de alerta -->
+  <div *ngIf="showAlert" class="alert-modal-overlay">
+    <div class="alert-modal-content" [ngClass]="alertType">
+      <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
+      <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+      <span class="alert-icon" *ngIf="alertType === 'error'">❌</span>
+      <span class="alert-icon" *ngIf="alertType === 'info'">ℹ️</span>
+      <span class="alert-msg">{{ alertMsg }}</span>
+    </div>
+  </div>
 
-<mat-card>
-  <app-card-header
-    title="Departamentos"
-    [description]="'Listado de departamentos con su código DANE.'">
-  </app-card-header>
-
-  <mat-card-content>
-    <ng-container *ngIf="!loading && !errorMsg; else estado">
-      <!-- Tabla personalizada para departamentos -->
-      <div class="table-container">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>Nombre del departamento</th>
-              <th>Código DANE</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let departamento of paginatedDepartamentos">
-              <td>{{ departamento.name }}</td>
-              <td>{{ departamento.daneCode }}</td>
-              <td class="actions-cell">
-                <button
-                  class="btn btn-sm btn-success"
-                  (click)="confirmarActualizacion(departamento)"
-                  title="Editar departamento">
-                  Editar
-                </button>
-                <button
-                  class="btn btn-sm btn-success-dark ml-2"
-                  (click)="confirmarEliminacion(departamento)"
-                  title="Eliminar departamento">
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="paginatedDepartamentos.length === 0 && !loading">
-              <td colspan="3" class="text-center">No hay departamentos para mostrar</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Paginación -->
-        <div class="pagination-container" *ngIf="totalPages > 1">
-          <div class="pagination-info">
-            <span>Página {{ currentPage }} de {{ totalPages }} ({{ departamentos.length }} elementos)</span>
-          </div>
-          <div class="pagination-controls">
-            <button
-              class="pagination-btn"
-              (click)="prevPage()"
-              [disabled]="currentPage === 1"
-              title="Página anterior">
-              « Anterior
-            </button>
-
-            <button
-              *ngFor="let page of getVisiblePages()"
-              class="pagination-btn"
-              [class.active]="page === currentPage"
-              (click)="goToPage(page)">
-              {{ page }}
-            </button>
-
-            <button
-              class="pagination-btn"
-              (click)="nextPage()"
-              [disabled]="currentPage === totalPages"
-              title="Página siguiente">
-              Siguiente »
-            </button>
-          </div>
-        </div>
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="showConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">🗑️</span>
+      <span class="alert-msg">¿Estás seguro de que deseas eliminar este departamento?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarEliminacion()">Cancelar</button>
+        <button class="red-btn" (click)="eliminarDepartamento()">Eliminar</button>
       </div>
-    </ng-container>
+    </div>
+  </div>
 
-    <ng-template #estado>
-      <div *ngIf="loading">Cargando departamentos...</div>
-      <div *ngIf="!loading && errorMsg" class="text-red-600">{{ errorMsg }}</div>
-    </ng-template>
-  </mat-card-content>
-
-  <app-button
-    texto="Agregar nuevo departamento"
-    color="accent"
-    (clicked)="abrirFormulario()">
-  </app-button>
-</mat-card>
-
-<!-- Mensajes de éxito y error -->
-<div *ngIf="successMsg" class="alert alert-success">
-  {{ successMsg }}
-</div>
-
-<div *ngIf="errorMsg" class="alert alert-error">
-  {{ errorMsg }}
-</div>
-
-<!-- Modal para crear departamento -->
-<div *ngIf="showForm" class="modal-overlay" (click)="cerrarFormulario()">
-  <div class="modal-content modern-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <div class="header-content">
-        <div class="header-icon create-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="header-text">
-          <h3>Crear Nuevo Departamento</h3>
-          <p>Ingresa la información del nuevo departamento</p>
-        </div>
+  <!-- Modal de confirmación para actualizar -->
+  <div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">✏️</span>
+      <span class="alert-msg">¿Está seguro que desea actualizar el departamento "{{ departmentAActualizar?.name }}"?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
+        <button class="blue-btn" (click)="abrirFormularioActualizar()">Sí, Editar</button>
       </div>
-      <button class="close-btn" (click)="cerrarFormulario()">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="department-header">
+    <div class="header-left">
+      <span class="icon">🏛️</span>
+      <h1 class="title">Departamentos</h1>
+    </div>
+    <button class="add-btn" (click)="abrirFormulario()">
+      <span class="btn-icon">➕</span>
+      Agregar Departamento
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre o código DANE..."
+        [(ngModel)]="searchTerm"
+        (input)="filterDepartamentos()"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="clear-search"
+        (click)="clearSearch()"
+        title="Limpiar búsqueda"
+      >
+        ✕
       </button>
     </div>
-
-    <div class="modal-body">
-      <form [formGroup]="departmentForm" (ngSubmit)="crearDepartamento()">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="name">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 1L14 4V12L8 15L2 12V4L8 1Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-              Nombre del Departamento
-            </label>
-            <input
-              type="text"
-              id="name"
-              formControlName="name"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('name')"
-              placeholder="Ej: Antioquia"
-              maxlength="50">
-            <div *ngIf="isFieldInvalid('name')" class="invalid-feedback">
-              {{ getFieldError('name') }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="daneCode">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Código DANE
-            </label>
-            <input
-              type="text"
-              id="daneCode"
-              formControlName="daneCode"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('daneCode')"
-              placeholder="Ej: 05"
-              maxlength="5">
-            <div *ngIf="isFieldInvalid('daneCode')" class="invalid-feedback">
-              {{ getFieldError('daneCode') }}
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormulario()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary modern-btn" [disabled]="loading || departmentForm.invalid">
-            <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div *ngIf="loading" class="loading-spinner"></div>
-            <span *ngIf="loading">Creando...</span>
-            <span *ngIf="!loading">Crear Departamento</span>
-          </button>
-        </div>
-      </form>
+    <div class="search-results" *ngIf="searchTerm">
+      <span class="results-count">
+        {{ filteredDepartamentos.length }} resultado(s) encontrado(s)
+      </span>
     </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="filteredDepartamentos.length === 0" class="no-results">
+    <span class="no-results-icon">📭</span>
+    <h3>No se encontraron resultados</h3>
+    <p *ngIf="searchTerm">Intenta con otro término de búsqueda</p>
+    <p *ngIf="!searchTerm">No hay departamentos registrados</p>
+    <small *ngIf="!searchTerm">Haga clic en "Agregar Departamento" para comenzar</small>
+  </div>
+
+  <!-- Lista de Departamentos -->
+  <div class="department-list" *ngIf="filteredDepartamentos.length > 0">
+    <div class="department-card" *ngFor="let dept of paginatedDepartamentos">
+      <div class="card-badge">
+        <span class="badge-icon">🏛️</span>
+      </div>
+      <div class="card-content">
+        <div class="card-title-section">
+          <h3 class="card-title">{{ dept.name }}</h3>
+          <p class="card-description">Código DANE: {{ dept.daneCode }}</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-icon">📝</span>
+            <div class="info-details">
+              <span class="info-label">Nombre</span>
+              <span class="info-value">{{ dept.name }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🔢</span>
+            <div class="info-details">
+              <span class="info-label">Código DANE</span>
+              <span class="info-value">{{ dept.daneCode }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="confirmarActualizacion(dept)" title="Editar">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">Editar</span>
+        </button>
+        <button class="action-btn delete-btn" (click)="confirmarEliminacion(dept)" title="Eliminar">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <app-pagination *ngIf="filteredDepartamentos.length > 0" [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages" [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage" (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>
+
+<!-- Modal para crear nuevo departamento -->
+<div *ngIf="showForm" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarFormulario()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">➕</span>
+      <h2>Agregar Nuevo Departamento</h2>
+    </div>
+
+    <form [formGroup]="departmentForm" (ngSubmit)="crearDepartamento()" autocomplete="off" class="form-styled">
+      <div class="form-group">
+        <label for="create-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Departamento
+        </label>
+        <input
+          id="create-name-input"
+          type="text"
+          class="custom-input"
+          formControlName="name"
+          maxlength="50"
+          placeholder="Ej: Antioquia" />
+        <div
+          *ngIf="isFieldInvalid('name')"
+          class="error-msg">
+          {{ getFieldError('name') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-daneCode-input">
+          <span class="label-icon">🔢</span>
+          Código DANE
+        </label>
+        <input
+          id="create-daneCode-input"
+          type="text"
+          class="custom-input"
+          formControlName="daneCode"
+          maxlength="5"
+          placeholder="Ej: 05" />
+        <div
+          *ngIf="isFieldInvalid('daneCode')"
+          class="error-msg">
+          {{ getFieldError('daneCode') }}
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarFormulario()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="departmentForm.invalid || loading">
+          <span class="btn-icon">➕</span>
+          Crear
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
 <!-- Modal para actualizar departamento -->
-<div *ngIf="showUpdateForm" class="modal-overlay" (click)="cerrarFormularioActualizar()">
-  <div class="modal-content modern-modal" (click)="$event.stopPropagation()">
+<div *ngIf="showUpdateForm && departmentSeleccionado" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarFormularioActualizar()" title="Cerrar">&times;</button>
     <div class="modal-header">
-      <div class="header-content">
-        <div class="header-icon edit-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M18.5 2.5C18.8978 2.10218 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10218 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10218 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="header-text">
-          <h3>Actualizar Departamento</h3>
-          <p>Modifica la información del departamento</p>
+      <span class="modal-icon">✏️</span>
+      <h2>Actualizar Departamento</h2>
+    </div>
+
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarDepartamento()" autocomplete="off" class="form-styled">
+      <div class="form-group">
+        <label for="update-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Departamento
+        </label>
+        <input
+          id="update-name-input"
+          type="text"
+          class="custom-input"
+          formControlName="name"
+          maxlength="50" />
+        <div
+          *ngIf="isFieldInvalid('name', updateForm)"
+          class="error-msg">
+          {{ getFieldError('name', updateForm) }}
         </div>
       </div>
-      <button class="close-btn" (click)="cerrarFormularioActualizar()">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    </div>
 
-    <div class="modal-body">
-      <form [formGroup]="updateForm" (ngSubmit)="actualizarDepartamento()">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="update-name">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 1L14 4V12L8 15L2 12V4L8 1Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-              </svg>
-              Nombre del Departamento
-            </label>
-            <input
-              type="text"
-              id="update-name"
-              formControlName="name"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('name', updateForm)"
-              placeholder="Ej: Antioquia"
-              maxlength="50">
-            <div *ngIf="isFieldInvalid('name', updateForm)" class="invalid-feedback">
-              {{ getFieldError('name', updateForm) }}
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="update-daneCode">
-              <svg class="input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 3H14V13H2V3Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                <path d="M5 6H11M5 8H11M5 10H8" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Código DANE
-            </label>
-            <input
-              type="text"
-              id="update-daneCode"
-              formControlName="daneCode"
-              class="form-control modern-input"
-              [class.is-invalid]="isFieldInvalid('daneCode', updateForm)"
-              placeholder="Ej: 05"
-              maxlength="5">
-            <div *ngIf="isFieldInvalid('daneCode', updateForm)" class="invalid-feedback">
-              {{ getFieldError('daneCode', updateForm) }}
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary modern-btn" (click)="cerrarFormularioActualizar()">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary modern-btn" [disabled]="loading || updateForm.invalid">
-            <svg *ngIf="!loading" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <div *ngIf="loading" class="loading-spinner"></div>
-            <span *ngIf="loading">Actualizando...</span>
-            <span *ngIf="!loading">Actualizar Departamento</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de confirmación para eliminar -->
-<div *ngIf="showConfirm" class="modal-overlay">
-  <div class="modal-content modal-sm">
-    <div class="modal-header">
-      <h3>Confirmar Eliminación</h3>
-    </div>
-
-    <div class="modal-body">
-      <div class="warning-content">
-        <div class="warning-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="warning-text">
-          <h4>¿Está seguro que desea eliminar?</h4>
-          <p>Va a eliminar permanentemente el departamento <strong>"{{ departmentAEliminar?.name }}"</strong></p>
-          <p class="text-warning"><strong>⚠️ Esta acción no se puede deshacer.</strong></p>
+      <div class="form-group">
+        <label for="update-daneCode-input">
+          <span class="label-icon">🔢</span>
+          Código DANE
+        </label>
+        <input
+          id="update-daneCode-input"
+          type="text"
+          class="custom-input"
+          formControlName="daneCode"
+          maxlength="5" />
+        <div
+          *ngIf="isFieldInvalid('daneCode', updateForm)"
+          class="error-msg">
+          {{ getFieldError('daneCode', updateForm) }}
         </div>
       </div>
-    </div>
 
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="cancelarEliminacion()">
-        Cancelar
-      </button>
-      <button type="button" class="btn btn-danger" (click)="eliminarDepartamento()" [disabled]="loading">
-        <span *ngIf="loading">Eliminando...</span>
-        <span *ngIf="!loading">Eliminar</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de confirmación para actualizar -->
-<div *ngIf="showUpdateConfirm" class="modal-overlay">
-  <div class="modal-content modal-sm">
-    <div class="modal-header">
-      <h3>Confirmar Actualización</h3>
-    </div>
-
-    <div class="modal-body">
-      <div class="warning-content">
-        <div class="warning-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M18.5 2.5C18.8978 2.10218 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10218 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10218 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="warning-text">
-          <h4>¿Desea actualizar este departamento?</h4>
-          <p>Va a editar la información del departamento <strong>"{{ departmentAActualizar?.name }}"</strong></p>
-          <p class="text-info"><strong>📝 Se abrirá el formulario de edición.</strong></p>
-        </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarFormularioActualizar()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="updateForm.invalid || loading">
+          <span class="btn-icon">💾</span>
+          Actualizar
+        </button>
       </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" (click)="cancelarActualizacion()">
-        Cancelar
-      </button>
-      <button type="button" class="btn btn-primary" (click)="abrirFormularioActualizar()">
-        Sí, Editar
-      </button>
-    </div>
+    </form>
   </div>
 </div>

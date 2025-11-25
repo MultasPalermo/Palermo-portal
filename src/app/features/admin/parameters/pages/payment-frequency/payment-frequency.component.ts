@@ -1,42 +1,53 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
 import { finalize } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { GenericMultasTableComponent } from '../../../../../shared/components/generic-multas-table/generic-multas-table.component';
-import { CardHeaderComponent } from '../../../../../shared/components/card-header/card-header.component';
-import { ButtonComponent } from '../../../../../shared/components/button/button.component';
-import { PaymentFrequency } from '../../../../../shared/modeloModelados/parameters/payment-frequency.models';
 import { PaymentFrequencyService } from '../../../../../core/services/parameters/payment-frequency.service';
-import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Generic';
-
-
-
+import { PaymentFrequency } from '../../../../../shared/modeloModelados/parameters/payment-frequency.models';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 
 @Component({
   selector: 'app-payment-frequency',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatCardModule, CardHeaderComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PaginationComponent
+  ],
   templateUrl: './payment-frequency.component.html',
   styleUrls: ['./payment-frequency.component.scss']
 })
 export class PaymentFrequencyComponent implements OnInit {
-  private router = inject(Router);
   private service = inject(PaymentFrequencyService);
   private fb = inject(FormBuilder);
+  private paginationService = inject(PaginationService);
 
   frecuencias: PaymentFrequency[] = [];
+  filteredFrecuencias: PaymentFrequency[] = [];
+  paginatedFrecuencias: PaymentFrequency[] = [];
   loading = false;
-  errorMsg = '';
-  successMsg = '';
+
+  // Búsqueda
+  searchTerm: string = '';
+
+  // Paginación
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 5,
+    totalItems: 0,
+    totalPages: 0
+  };
 
   // Variables para modales
   showForm = false;
   showUpdateForm = false;
   showConfirm = false;
+  showUpdateConfirm = false;
   paymentFrequencyAEliminar: PaymentFrequency | null = null;
   paymentFrequencySeleccionado: PaymentFrequency | null = null;
+  paymentFrequencyAActualizar: PaymentFrequency | null = null;
 
   // Opciones para IntervalType
   intervalTypeOptions = [
@@ -49,12 +60,10 @@ export class PaymentFrequencyComponent implements OnInit {
   paymentFrequencyForm: FormGroup;
   updateForm: FormGroup;
 
-  columns: ColumnDef[] = [
-    { key: 'intervalPage',    header: 'Intervalo Página', type: 'text' },
-    { key: 'IntervalType',    header: 'Tipo Intervalo',   type: 'text' },
-    { key: 'IntervalValue',   header: 'Valor Intervalo',  type: 'text' },
-    { key: 'actions',         header: 'Acciones',         type: 'actions' }
-  ];
+  // Alertas estandarizadas
+  showAlert = false;
+  alertType: 'creado' | 'eliminado' | 'error' | 'info' = 'creado';
+  alertMsg = '';
 
   constructor() {
     // Inicializar formularios reactivos
@@ -72,35 +81,35 @@ export class PaymentFrequencyComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargarAcuerdosFrecuencia();
+    this.cargarFrecuencias();
   }
 
-  private cargarAcuerdosFrecuencia(): void {
+  private cargarFrecuencias(): void {
     this.loading = true;
-    this.errorMsg = '';
-
     this.service.genericService.getAll<PaymentFrequency>(this.service.endpoint, 'GetAll')
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (r: any[]) => {
-          // El backend devuelve intervalPage, dueDayOfMonth, IntervalType, IntervalValue.
           this.frecuencias = (r || []).map(item => ({
             id: item.id,
             intervalPage: item.intervalPage ?? '',
             IntervalType: item.IntervalType ?? 'Months',
             IntervalValue: item.IntervalValue ?? 1
           } as PaymentFrequency));
+          this.filteredFrecuencias = this.frecuencias;
+          this.updatePagination();
         },
-        error: (e: any) => { this.errorMsg = 'No fue posible cargar las frecuencias de pago.'; }
+        error: (e: any) => {
+          console.error('Error cargando frecuencias de pago', e);
+          this.mostrarAlerta('error', 'No fue posible cargar las frecuencias de pago.');
+        }
       });
   }
 
   // Métodos para manejar formularios
   abrirFormulario(): void {
     this.showForm = true;
-    this.paymentFrequencyForm.reset();
-    this.errorMsg = '';
-    this.successMsg = '';
+    this.paymentFrequencyForm.reset({ IntervalType: 'Months' });
   }
 
   cerrarFormulario(): void {
@@ -112,51 +121,56 @@ export class PaymentFrequencyComponent implements OnInit {
   crearPaymentFrequency(): void {
     if (this.paymentFrequencyForm.valid) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const paymentFrequencyData = this.paymentFrequencyForm.value;
 
-      // Construir payload compatible con el backend
       const payload = {
         intervalPage: paymentFrequencyData.intervalPage,
         IntervalType: paymentFrequencyData.IntervalType,
         IntervalValue: paymentFrequencyData.IntervalValue
       };
 
-      console.debug('Crear PaymentFrequency payload:', payload);
-
       this.service.genericService.create<PaymentFrequency>(this.service.endpoint, payload)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (nuevoPaymentFrequency: PaymentFrequency) => {
-            this.successMsg = 'Frecuencia de pago creada exitosamente.';
-            this.cargarAcuerdosFrecuencia(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Frecuencia de pago creada exitosamente.');
+            this.cargarFrecuencias();
             this.cerrarFormulario();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al crear frecuencia de pago:', error);
-            this.errorMsg = error?.error?.message || 'Error al crear la frecuencia de pago.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al crear la frecuencia de pago.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
   // Métodos para editar frecuencia de pago
-  abrirFormularioActualizar(paymentFrequency: PaymentFrequency): void {
-    this.paymentFrequencySeleccionado = { ...paymentFrequency };
-    this.updateForm.patchValue({
-      intervalPage: paymentFrequency.intervalPage,
-      IntervalType: paymentFrequency.IntervalType,
-      IntervalValue: paymentFrequency.IntervalValue
-    });
-    this.showUpdateForm = true;
-    this.errorMsg = '';
-    this.successMsg = '';
+  confirmarActualizacion(paymentFrequency: PaymentFrequency): void {
+    this.paymentFrequencyAActualizar = paymentFrequency;
+    this.showUpdateConfirm = true;
+  }
+
+  cancelarActualizacion(): void {
+    this.paymentFrequencyAActualizar = null;
+    this.showUpdateConfirm = false;
+  }
+
+  abrirFormularioActualizar(): void {
+    if (this.paymentFrequencyAActualizar) {
+      this.paymentFrequencySeleccionado = { ...this.paymentFrequencyAActualizar };
+      this.updateForm.patchValue({
+        intervalPage: this.paymentFrequencyAActualizar.intervalPage,
+        IntervalType: this.paymentFrequencyAActualizar.IntervalType,
+        IntervalValue: this.paymentFrequencyAActualizar.IntervalValue
+      });
+      this.showUpdateForm = true;
+      this.showUpdateConfirm = false;
+      this.paymentFrequencyAActualizar = null;
+    }
   }
 
   cerrarFormularioActualizar(): void {
@@ -168,40 +182,27 @@ export class PaymentFrequencyComponent implements OnInit {
   actualizarPaymentFrequency(): void {
     if (this.updateForm.valid && this.paymentFrequencySeleccionado && this.paymentFrequencySeleccionado.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const paymentFrequencyActualizado = {
         ...this.paymentFrequencySeleccionado,
         ...this.updateForm.value
       };
 
-      const updatePayload = {
-        ...paymentFrequencyActualizado,
-        intervalPage: this.updateForm.value.intervalPage,
-        IntervalType: this.updateForm.value.IntervalType,
-        IntervalValue: this.updateForm.value.IntervalValue
-      };
-
-      console.debug('Update PaymentFrequency payload:', updatePayload);
-
       this.service.genericService.update<PaymentFrequency>(this.service.endpoint, this.paymentFrequencySeleccionado.id, paymentFrequencyActualizado)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (paymentFrequencyActualizado: PaymentFrequency) => {
-            this.successMsg = 'Frecuencia de pago actualizada exitosamente.';
-            this.cargarAcuerdosFrecuencia(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Frecuencia de pago actualizada exitosamente.');
+            this.cargarFrecuencias();
             this.cerrarFormularioActualizar();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al actualizar frecuencia de pago:', error);
-            this.errorMsg = error?.error?.message || 'Error al actualizar la frecuencia de pago.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al actualizar la frecuencia de pago.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -219,25 +220,65 @@ export class PaymentFrequencyComponent implements OnInit {
   eliminarPaymentFrequency(): void {
     if (this.paymentFrequencyAEliminar && this.paymentFrequencyAEliminar.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       this.service.genericService.delete(this.service.endpoint, this.paymentFrequencyAEliminar.id)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: () => {
-            this.successMsg = 'Frecuencia de pago eliminada exitosamente.';
-            this.cargarAcuerdosFrecuencia(); // Recargar la lista
+            this.mostrarAlerta('eliminado', 'Frecuencia de pago eliminada exitosamente.');
+            this.cargarFrecuencias();
             this.cancelarEliminacion();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al eliminar frecuencia de pago:', error);
-            this.errorMsg = error?.error?.message || 'Error al eliminar la frecuencia de pago.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al eliminar la frecuencia de pago.');
           }
         });
     }
+  }
+
+  // Métodos de paginación
+  updatePagination(): void {
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredFrecuencias.length);
+    this.updatePaginatedItems();
+  }
+
+  updatePaginatedItems(): void {
+    this.paginatedFrecuencias = this.paginationService.getPaginatedItems(this.filteredFrecuencias, this.paginationConfig);
+  }
+
+  onPageChange(page: number): void {
+    this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
+    this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterFrecuencias(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredFrecuencias = [...this.frecuencias];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredFrecuencias = this.frecuencias.filter(frec =>
+        frec.intervalPage?.toLowerCase().includes(term) ||
+        frec.IntervalType?.toLowerCase().includes(term) ||
+        frec.IntervalValue?.toString().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterFrecuencias();
+  }
+
+  // Método de alerta estandarizado
+  mostrarAlerta(tipo: 'creado' | 'eliminado' | 'error' | 'info', mensaje: string): void {
+    this.alertType = tipo;
+    this.alertMsg = mensaje;
+    this.showAlert = true;
+    setTimeout(() => this.showAlert = false, 2500);
   }
 
   // Métodos auxiliares para validaciones
@@ -264,7 +305,9 @@ export class PaymentFrequencyComponent implements OnInit {
     return '';
   }
 
-  onClickGenerar() {
-    this.router.navigate(['/acuerdo-pago/formulario']);
+  // Helper para obtener el label del tipo de intervalo
+  getIntervalTypeLabel(value: string): string {
+    const option = this.intervalTypeOptions.find(opt => opt.value === value);
+    return option ? option.label : value;
   }
 }

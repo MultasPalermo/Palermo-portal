@@ -25,6 +25,10 @@ export class ModulePageComponent implements OnInit {
 
   modules: Module[] = [];
   paginatedModules: Module[] = [];
+  filteredModules: Module[] = [];
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
   paginationConfig: PaginationConfig = {
@@ -62,11 +66,12 @@ export class ModulePageComponent implements OnInit {
   // Cargar módulos desde la API
   cargarModules(esDespuesDeOperacion: boolean = false): void {
     console.log('Cargando módulos desde la API...'); // Para depuración
-    
+
     this.moduleService.genericService.getAll<Module>(this.moduleService.endpoint).subscribe({
       next: (modules: Module[]) => {
         console.log('Módulos cargados:', modules); // Para depuración
         this.modules = modules || []; // Asegurar que modules sea un array
+        this.filteredModules = this.modules;
         this.updatePagination();
         // Forzar detección de cambios para asegurar que la vista se actualice
         this.cdr.detectChanges();
@@ -271,16 +276,36 @@ export class ModulePageComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.modules.length);
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredModules.length);
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    this.paginatedModules = this.paginationService.getPaginatedItems(this.modules, this.paginationConfig);
+    this.paginatedModules = this.paginationService.getPaginatedItems(this.filteredModules, this.paginationConfig);
   }
 
   onPageChange(page: number): void {
     this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
     this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterModules(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredModules = [...this.modules];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredModules = this.modules.filter(module =>
+        module.name?.toLowerCase().includes(term) ||
+        module.description?.toLowerCase().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterModules();
   }
 }

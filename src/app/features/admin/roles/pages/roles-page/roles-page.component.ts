@@ -41,6 +41,10 @@ export class RolesPageComponent implements OnInit {
 
   roles: Rol[] = [];
   paginatedRoles: Rol[] = [];
+  filteredRoles: Rol[] = [];
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
   paginationConfig: PaginationConfig = {
@@ -76,6 +80,7 @@ export class RolesPageComponent implements OnInit {
       next: (roles: Rol[]) => {
         console.log('Roles cargados:', roles); // Para depuración
         this.roles = roles || []; // Asegurar que roles sea un array
+        this.filteredRoles = this.roles;
         this.updatePagination();
         // Forzar detección de cambios para asegurar que la vista se actualice
         this.cdr.detectChanges();
@@ -253,16 +258,36 @@ export class RolesPageComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.roles.length);
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredRoles.length);
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    this.paginatedRoles = this.paginationService.getPaginatedItems(this.roles, this.paginationConfig);
+    this.paginatedRoles = this.paginationService.getPaginatedItems(this.filteredRoles, this.paginationConfig);
   }
 
   onPageChange(page: number): void {
     this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
     this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterRoles(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredRoles = [...this.roles];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredRoles = this.roles.filter(rol =>
+        rol.name?.toLowerCase().includes(term) ||
+        rol.description?.toLowerCase().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterRoles();
   }
 }

@@ -24,42 +24,103 @@
 
   <!-- Header -->
   <div class="form-modules-header">
-    <span class="icon"><i class="material-icons">link</i></span>
-    <span class="title">Form-Modules</span>
-    <button class="add-btn" (click)="abrirModal()">+ Agregar Form-Module</button>
+    <div class="header-left">
+      <span class="icon">🔗</span>
+      <h1 class="title">Form-Modules</h1>
+    </div>
+    <button class="add-btn" (click)="abrirModal()">
+      <span class="btn-icon">➕</span>
+      Agregar Form-Module
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por formulario o módulo..."
+        [(ngModel)]="searchTerm"
+        (input)="filterFormModules()"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="clear-search"
+        (click)="clearSearch()"
+        title="Limpiar búsqueda"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="search-results" *ngIf="searchTerm">
+      <span class="results-count">
+        {{ filteredFormModules.length }} resultado(s) encontrado(s)
+      </span>
+    </div>
   </div>
 
   <!-- Loading -->
   <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
     <p>Cargando form-modules...</p>
   </div>
 
+  <!-- Sin resultados -->
+  <div *ngIf="!isLoading && filteredFormModules.length === 0" class="no-results">
+    <span class="no-results-icon">📭</span>
+    <h3>No se encontraron resultados</h3>
+    <p *ngIf="searchTerm">Intenta con otro término de búsqueda</p>
+    <p *ngIf="!searchTerm">No hay form-modules registrados</p>
+  </div>
+
   <!-- Lista de Form-Modules -->
-  <div class="form-modules-list" *ngIf="!isLoading">
+  <div class="form-modules-list" *ngIf="!isLoading && filteredFormModules.length > 0">
   <div class="form-module-card" *ngFor="let formModule of paginatedFormModules; let i = index">
-    <div class="card-header">
-      <h3>{{ formModule.formName }} - {{ formModule.moduleName }}</h3>
-      <div class="card-actions">
-        <button class="blue-btn" (click)="confirmarActualizacion(i)">Editar</button>
-        <button class="red-btn" (click)="pedirConfirmacionEliminar(i)">Eliminar</button>
-      </div>
+    <div class="card-badge">
+      <span class="badge-icon">🔗</span>
     </div>
     <div class="card-content">
-      <div class="info-row">
-        <span class="label">Formulario:</span>
-        <span class="value">{{ formModule.formName }}</span>
+      <div class="card-title-section">
+        <h3 class="card-title">{{ formModule.formName }}</h3>
+        <span class="card-subtitle">vinculado con</span>
+        <h4 class="card-module">{{ formModule.moduleName }}</h4>
       </div>
-      <div class="info-row">
-        <span class="label">Módulo:</span>
-        <span class="value">{{ formModule.moduleName }}</span>
+      <div class="card-divider"></div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-icon">📝</span>
+          <div class="info-details">
+            <span class="info-label">Formulario</span>
+            <span class="info-value">{{ formModule.formName }}</span>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">📦</span>
+          <div class="info-details">
+            <span class="info-label">Módulo</span>
+            <span class="info-value">{{ formModule.moduleName }}</span>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="card-actions">
+      <button class="action-btn edit-btn" (click)="confirmarActualizacion(i)" title="Editar">
+        <span class="btn-icon">✏️</span>
+        <span class="btn-text">Editar</span>
+      </button>
+      <button class="action-btn delete-btn" (click)="pedirConfirmacionEliminar(i)" title="Eliminar">
+        <span class="btn-icon">🗑️</span>
+        <span class="btn-text">Eliminar</span>
+      </button>
     </div>
   </div>
 </div>
 
 
   <!-- Paginación -->
-  <app-pagination *ngIf="!isLoading" [currentPage]="paginationConfig.currentPage"
+  <app-pagination *ngIf="!isLoading && filteredFormModules.length > 0" [currentPage]="paginationConfig.currentPage"
     [totalPages]="paginationConfig.totalPages" [totalItems]="paginationConfig.totalItems"
     [itemsPerPage]="paginationConfig.itemsPerPage" (pageChange)="onPageChange($event)">
   </app-pagination>
@@ -69,34 +130,63 @@
 <div *ngIf="showModal" class="modal-overlay">
   <div class="modal-content">
     <button class="modal-close" (click)="cerrarModal()" title="Cerrar">&times;</button>
-    <h2>{{ isEditing ? 'Editar Form-Module' : 'Agregar Form-Module' }}</h2>
+    <div class="modal-header">
+      <span class="modal-icon">{{ isEditing ? '✏️' : '➕' }}</span>
+      <h2>{{ isEditing ? 'Editar Form-Module' : 'Agregar Form-Module' }}</h2>
+    </div>
 
-    <form (ngSubmit)="guardarFormModule()" autocomplete="off">
+    <form (ngSubmit)="guardarFormModule()" autocomplete="off" class="form-styled">
       <!-- Selector de formulario -->
-      <label>
-        Formulario:
-        <select [(ngModel)]="nuevoFormModule.formid" name="formid" required>
+      <div class="form-group">
+        <label for="formid">
+          <span class="label-icon">📝</span>
+          Formulario
+        </label>
+        <select
+          id="formid"
+          class="custom-select"
+          [(ngModel)]="nuevoFormModule.formid"
+          name="formid"
+          required
+        >
           <option [ngValue]="0" disabled selected>Seleccione un formulario</option>
           <option *ngFor="let f of forms" [ngValue]="f.id">
             {{ f.name }}
           </option>
         </select>
-      </label>
+      </div>
 
       <!-- Selector de módulo -->
-      <label>
-        Módulo:
-        <select [(ngModel)]="nuevoFormModule.moduleid" name="moduleid" required>
+      <div class="form-group">
+        <label for="moduleid">
+          <span class="label-icon">📦</span>
+          Módulo
+        </label>
+        <select
+          id="moduleid"
+          class="custom-select"
+          [(ngModel)]="nuevoFormModule.moduleid"
+          name="moduleid"
+          required
+        >
           <option [ngValue]="0" disabled selected>Seleccione un módulo</option>
           <option *ngFor="let m of modules" [ngValue]="m.id">
             {{ m.name }}
           </option>
         </select>
-      </label>
+      </div>
 
       <div class="modal-actions">
-        <button type="button" (click)="cerrarModal()">Cancelar</button>
-        <button type="submit" [disabled]="!nuevoFormModule.formid || !nuevoFormModule.moduleid">
+        <button type="button" class="cancel-btn" (click)="cerrarModal()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="!nuevoFormModule.formid || !nuevoFormModule.moduleid"
+        >
+          <span class="btn-icon">{{ isEditing ? '💾' : '➕' }}</span>
           {{ isEditing ? 'Actualizar' : 'Crear' }}
         </button>
       </div>

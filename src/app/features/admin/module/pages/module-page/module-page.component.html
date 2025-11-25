@@ -1,4 +1,4 @@
-<div class="personas-container">
+<div class="modules-container">
   <!-- Modal de alerta -->
   <div *ngIf="showAlert" class="alert-modal-overlay">
     <div class="alert-modal-content" [ngClass]="alertType">
@@ -22,112 +22,6 @@
     </div>
   </div>
 
-  <h1 class="page-title">Gestión de Módulos</h1>
-
-  <!-- Botón para agregar nuevo módulo -->
-  <button (click)="abrirModal()" class="btn-agregar">
-    <i class="pi pi-plus" style="margin-right: 0.5rem;"></i>
-    Agregar Módulo
-  </button>
-
-  <!-- Tabla de módulos -->
-  <div *ngFor="let module of paginatedModules" class="persona-card">
-    <div class="persona-info">
-      <div class="info-row">
-        <span class="label">Nombre:</span>
-        <span class="value">{{ module.name }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Descripción:</span>
-        <span class="value">{{ module.description }}</span>
-      </div>
-    </div>
-    <div class="persona-actions">
-      <button (click)="confirmarActualizacion(module)" class="btn-editar">
-        <i class="pi pi-pencil"></i>
-        Editar
-      </button>
-      <button (click)="pedirConfirmacionEliminar(module)" class="btn-eliminar">
-        <i class="pi pi-trash"></i>
-        Eliminar
-      </button>
-    </div>
-  </div>
-
-  <div *ngIf="modules.length === 0" class="no-data">
-    <i class="pi pi-info-circle"></i>
-    <p>No hay módulos registrados</p>
-    <small>Haga clic en "Agregar Módulo" para comenzar</small>
-  </div>
-
-  <!-- Paginación -->
-  <app-pagination
-    [currentPage]="paginationConfig.currentPage"
-    [totalPages]="paginationConfig.totalPages"
-    [totalItems]="paginationConfig.totalItems"
-    [itemsPerPage]="paginationConfig.itemsPerPage"
-    (pageChange)="onPageChange($event)">
-  </app-pagination>
-
-  <!-- Modal para crear nuevo módulo -->
-  <div *ngIf="showModal" class="modal-overlay">
-    <div class="modal-content persona-form">
-      <h2>Agregar Nuevo Módulo</h2>
-      <form (ngSubmit)="crearModule()" autocomplete="off" #createForm="ngForm">
-        <label>
-          Nombre del Módulo:
-          <input type="text" [(ngModel)]="nuevoModule.name" name="name" required 
-                 #nameInput="ngModel" maxlength="80" placeholder="Ej: Módulo de Usuarios" />
-          <div *ngIf="nameInput.invalid && nameInput.touched" class="error-msg">
-            El nombre es requerido
-          </div>
-        </label>
-        <label>
-          Descripción:
-          <textarea [(ngModel)]="nuevoModule.description" name="description" required 
-                   #descriptionInput="ngModel" maxlength="250" rows="4" 
-                   placeholder="Describe la funcionalidad del módulo..."></textarea>
-          <div *ngIf="descriptionInput.invalid && descriptionInput.touched" class="error-msg">
-            La descripción es requerida
-          </div>
-        </label>
-        <div class="modal-actions">
-          <button type="button" (click)="cerrarModal()">Cancelar</button>
-          <button type="submit" [disabled]="createForm.invalid || !nuevoModule.name.trim() || !nuevoModule.description.trim()">Crear</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para actualizar módulo -->
-  <div *ngIf="showUpdateModal && moduleSeleccionado" class="modal-overlay">
-    <div class="modal-content persona-form">
-      <h2>Actualizar Módulo</h2>
-      <form (ngSubmit)="actualizarModule()" autocomplete="off" #updateForm="ngForm">
-        <label>
-          Nombre del Módulo:
-          <input type="text" [(ngModel)]="moduleSeleccionado.name" name="name" required 
-                 #nameUpdateInput="ngModel" maxlength="80" />
-          <div *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched" class="error-msg">
-            El nombre es requerido
-          </div>
-        </label>
-        <label>
-          Descripción:
-          <textarea [(ngModel)]="moduleSeleccionado.description" name="description" required 
-                   #descriptionUpdateInput="ngModel" maxlength="250" rows="4"></textarea>
-          <div *ngIf="descriptionUpdateInput.invalid && descriptionUpdateInput.touched" class="error-msg">
-            La descripción es requerida
-          </div>
-        </label>
-        <div class="modal-actions">
-          <button type="button" (click)="cerrarModalActualizar()">Cancelar</button>
-          <button type="submit" [disabled]="updateForm.invalid || !moduleSeleccionado.name.trim() || !moduleSeleccionado.description.trim()">Actualizar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Modal de confirmación para actualizar -->
   <div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
     <div class="alert-modal-content eliminado">
@@ -140,4 +34,239 @@
     </div>
   </div>
 
-</div> <!-- cierre del container -->
+  <!-- Header -->
+  <div class="modules-header">
+    <div class="header-left">
+      <span class="icon">📦</span>
+      <h1 class="title">Módulos</h1>
+    </div>
+    <button class="add-btn" (click)="abrirModal()">
+      <span class="btn-icon">➕</span>
+      Agregar Módulo
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre o descripción..."
+        [(ngModel)]="searchTerm"
+        (input)="filterModules()"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="clear-search"
+        (click)="clearSearch()"
+        title="Limpiar búsqueda"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="search-results" *ngIf="searchTerm">
+      <span class="results-count">
+        {{ filteredModules.length }} resultado(s) encontrado(s)
+      </span>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="filteredModules.length === 0" class="no-results">
+    <span class="no-results-icon">📭</span>
+    <h3>No se encontraron resultados</h3>
+    <p *ngIf="searchTerm">Intenta con otro término de búsqueda</p>
+    <p *ngIf="!searchTerm">No hay módulos registrados</p>
+    <small *ngIf="!searchTerm">Haga clic en "Agregar Módulo" para comenzar</small>
+  </div>
+
+  <!-- Lista de Módulos -->
+  <div class="modules-list" *ngIf="filteredModules.length > 0">
+    <div class="module-card" *ngFor="let module of paginatedModules">
+      <div class="card-badge">
+        <span class="badge-icon">⚙️</span>
+      </div>
+      <div class="card-content">
+        <div class="card-title-section">
+          <h3 class="card-title">{{ module.name }}</h3>
+          <p class="card-description">{{ module.description }}</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-icon">📝</span>
+            <div class="info-details">
+              <span class="info-label">Nombre</span>
+              <span class="info-value">{{ module.name }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📄</span>
+            <div class="info-details">
+              <span class="info-label">Descripción</span>
+              <span class="info-value">{{ module.description }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="confirmarActualizacion(module)" title="Editar">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">Editar</span>
+        </button>
+        <button class="action-btn delete-btn" (click)="pedirConfirmacionEliminar(module)" title="Eliminar">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <app-pagination *ngIf="filteredModules.length > 0" [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages" [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage" (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>
+
+<!-- Modal para crear nuevo módulo -->
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarModal()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">➕</span>
+      <h2>Agregar Nuevo Módulo</h2>
+    </div>
+
+    <form (ngSubmit)="crearModule()" autocomplete="off" class="form-styled" #createForm="ngForm">
+      <div class="form-group">
+        <label for="create-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Módulo
+        </label>
+        <input
+          id="create-name-input"
+          type="text"
+          class="custom-input"
+          [(ngModel)]="nuevoModule.name"
+          name="name"
+          required
+          #nameInput="ngModel"
+          maxlength="80"
+          placeholder="Ej: Módulo de Usuarios" />
+        <div
+          *ngIf="nameInput.invalid && nameInput.touched"
+          class="error-msg">
+          El nombre es requerido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-desc-input">
+          <span class="label-icon">📄</span>
+          Descripción
+        </label>
+        <textarea
+          id="create-desc-input"
+          class="custom-textarea"
+          [(ngModel)]="nuevoModule.description"
+          name="description"
+          required
+          #descriptionInput="ngModel"
+          maxlength="250"
+          rows="4"
+          placeholder="Describe la funcionalidad del módulo..."></textarea>
+        <div
+          *ngIf="descriptionInput.invalid && descriptionInput.touched"
+          class="error-msg">
+          La descripción es requerida
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarModal()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="createForm.invalid || !nuevoModule.name.trim() || !nuevoModule.description.trim()">
+          <span class="btn-icon">➕</span>
+          Crear
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para actualizar módulo -->
+<div *ngIf="showUpdateModal && moduleSeleccionado" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarModalActualizar()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">✏️</span>
+      <h2>Actualizar Módulo</h2>
+    </div>
+
+    <form (ngSubmit)="actualizarModule()" autocomplete="off" class="form-styled" #updateForm="ngForm">
+      <div class="form-group">
+        <label for="update-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Módulo
+        </label>
+        <input
+          id="update-name-input"
+          type="text"
+          class="custom-input"
+          [(ngModel)]="moduleSeleccionado.name"
+          name="name"
+          required
+          #nameUpdateInput="ngModel"
+          maxlength="80" />
+        <div
+          *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched"
+          class="error-msg">
+          El nombre es requerido
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="update-desc-input">
+          <span class="label-icon">📄</span>
+          Descripción
+        </label>
+        <textarea
+          id="update-desc-input"
+          class="custom-textarea"
+          [(ngModel)]="moduleSeleccionado.description"
+          name="description"
+          required
+          #descriptionUpdateInput="ngModel"
+          maxlength="250"
+          rows="4"></textarea>
+        <div
+          *ngIf="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"
+          class="error-msg">
+          La descripción es requerida
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarModalActualizar()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="updateForm.invalid || !moduleSeleccionado.name.trim() || !moduleSeleccionado.description.trim()">
+          <span class="btn-icon">💾</span>
+          Actualizar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
