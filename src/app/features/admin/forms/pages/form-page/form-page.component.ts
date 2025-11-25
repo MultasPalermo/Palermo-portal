@@ -20,6 +20,10 @@ export class FormPageComponent implements OnInit {
   // Datos principales
   forms: Form[] = [];
   paginatedForms: Form[] = [];
+  filteredForms: Form[] = [];
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Configuración de paginación
   paginationConfig: PaginationConfig = {
@@ -67,6 +71,7 @@ export class FormPageComponent implements OnInit {
     this.formService.genericService.getAll<Form>(this.formService.endpoint).subscribe({
       next: (forms: Form[]) => {
         this.forms = Array.isArray(forms) ? forms : [];
+        this.filteredForms = this.forms;
         this.updatePagination();
         this.cdr.detectChanges();
       },
@@ -324,17 +329,37 @@ export class FormPageComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.forms.length);
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredForms.length);
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    this.paginatedForms = this.paginationService.getPaginatedItems(this.forms, this.paginationConfig);
+    this.paginatedForms = this.paginationService.getPaginatedItems(this.filteredForms, this.paginationConfig);
   }
 
   onPageChange(page: number): void {
     this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
     this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterForms(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredForms = [...this.forms];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredForms = this.forms.filter(form =>
+        form.name?.toLowerCase().includes(term) ||
+        form.description?.toLowerCase().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterForms();
   }
 
   /**

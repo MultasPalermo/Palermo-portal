@@ -1,163 +1,321 @@
-<div class="grid">
-  <div class="col-12">
-    <p-card header="Gestión de Roles-Formularios-Permisos" class="shadow-2">
+<div class="rol-form-permission-container">
+  <!-- Encabezado -->
+  <div class="header">
+    <div class="header-left">
+      <span class="icon">🔐</span>
+      <h1 class="title">Permisos de Roles</h1>
+    </div>
+    <button class="add-btn" (click)="abrirFormulario()">
+      <span class="btn-icon">➕</span>
+      Agregar Permiso
+    </button>
+  </div>
 
-      <!-- Toolbar -->
-      <p-toolbar class="mb-4">
-        <div class="p-toolbar-group-left">
-          <p-button label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2" (onClick)="openNew()">
-          </p-button>
-        </div>
+  <!-- Barra de búsqueda -->
+  <div class="search-container" *ngIf="displayData.length > 0">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por rol, formulario o permiso..."
+        [(ngModel)]="searchTerm"
+        (input)="filterData()"
+      />
+      <button class="clear-btn" *ngIf="searchTerm" (click)="clearSearch()" type="button">✕</button>
+    </div>
+  </div>
 
-        <div class="p-toolbar-group-right">
-          <span class="p-input-icon-left">
-            <input pInputText type="text" placeholder="Buscar..." [(ngModel)]="globalFilter"
-              (input)="onGlobalFilter($event)" class="w-full">
-          </span>
-        </div>
-      </p-toolbar>
+  <!-- Indicador de carga -->
+  <div class="loading-indicator" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
 
-      <!-- Loading spinner -->
-      <div *ngIf="loading" class="flex justify-content-center align-items-center p-4">
-        <p-progressSpinner></p-progressSpinner>
-        <span class="ml-2">Cargando datos...</span>
+  <!-- Lista de permisos -->
+  <div class="permission-list" *ngIf="!loading && filteredData.length > 0">
+    <div class="permission-card" *ngFor="let item of paginatedData">
+      <div class="card-badge">
+        <span class="badge-icon">🔐</span>
       </div>
 
-      <!-- Data table -->
-      <p-table *ngIf="!loading" [value]="filteredData" [rows]="10" [paginator]="true" [responsive]="true"
-        [rowsPerPageOptions]="[5, 10, 20]" [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
-        [tableStyle]="{'min-width': '60rem'}" class="p-datatable-gridlines">
+      <div class="card-content">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Rol:</span>
+            <span class="info-value rol-badge">{{ item.rolName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Formulario:</span>
+            <span class="info-value">{{ item.formName }}</span>
+          </div>
+          <div class="info-item full-width">
+            <span class="info-label">Permiso:</span>
+            <span class="info-value permission-badge">{{ item.permissionName }}</span>
+          </div>
+        </div>
+      </div>
 
-        <ng-template pTemplate="header">
-          <tr>
-            <th pSortableColumn="rolName" class="text-center">
-              Rol
-              <p-sortIcon field="rolName"></p-sortIcon>
-            </th>
-            <th pSortableColumn="formName" class="text-center">
-              Formulario
-              <p-sortIcon field="formName"></p-sortIcon>
-            </th>
-            <th pSortableColumn="permissionName" class="text-center">
-              Permiso
-              <p-sortIcon field="permissionName"></p-sortIcon>
-            </th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </ng-template>
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="confirmarActualizacion(item)" title="Editar permiso">
+          <span class="btn-icon">✏️</span>
+          Editar
+        </button>
+        <button class="action-btn delete-btn" (click)="confirmarEliminacion(item)" title="Eliminar permiso">
+          <span class="btn-icon">🗑️</span>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
 
-        <ng-template pTemplate="body" let-rowData>
-          <tr>
-            <td class="text-center">
-              <span class="p-tag p-tag-info font-bold">{{ rowData.rolName }}</span>
-            </td>
-            <td class="text-center">
-              <span class="font-medium">{{ rowData.formName }}</span>
-            </td>
-            <td class="text-center">
-              <span class="p-tag p-tag-success">{{ rowData.permissionName }}</span>
-            </td>
-            <td class="text-center">
-              <p-button icon="pi pi-pencil" class="p-button-rounded p-button-warning p-button-text mr-2"
-                pTooltip="Editar" tooltipPosition="top" (onClick)="editItem(rowData)">
-              </p-button>
-              <p-button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar"
-                tooltipPosition="top" (onClick)="deleteItem(rowData)">
-              </p-button>
-            </td>
-          </tr>
-        </ng-template>
+  <!-- Estado vacío -->
+  <div class="empty-state" *ngIf="!loading && filteredData.length === 0 && displayData.length > 0">
+    <span class="empty-icon">🔍</span>
+    <h3>No se encontraron resultados</h3>
+    <p>No hay permisos que coincidan con tu búsqueda.</p>
+    <button class="clear-search-btn" (click)="clearSearch()">Limpiar búsqueda</button>
+  </div>
 
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="4" class="text-center p-4">
-              <div class="flex flex-column align-items-center">
-                <i class="pi pi-info-circle"
-                  style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-                <span class="text-lg">No se encontraron registros</span>
-                <span class="text-500">Intente ajustar los filtros de búsqueda</span>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
+  <div class="empty-state" *ngIf="!loading && displayData.length === 0">
+    <span class="empty-icon">📭</span>
+    <h3>No hay permisos configurados</h3>
+    <p>Comienza agregando el primer permiso.</p>
+  </div>
 
-    </p-card>
+  <!-- Paginación -->
+  <app-pagination
+    *ngIf="filteredData.length > 0"
+    [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages"
+    [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>
+
+<!-- Modal para crear -->
+<div class="modal-overlay" *ngIf="showForm" (click)="cerrarFormulario()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <span class="modal-icon">➕</span>
+        Agregar Permiso
+      </h2>
+      <button class="close-btn" (click)="cerrarFormulario()">✕</button>
+    </div>
+
+    <form [formGroup]="rolFormPermissionForm" (ngSubmit)="crearItem()">
+      <div class="form-grid">
+        <!-- Rol -->
+        <div class="form-group">
+          <label for="rolid" class="form-label">
+            Rol <span class="required">*</span>
+          </label>
+          <select
+            id="rolid"
+            class="form-input"
+            formControlName="rolid"
+            [class.invalid]="isFieldInvalid('rolid')">
+            <option value="">Seleccione un rol</option>
+            <option *ngFor="let option of roleOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('rolid')">
+            {{ getFieldError('rolid') }}
+          </span>
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-group">
+          <label for="formid" class="form-label">
+            Formulario <span class="required">*</span>
+          </label>
+          <select
+            id="formid"
+            class="form-input"
+            formControlName="formid"
+            [class.invalid]="isFieldInvalid('formid')">
+            <option value="">Seleccione un formulario</option>
+            <option *ngFor="let option of formOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('formid')">
+            {{ getFieldError('formid') }}
+          </span>
+        </div>
+
+        <!-- Permiso -->
+        <div class="form-group">
+          <label for="permissionid" class="form-label">
+            Permiso <span class="required">*</span>
+          </label>
+          <select
+            id="permissionid"
+            class="form-input"
+            formControlName="permissionid"
+            [class.invalid]="isFieldInvalid('permissionid')">
+            <option value="">Seleccione un permiso</option>
+            <option *ngFor="let option of permissionOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('permissionid')">
+            {{ getFieldError('permissionid') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarFormulario()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="rolFormPermissionForm.invalid || loading">
+          {{ loading ? 'Creando...' : 'Crear Permiso' }}
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 
-<!-- Dialog for Create/Edit -->
-<p-dialog 
-    [(visible)]="displayDialog" 
-    [header]="dialogTitle" 
-    [modal]="true"
-    [style]="{width: '90%', maxWidth: '900px', minWidth: '500px', height: '60vh', maxHeight: '90vh'}"
-    [contentStyle]="{overflow: 'auto'}"
-    [closable]="true" 
-    [draggable]="false"
-    [resizable]="false">
-
-  <form [formGroup]="rolFormPermissionForm" (ngSubmit)="saveItem()">
-
-    <!-- Rol Field -->
-    <div class="field">
-      <label for="rolid" class="block text-900 font-medium mb-2">
-        Rol <span class="text-red-500">*</span>
-      </label>
-      <p-dropdown id="rolid" formControlName="rolid" [options]="roleOptions" placeholder="Seleccione un rol"
-        [style]="{'width': '100%'}">
-      </p-dropdown>
-
-      <small *ngIf="isFieldInvalid('rolid')" class="p-error block mt-1">
-        {{ getFieldError('rolid') }}
-      </small>
+<!-- Modal para editar -->
+<div class="modal-overlay" *ngIf="showUpdateForm" (click)="cerrarFormularioActualizar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <span class="modal-icon">✏️</span>
+        Editar Permiso
+      </h2>
+      <button class="close-btn" (click)="cerrarFormularioActualizar()">✕</button>
     </div>
 
-    <!-- Form Field -->
-    <div class="field">
-      <label for="formid" class="block text-900 font-medium mb-2">
-        Formulario <span class="text-red-500">*</span>
-      </label>
-      <p-dropdown id="formid" formControlName="formid" [options]="formOptions" placeholder="Seleccione un formulario"
-        [style]="{'width': '100%'}" [class]="isFieldInvalid('formid') ? 'ng-invalid ng-dirty p-invalid' : ''">
-      </p-dropdown>
-      <small *ngIf="isFieldInvalid('formid')" class="p-error block mt-1">
-        {{ getFieldError('formid') }}
-      </small>
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarItem()">
+      <div class="form-grid">
+        <!-- Rol -->
+        <div class="form-group">
+          <label for="update-rolid" class="form-label">
+            Rol <span class="required">*</span>
+          </label>
+          <select
+            id="update-rolid"
+            class="form-input"
+            formControlName="rolid"
+            [class.invalid]="isFieldInvalid('rolid', updateForm)">
+            <option value="">Seleccione un rol</option>
+            <option *ngFor="let option of roleOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('rolid', updateForm)">
+            {{ getFieldError('rolid', updateForm) }}
+          </span>
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-group">
+          <label for="update-formid" class="form-label">
+            Formulario <span class="required">*</span>
+          </label>
+          <select
+            id="update-formid"
+            class="form-input"
+            formControlName="formid"
+            [class.invalid]="isFieldInvalid('formid', updateForm)">
+            <option value="">Seleccione un formulario</option>
+            <option *ngFor="let option of formOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('formid', updateForm)">
+            {{ getFieldError('formid', updateForm) }}
+          </span>
+        </div>
+
+        <!-- Permiso -->
+        <div class="form-group">
+          <label for="update-permissionid" class="form-label">
+            Permiso <span class="required">*</span>
+          </label>
+          <select
+            id="update-permissionid"
+            class="form-input"
+            formControlName="permissionid"
+            [class.invalid]="isFieldInvalid('permissionid', updateForm)">
+            <option value="">Seleccione un permiso</option>
+            <option *ngFor="let option of permissionOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <span class="error-message" *ngIf="isFieldInvalid('permissionid', updateForm)">
+            {{ getFieldError('permissionid', updateForm) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarFormularioActualizar()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="updateForm.invalid || loading">
+          {{ loading ? 'Actualizando...' : 'Actualizar Permiso' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal-overlay" *ngIf="showConfirm" (click)="cancelarEliminacion()">
+  <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">⚠️</div>
+    <h2 class="confirm-title">¿Eliminar Permiso?</h2>
+    <p class="confirm-message">
+      ¿Está seguro de que desea eliminar el permiso <strong>{{ itemToDelete?.permissionName }}</strong>
+      del rol <strong>{{ itemToDelete?.rolName }}</strong> en el formulario <strong>{{ itemToDelete?.formName }}</strong>?
+      Esta acción no se puede deshacer.
+    </p>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelarEliminacion()" [disabled]="loading">
+        Cancelar
+      </button>
+      <button class="btn-danger" (click)="eliminarItem()" [disabled]="loading">
+        {{ loading ? 'Eliminando...' : 'Eliminar' }}
+      </button>
     </div>
+  </div>
+</div>
 
-    <!-- Permission Field -->
-    <div class="field">
-      <label for="permissionid" class="block text-900 font-medium mb-2">
-        Permiso <span class="text-red-500">*</span>
-      </label>
-      <p-dropdown id="permissionid" formControlName="permissionid" [options]="permissionOptions"
-        placeholder="Seleccione un permiso" [style]="{'width': '100%'}"
-        [class]="isFieldInvalid('permissionid') ? 'ng-invalid ng-dirty p-invalid' : ''">
-      </p-dropdown>
-      <small *ngIf="isFieldInvalid('permissionid')" class="p-error block mt-1">
-        {{ getFieldError('permissionid') }}
-      </small>
+<!-- Modal de confirmación para actualizar -->
+<div class="modal-overlay" *ngIf="showUpdateConfirm" (click)="cancelarActualizacion()">
+  <div class="modal-content modal-confirm" (click)="$event.stopPropagation()">
+    <div class="confirm-icon">✏️</div>
+    <h2 class="confirm-title">¿Editar Permiso?</h2>
+    <p class="confirm-message">
+      ¿Desea editar el permiso <strong>{{ itemToUpdate?.permissionName }}</strong>
+      del rol <strong>{{ itemToUpdate?.rolName }}</strong> en el formulario <strong>{{ itemToUpdate?.formName }}</strong>?
+    </p>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelarActualizacion()">
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="abrirFormularioActualizar()">
+        Continuar
+      </button>
     </div>
+  </div>
+</div>
 
-  </form>
-
-   <ng-template pTemplate="footer">
-    <div class="flex justify-content-end gap-2">
-      <p-button label="Cancelar" icon="pi pi-times" class="p-button-text p-button-secondary" (onClick)="closeDialog()"></p-button>
-      <p-button [label]="isEditMode ? 'Actualizar' : 'Guardar'" 
-                [icon]="isEditMode ? 'pi pi-check' : 'pi pi-save'"
-                class="p-button-primary" 
-                [disabled]="rolFormPermissionForm.invalid" 
-                (onClick)="saveItem()"></p-button>
+<!-- Alertas -->
+<div class="alert-container" *ngIf="showAlert">
+  <div class="alert" [class]="'alert-' + alertType">
+    <div class="alert-content">
+      <span class="alert-icon" *ngIf="alertType === 'creado'">✓</span>
+      <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+      <span class="alert-icon" *ngIf="alertType === 'error'">✕</span>
+      <span class="alert-icon" *ngIf="alertType === 'info'">ℹ</span>
+      <span class="alert-message">{{ alertMsg }}</span>
     </div>
-  </ng-template>
-
-</p-dialog>
-
-<!-- Toast messages -->
-<p-toast></p-toast>
-
-<!-- Confirmation dialog -->
-<p-confirmDialog></p-confirmDialog>
+  </div>
+</div>

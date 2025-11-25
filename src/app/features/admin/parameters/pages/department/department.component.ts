@@ -1,15 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { CardHeaderComponent } from '../../../../../shared/components/card-header/card-header.component';
-import { ButtonComponent } from '../../../../../shared/components/button/button.component';
 import { DepartmentService } from '../../../../../core/services/parameters/department.service';
 import { Department } from '../../../../../shared/modeloModelados/parameters/department.models';
-import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Generic';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 
 
 
@@ -20,30 +16,31 @@ import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Gene
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatButtonModule,
-    RouterModule,
-    CardHeaderComponent,
-    ButtonComponent
+    PaginationComponent
   ],
   templateUrl: './department.component.html',
   styleUrls: ['./department.component.scss']
 })
 export class DepartmentComponent implements OnInit {
-  private router = inject(Router);
   private service = inject(DepartmentService);
   private fb = inject(FormBuilder);
+  private paginationService = inject(PaginationService);
 
   departamentos: Department[] = [];
+  filteredDepartamentos: Department[] = [];
+  paginatedDepartamentos: Department[] = [];
   loading = false;
-  errorMsg = '';
-  successMsg = '';
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
-  currentPage: number = 1;
-  itemsPerPage: number = 5;
-  totalPages: number = 0;
-  paginatedDepartamentos: Department[] = [];
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 5,
+    totalItems: 0,
+    totalPages: 0
+  };
 
   // Variables para modales
   showForm = false;
@@ -58,12 +55,10 @@ export class DepartmentComponent implements OnInit {
   departmentForm: FormGroup;
   updateForm: FormGroup;
 
-  // Columnas fijas para la tabla genérica
-  columns: ColumnDef[] = [
-    { key: 'name',     header: 'Nombre del departamento', type: 'text' },
-    { key: 'daneCode', header: 'Código DANE',             type: 'text' },
-    { key: 'actions',  header: 'Acciones',               type: 'actions' }
-  ];
+  // Alertas estandarizadas
+  showAlert = false;
+  alertType: 'creado' | 'eliminado' | 'error' | 'info' = 'creado';
+  alertMsg = '';
 
   constructor() {
     // Inicializar formularios reactivos
@@ -85,19 +80,18 @@ export class DepartmentComponent implements OnInit {
 
   private cargarDepartamentos(): void {
     this.loading = true;
-    this.errorMsg = '';
 
-    // 👇 Endpoint del backend: api/department (según tu controlador departmentController)
     this.service.genericService.getAll<Department>(this.service.endpoint, 'GetAll')
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (rows: Department[]) => {
-          this.departamentos = rows; // no hace falta mapear, ya coincide con la interfaz
+          this.departamentos = rows;
+          this.filteredDepartamentos = rows;
           this.updatePagination();
         },
         error: (err: any) => {
           console.error('Error cargando departamentos', err);
-          this.errorMsg = 'No fue posible cargar los departamentos.';
+          this.mostrarAlerta('error', 'No fue posible cargar los departamentos.');
         }
       });
   }
@@ -106,8 +100,6 @@ export class DepartmentComponent implements OnInit {
   abrirFormulario(): void {
     this.showForm = true;
     this.departmentForm.reset();
-    this.errorMsg = '';
-    this.successMsg = '';
   }
 
   cerrarFormulario(): void {
@@ -119,8 +111,6 @@ export class DepartmentComponent implements OnInit {
   crearDepartamento(): void {
     if (this.departmentForm.valid) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const departmentData = this.departmentForm.value;
 
@@ -128,19 +118,17 @@ export class DepartmentComponent implements OnInit {
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (nuevoDepartamento: Department) => {
-            this.successMsg = 'Departamento creado exitosamente.';
-            this.cargarDepartamentos(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Departamento creado exitosamente.');
+            this.cargarDepartamentos();
             this.cerrarFormulario();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al crear departamento:', error);
-            this.errorMsg = error.error?.message || 'Error al crear el departamento.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al crear el departamento.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -165,8 +153,6 @@ export class DepartmentComponent implements OnInit {
       this.showUpdateForm = true;
       this.showUpdateConfirm = false;
       this.departmentAActualizar = null;
-      this.errorMsg = '';
-      this.successMsg = '';
     }
   }
 
@@ -179,8 +165,6 @@ export class DepartmentComponent implements OnInit {
   actualizarDepartamento(): void {
     if (this.updateForm.valid && this.departmentSeleccionado && this.departmentSeleccionado.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const departmentActualizado = {
         ...this.departmentSeleccionado,
@@ -191,19 +175,17 @@ export class DepartmentComponent implements OnInit {
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (departmentActualizado: Department) => {
-            this.successMsg = 'Departamento actualizado exitosamente.';
-            this.cargarDepartamentos(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Departamento actualizado exitosamente.');
+            this.cargarDepartamentos();
             this.cerrarFormularioActualizar();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al actualizar departamento:', error);
-            this.errorMsg = error.error?.message || 'Error al actualizar el departamento.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al actualizar el departamento.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -220,67 +202,62 @@ export class DepartmentComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.totalPages = Math.ceil(this.departamentos.length / this.itemsPerPage);
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredDepartamentos.length);
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedDepartamentos = this.departamentos.slice(startIndex, endIndex);
+    this.paginatedDepartamentos = this.paginationService.getPaginatedItems(this.filteredDepartamentos, this.paginationConfig);
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedItems();
+  onPageChange(page: number): void {
+    this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
+    this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterDepartamentos(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredDepartamentos = [...this.departamentos];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredDepartamentos = this.departamentos.filter(dept =>
+        dept.name?.toLowerCase().includes(term) ||
+        dept.daneCode?.toString().includes(term)
+      );
     }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
   }
 
-  nextPage(): void {
-    this.goToPage(this.currentPage + 1);
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterDepartamentos();
   }
 
-  prevPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  getVisiblePages(): number[] {
-    const visiblePages: number[] = [];
-    const maxVisible = 5;
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
-
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      visiblePages.push(i);
-    }
-
-    return visiblePages;
+  // Método de alerta estandarizado
+  mostrarAlerta(tipo: 'creado' | 'eliminado' | 'error' | 'info', mensaje: string): void {
+    this.alertType = tipo;
+    this.alertMsg = mensaje;
+    this.showAlert = true;
+    setTimeout(() => this.showAlert = false, 2500);
   }
 
   eliminarDepartamento(): void {
     if (this.departmentAEliminar && this.departmentAEliminar.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       this.service.genericService.delete(this.service.endpoint, this.departmentAEliminar.id)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: () => {
-            this.successMsg = 'Departamento eliminado exitosamente.';
-            this.cargarDepartamentos(); // Recargar la lista
+            this.mostrarAlerta('eliminado', 'Departamento eliminado exitosamente.');
+            this.cargarDepartamentos();
             this.cancelarEliminacion();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al eliminar departamento:', error);
-            this.errorMsg = error.error?.message || 'Error al eliminar el departamento.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al eliminar el departamento.');
           }
         });
     }
@@ -301,9 +278,5 @@ export class DepartmentComponent implements OnInit {
       if (field.errors['pattern']) return `El formato del ${fieldName} no es válido.`;
     }
     return '';
-  }
-
-  onClickGenerar() {
-    this.router.navigate(['/acuerdo-pago/formulario']);
   }
 }

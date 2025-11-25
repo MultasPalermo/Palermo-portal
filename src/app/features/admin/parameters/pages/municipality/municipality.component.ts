@@ -1,38 +1,44 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
 import { finalize } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { GenericMultasTableComponent } from '../../../../../shared/components/generic-multas-table/generic-multas-table.component';
-import { CardHeaderComponent } from '../../../../../shared/components/card-header/card-header.component';
-import { ButtonComponent } from '../../../../../shared/components/button/button.component';
 import { MunicipalityService } from '../../../../../core/services/parameters/municipality.service';
 import { Municipality } from '../../../../../shared/modeloModelados/parameters/municipality.models';
-import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Generic';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 
 @Component({
   selector: 'app-municipality',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatCardModule, GenericMultasTableComponent, CardHeaderComponent, ButtonComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    PaginationComponent
+  ],
   templateUrl: './municipality.component.html',
   styleUrls: ['./municipality.component.scss']
 })
 export class MunicipalityComponent implements OnInit {
-  private router = inject(Router);
   private service = inject(MunicipalityService);
   private fb = inject(FormBuilder);
+  private paginationService = inject(PaginationService);
 
   municipios: Municipality[] = [];
+  filteredMunicipios: Municipality[] = [];
+  paginatedMunicipios: Municipality[] = [];
   loading = false;
-  errorMsg = '';
-  successMsg = '';
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
-  currentPage: number = 1;
-  itemsPerPage: number = 5;
-  totalPages: number = 0;
-  paginatedMunicipios: Municipality[] = [];
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 5,
+    totalItems: 0,
+    totalPages: 0
+  };
 
   // Variables para modales
   showForm = false;
@@ -47,11 +53,10 @@ export class MunicipalityComponent implements OnInit {
   municipalityForm: FormGroup;
   updateForm: FormGroup;
 
-  columns: ColumnDef[] = [
-    { key: 'name',           header: 'Municipio',      type: 'text' },
-    { key: 'daneCode',       header: 'Código DANE',    type: 'text' },
-    { key: 'departmentName', header: 'Departamento',   type: 'text' },
-  ];
+  // Alertas estandarizadas
+  showAlert = false;
+  alertType: 'creado' | 'eliminado' | 'error' | 'info' = 'creado';
+  alertMsg = '';
 
   constructor() {
     // Inicializar formularios reactivos
@@ -74,15 +79,18 @@ export class MunicipalityComponent implements OnInit {
 
   private cargarMunicipios(): void {
     this.loading = true;
-    this.errorMsg = '';
     this.service.genericService.getAll<Municipality>(this.service.endpoint, 'GetAll')
       .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (r: Municipality[]) => {
             this.municipios = r;
+            this.filteredMunicipios = r;
             this.updatePagination();
           },
-          error: (e: any) => this.errorMsg = 'No fue posible cargar los municipios.'
+          error: (e: any) => {
+            console.error('Error cargando municipios', e);
+            this.mostrarAlerta('error', 'No fue posible cargar los municipios.');
+          }
         });
   }
 
@@ -90,8 +98,6 @@ export class MunicipalityComponent implements OnInit {
   abrirFormulario(): void {
     this.showForm = true;
     this.municipalityForm.reset();
-    this.errorMsg = '';
-    this.successMsg = '';
   }
 
   cerrarFormulario(): void {
@@ -103,8 +109,6 @@ export class MunicipalityComponent implements OnInit {
   crearMunicipio(): void {
     if (this.municipalityForm.valid) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const municipalityData = this.municipalityForm.value;
 
@@ -112,19 +116,17 @@ export class MunicipalityComponent implements OnInit {
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (nuevoMunicipio: Municipality) => {
-            this.successMsg = 'Municipio creado exitosamente.';
-            this.cargarMunicipios(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Municipio creado exitosamente.');
+            this.cargarMunicipios();
             this.cerrarFormulario();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al crear municipio:', error);
-            this.errorMsg = error.error?.message || 'Error al crear el municipio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al crear el municipio.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -150,8 +152,6 @@ export class MunicipalityComponent implements OnInit {
       this.showUpdateForm = true;
       this.showUpdateConfirm = false;
       this.municipalityAActualizar = null;
-      this.errorMsg = '';
-      this.successMsg = '';
     }
   }
 
@@ -164,8 +164,6 @@ export class MunicipalityComponent implements OnInit {
   actualizarMunicipio(): void {
     if (this.updateForm.valid && this.municipalitySeleccionado && this.municipalitySeleccionado.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const municipalityActualizado = {
         ...this.municipalitySeleccionado,
@@ -176,19 +174,17 @@ export class MunicipalityComponent implements OnInit {
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: (municipalityActualizado: Municipality) => {
-            this.successMsg = 'Municipio actualizado exitosamente.';
-            this.cargarMunicipios(); // Recargar la lista
+            this.mostrarAlerta('creado', 'Municipio actualizado exitosamente.');
+            this.cargarMunicipios();
             this.cerrarFormularioActualizar();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al actualizar municipio:', error);
-            this.errorMsg = error.error?.message || 'Error al actualizar el municipio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al actualizar el municipio.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -203,72 +199,68 @@ export class MunicipalityComponent implements OnInit {
     this.showConfirm = false;
   }
 
-  // Métodos de paginación
-  updatePagination(): void {
-    this.totalPages = Math.ceil(this.municipios.length / this.itemsPerPage);
-    this.updatePaginatedItems();
-  }
-
-  updatePaginatedItems(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedMunicipios = this.municipios.slice(startIndex, endIndex);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedItems();
-    }
-  }
-
-  nextPage(): void {
-    this.goToPage(this.currentPage + 1);
-  }
-
-  prevPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  getVisiblePages(): number[] {
-    const visiblePages: number[] = [];
-    const maxVisible = 5;
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
-
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      visiblePages.push(i);
-    }
-
-    return visiblePages;
-  }
-
   eliminarMunicipio(): void {
     if (this.municipalityAEliminar && this.municipalityAEliminar.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       this.service.genericService.delete(this.service.endpoint, this.municipalityAEliminar.id)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: () => {
-            this.successMsg = 'Municipio eliminado exitosamente.';
-            this.cargarMunicipios(); // Recargar la lista
+            this.mostrarAlerta('eliminado', 'Municipio eliminado exitosamente.');
+            this.cargarMunicipios();
             this.cancelarEliminacion();
-            setTimeout(() => this.successMsg = '', 3000);
           },
           error: (error: any) => {
             console.error('Error al eliminar municipio:', error);
-            this.errorMsg = error.error?.message || 'Error al eliminar el municipio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+            this.mostrarAlerta('error', error.error?.message || 'Error al eliminar el municipio.');
           }
         });
     }
+  }
+
+  // Métodos de paginación
+  updatePagination(): void {
+    this.paginationConfig = this.paginationService.updatePagination(this.paginationConfig, this.filteredMunicipios.length);
+    this.updatePaginatedItems();
+  }
+
+  updatePaginatedItems(): void {
+    this.paginatedMunicipios = this.paginationService.getPaginatedItems(this.filteredMunicipios, this.paginationConfig);
+  }
+
+  onPageChange(page: number): void {
+    this.paginationConfig = this.paginationService.goToPage(this.paginationConfig, page);
+    this.updatePaginatedItems();
+  }
+
+  // Método de búsqueda
+  filterMunicipios(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredMunicipios = [...this.municipios];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredMunicipios = this.municipios.filter(municipio =>
+        municipio.name?.toLowerCase().includes(term) ||
+        municipio.daneCode?.toString().includes(term) ||
+        municipio.departmentName?.toLowerCase().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterMunicipios();
+  }
+
+  // Método de alerta estandarizado
+  mostrarAlerta(tipo: 'creado' | 'eliminado' | 'error' | 'info', mensaje: string): void {
+    this.alertType = tipo;
+    this.alertMsg = mensaje;
+    this.showAlert = true;
+    setTimeout(() => this.showAlert = false, 2500);
   }
 
   // Métodos auxiliares para validaciones
@@ -287,9 +279,4 @@ export class MunicipalityComponent implements OnInit {
     }
     return '';
   }
-
-  // Método comentado ya que no se necesita navegación
-  // onClickGenerar() {
-  //   this.router.navigate(['/acuerdo-pago/formulario']);
-  // }
 }

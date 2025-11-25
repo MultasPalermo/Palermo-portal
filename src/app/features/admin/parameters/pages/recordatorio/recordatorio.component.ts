@@ -1,15 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-import { CardHeaderComponent } from '../../../../../shared/components/card-header/card-header.component';
-import { ButtonComponent } from '../../../../../shared/components/button/button.component';
 import { NotificationSettingService } from '../../../../../core/services/parameters/notification-setting.service';
 import { NotificationSetting } from '../../../../../shared/modeloModelados/parameters/notification-setting.models';
-import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Generic';
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 
 @Component({
   selector: 'app-recordatorio',
@@ -18,30 +14,31 @@ import { ColumnDef } from '../../../../../shared/modeloModelados/util/table.Gene
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatButtonModule,
-    RouterModule,
-    CardHeaderComponent,
-    ButtonComponent
+    PaginationComponent
   ],
   templateUrl: './recordatorio.component.html',
   styleUrls: ['./recordatorio.component.scss']
 })
 export class RecordatorioComponent implements OnInit {
-  private router = inject(Router);
   private service = inject(NotificationSettingService);
   private fb = inject(FormBuilder);
+  private paginationService = inject(PaginationService);
 
   recordatorios: NotificationSetting[] = [];
+  filteredRecordatorios: NotificationSetting[] = [];
+  paginatedRecordatorios: NotificationSetting[] = [];
   loading = false;
-  errorMsg = '';
-  successMsg = '';
+
+  // Búsqueda
+  searchTerm: string = '';
 
   // Paginación
-  currentPage: number = 1;
-  itemsPerPage: number = 5;
-  totalPages: number = 0;
-  paginatedRecordatorios: NotificationSetting[] = [];
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 5,
+    totalItems: 0,
+    totalPages: 0
+  };
 
   // Variables para modales
   showForm = false;
@@ -56,14 +53,15 @@ export class RecordatorioComponent implements OnInit {
   recordatorioForm: FormGroup;
   updateForm: FormGroup;
 
-  // Columnas fijas para la tabla genérica
-  columns: ColumnDef[] = [
-    { key: 'name',        header: 'Nombre',      type: 'text' },
-    { key: 'days',        header: 'Días',        type: 'text' },
-    { key: 'description', header: 'Descripción', type: 'text' },
-    { key: 'timeUnit',    header: 'Unidad',      type: 'text' },
-    { key: 'active',      header: 'Activo',      type: 'text' },
-    { key: 'actions',     header: 'Acciones',    type: 'actions' }
+  // Alertas estandarizadas
+  showAlert = false;
+  alertType: 'creado' | 'eliminado' | 'error' | 'info' = 'creado';
+  alertMsg = '';
+
+  // Opciones para el selector de unidad de tiempo
+  timeUnitOptions = [
+    { value: 'DAYS', label: 'Días' },
+    { value: 'SECONDS', label: 'Segundos' }
   ];
 
   constructor() {
@@ -91,28 +89,56 @@ export class RecordatorioComponent implements OnInit {
 
   private cargarRecordatorios(): void {
     this.loading = true;
-    this.errorMsg = '';
-
     this.service.genericService.getAll<NotificationSetting>(this.service.endpoint, 'GetAll')
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (rows: NotificationSetting[]) => {
-          this.recordatorios = rows;
+        next: (r: NotificationSetting[]) => {
+          this.recordatorios = r;
+          this.filteredRecordatorios = r;
           this.updatePagination();
         },
-        error: (err: any) => {
-          console.error('Error cargando recordatorios', err);
-          this.errorMsg = 'No fue posible cargar los recordatorios.';
+        error: (e: any) => {
+          console.error('Error cargando recordatorios', e);
+          this.mostrarAlerta('error', 'No fue posible cargar los recordatorios.');
         }
       });
+  }
+
+  // Búsqueda
+  filterRecordatorios(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredRecordatorios = [...this.recordatorios];
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredRecordatorios = this.recordatorios.filter(rec =>
+        rec.name?.toLowerCase().includes(term) ||
+        rec.description?.toLowerCase().includes(term) ||
+        rec.timeUnit?.toLowerCase().includes(term) ||
+        rec.days?.toString().includes(term)
+      );
+    }
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterRecordatorios();
+  }
+
+  // Alertas estandarizadas
+  mostrarAlerta(tipo: 'creado' | 'eliminado' | 'error' | 'info', mensaje: string): void {
+    this.alertType = tipo;
+    this.alertMsg = mensaje;
+    this.showAlert = true;
+    setTimeout(() => this.showAlert = false, 2500);
   }
 
   // Métodos para manejar formularios
   abrirFormulario(): void {
     // Validar que no haya más de 5 recordatorios
-    if (this.recordatorios.length >= 5) {
-      this.errorMsg = 'No se pueden crear más de 5 recordatorios. Elimine uno para poder crear otro.';
-      setTimeout(() => this.errorMsg = '', 5000);
+    if (!this.canCreateRecordatorio()) {
+      this.mostrarAlerta('error', 'Solo se permiten 5 recordatorios como máximo. Elimine uno para poder crear otro.');
       return;
     }
 
@@ -121,8 +147,6 @@ export class RecordatorioComponent implements OnInit {
       timeUnit: 'DAYS',
       active: true
     });
-    this.errorMsg = '';
-    this.successMsg = '';
   }
 
   cerrarFormulario(): void {
@@ -134,35 +158,29 @@ export class RecordatorioComponent implements OnInit {
   crearRecordatorio(): void {
     if (this.recordatorioForm.valid) {
       // Validar nuevamente antes de crear
-      if (this.recordatorios.length >= 5) {
-        this.errorMsg = 'No se pueden crear más de 5 recordatorios.';
-        setTimeout(() => this.errorMsg = '', 3000);
+      if (!this.canCreateRecordatorio()) {
+        this.mostrarAlerta('error', 'No se pueden crear más de 5 recordatorios.');
         return;
       }
 
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
-
       const recordatorioData = this.recordatorioForm.value;
 
       this.service.genericService.create<NotificationSetting>(this.service.endpoint, recordatorioData)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
-          next: (nuevoRecordatorio: NotificationSetting) => {
-            this.successMsg = 'Recordatorio creado exitosamente.';
+          next: () => {
+            this.mostrarAlerta('creado', 'Recordatorio creado exitosamente.');
             this.cargarRecordatorios();
             this.cerrarFormulario();
-            setTimeout(() => this.successMsg = '', 3000);
           },
-          error: (error: any) => {
-            console.error('Error al crear recordatorio:', error);
-            this.errorMsg = error.error?.message || 'Error al crear el recordatorio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+          error: (e: any) => {
+            console.error('Error al crear recordatorio:', e);
+            this.mostrarAlerta('error', e.error?.message || 'Error al crear el recordatorio.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -190,8 +208,6 @@ export class RecordatorioComponent implements OnInit {
       this.showUpdateForm = true;
       this.showUpdateConfirm = false;
       this.recordatorioAActualizar = null;
-      this.errorMsg = '';
-      this.successMsg = '';
     }
   }
 
@@ -204,8 +220,6 @@ export class RecordatorioComponent implements OnInit {
   actualizarRecordatorio(): void {
     if (this.updateForm.valid && this.recordatorioSeleccionado && this.recordatorioSeleccionado.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       const recordatorioActualizado = {
         ...this.recordatorioSeleccionado,
@@ -215,20 +229,18 @@ export class RecordatorioComponent implements OnInit {
       this.service.genericService.update<NotificationSetting>(this.service.endpoint, this.recordatorioSeleccionado.id, recordatorioActualizado)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
-          next: (recordatorioActualizado: NotificationSetting) => {
-            this.successMsg = 'Recordatorio actualizado exitosamente.';
+          next: () => {
+            this.mostrarAlerta('creado', 'Recordatorio actualizado exitosamente.');
             this.cargarRecordatorios();
             this.cerrarFormularioActualizar();
-            setTimeout(() => this.successMsg = '', 3000);
           },
-          error: (error: any) => {
-            console.error('Error al actualizar recordatorio:', error);
-            this.errorMsg = error.error?.message || 'Error al actualizar el recordatorio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+          error: (e: any) => {
+            console.error('Error al actualizar recordatorio:', e);
+            this.mostrarAlerta('error', e.error?.message || 'Error al actualizar el recordatorio.');
           }
         });
     } else {
-      this.errorMsg = 'Por favor complete todos los campos requeridos.';
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
     }
   }
 
@@ -246,22 +258,18 @@ export class RecordatorioComponent implements OnInit {
   eliminarRecordatorio(): void {
     if (this.recordatorioAEliminar && this.recordatorioAEliminar.id) {
       this.loading = true;
-      this.errorMsg = '';
-      this.successMsg = '';
 
       this.service.genericService.delete(this.service.endpoint, this.recordatorioAEliminar.id)
         .pipe(finalize(() => this.loading = false))
         .subscribe({
           next: () => {
-            this.successMsg = 'Recordatorio eliminado exitosamente.';
+            this.mostrarAlerta('eliminado', 'Recordatorio eliminado exitosamente.');
             this.cargarRecordatorios();
             this.cancelarEliminacion();
-            setTimeout(() => this.successMsg = '', 3000);
           },
-          error: (error: any) => {
-            console.error('Error al eliminar recordatorio:', error);
-            this.errorMsg = error.error?.message || 'Error al eliminar el recordatorio.';
-            setTimeout(() => this.errorMsg = '', 3000);
+          error: (e: any) => {
+            console.error('Error al eliminar recordatorio:', e);
+            this.mostrarAlerta('error', e.error?.message || 'Error al eliminar el recordatorio.');
           }
         });
     }
@@ -269,46 +277,23 @@ export class RecordatorioComponent implements OnInit {
 
   // Métodos de paginación
   updatePagination(): void {
-    this.totalPages = Math.ceil(this.recordatorios.length / this.itemsPerPage);
+    this.paginationConfig = this.paginationService.updatePagination(
+      this.paginationConfig,
+      this.filteredRecordatorios.length
+    );
     this.updatePaginatedItems();
   }
 
   updatePaginatedItems(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedRecordatorios = this.recordatorios.slice(startIndex, endIndex);
+    const { currentPage, itemsPerPage } = this.paginationConfig;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    this.paginatedRecordatorios = this.filteredRecordatorios.slice(startIndex, endIndex);
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedItems();
-    }
-  }
-
-  nextPage(): void {
-    this.goToPage(this.currentPage + 1);
-  }
-
-  prevPage(): void {
-    this.goToPage(this.currentPage - 1);
-  }
-
-  getVisiblePages(): number[] {
-    const visiblePages: number[] = [];
-    const maxVisible = 5;
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
-
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      visiblePages.push(i);
-    }
-
-    return visiblePages;
+  onPageChange(page: number): void {
+    this.paginationConfig.currentPage = page;
+    this.updatePaginatedItems();
   }
 
   // Métodos auxiliares para validaciones
@@ -329,14 +314,14 @@ export class RecordatorioComponent implements OnInit {
     return '';
   }
 
-  // Método auxiliar para mostrar el estado activo
-  getActiveText(active: boolean): string {
-    return active ? 'Sí' : 'No';
+  // Métodos auxiliares
+  getTimeUnitLabel(timeUnit: string): string {
+    const option = this.timeUnitOptions.find(opt => opt.value === timeUnit);
+    return option ? option.label : timeUnit;
   }
 
-  // Método auxiliar para mostrar la unidad de tiempo
-  getTimeUnitText(timeUnit: string): string {
-    return timeUnit === 'DAYS' ? 'Días' : 'Segundos';
+  getActiveLabel(active: boolean): string {
+    return active ? 'Activo' : 'Inactivo';
   }
 
   // Verificar si se puede crear un nuevo recordatorio

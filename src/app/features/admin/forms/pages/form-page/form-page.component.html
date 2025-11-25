@@ -1,170 +1,215 @@
-<div class="personas-container">
-  <h1 class="page-title">Gestión de Formularios</h1>
+<div class="forms-container">
+  <!-- Modal de alerta -->
+  <div *ngIf="showAlert" class="alert-modal-overlay">
+    <div class="alert-modal-content" [ngClass]="alertType">
+      <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
+      <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
+      <span class="alert-icon" *ngIf="alertType === 'error'">❌</span>
+      <span class="alert-icon" *ngIf="alertType === 'info'">ℹ️</span>
+      <span class="alert-msg">{{ alertMsg }}</span>
+    </div>
+  </div>
 
-  <!-- Botón para agregar nuevo formulario -->
-  <button 
-    (click)="abrirModal()" 
-    class="btn-agregar"
-    aria-label="Abrir modal para agregar nuevo formulario"
-    title="Agregar nuevo formulario">
-    <i class="pi pi-plus" aria-hidden="true"></i>
-    Agregar Formulario
-  </button>
+  <!-- Modal de confirmación de eliminación -->
+  <div *ngIf="showConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">🗑️</span>
+      <span class="alert-msg">¿Estás seguro de que deseas eliminar este formulario?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarEliminar()">Cancelar</button>
+        <button class="red-btn" (click)="confirmarEliminar()">Eliminar</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Lista de formularios -->
-  <section aria-label="Lista de formularios">
-    <div 
-      *ngFor="let form of paginatedForms; trackBy: trackByFormId" 
-      class="persona-card"
-      role="article"
-      [attr.aria-label]="'Formulario: ' + form.name">
-      <div class="persona-info">
-        <div class="info-row">
-          <span class="label" [id]="'name-label-' + form.id">Nombre:</span>
-          <span class="value" [attr.aria-labelledby]="'name-label-' + form.id">{{ form.name }}</span>
+  <!-- Modal de confirmación para actualizar -->
+  <div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
+    <div class="alert-modal-content eliminado">
+      <span class="alert-icon">✏️</span>
+      <span class="alert-msg">¿Está seguro que desea actualizar el formulario "{{ formAActualizar?.name }}"?</span>
+      <div class="modal-actions">
+        <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
+        <button class="blue-btn" (click)="abrirModalActualizar()">Sí, Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="forms-header">
+    <div class="header-left">
+      <span class="icon">📝</span>
+      <h1 class="title">Formularios</h1>
+    </div>
+    <button class="add-btn" (click)="abrirModal()">
+      <span class="btn-icon">➕</span>
+      Agregar Formulario
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre o descripción..."
+        [(ngModel)]="searchTerm"
+        (input)="filterForms()"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="clear-search"
+        (click)="clearSearch()"
+        title="Limpiar búsqueda"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="search-results" *ngIf="searchTerm">
+      <span class="results-count">
+        {{ filteredForms.length }} resultado(s) encontrado(s)
+      </span>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="filteredForms.length === 0" class="no-results">
+    <span class="no-results-icon">📭</span>
+    <h3>No se encontraron resultados</h3>
+    <p *ngIf="searchTerm">Intenta con otro término de búsqueda</p>
+    <p *ngIf="!searchTerm">No hay formularios registrados</p>
+    <small *ngIf="!searchTerm">Haga clic en "Agregar Formulario" para comenzar</small>
+  </div>
+
+  <!-- Lista de Formularios -->
+  <div class="forms-list" *ngIf="filteredForms.length > 0">
+    <div class="form-card" *ngFor="let form of paginatedForms; trackBy: trackByFormId">
+      <div class="card-badge">
+        <span class="badge-icon">📋</span>
+      </div>
+      <div class="card-content">
+        <div class="card-title-section">
+          <h3 class="card-title">{{ form.name }}</h3>
+          <p class="card-description">{{ form.description }}</p>
         </div>
-        <div class="info-row">
-          <span class="label" [id]="'desc-label-' + form.id">Descripción:</span>
-          <span class="value" [attr.aria-labelledby]="'desc-label-' + form.id">{{ form.description }}</span>
+        <div class="card-divider"></div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-icon">📝</span>
+            <div class="info-details">
+              <span class="info-label">Nombre</span>
+              <span class="info-value">{{ form.name }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📄</span>
+            <div class="info-details">
+              <span class="info-label">Descripción</span>
+              <span class="info-value">{{ form.description }}</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="persona-actions" role="group" [attr.aria-label]="'Acciones para ' + form.name">
-        <button 
-          (click)="confirmarActualizacion(form)" 
-          class="btn-editar"
-          [attr.aria-label]="'Editar formulario ' + form.name"
-          [title]="'Editar ' + form.name">
-          <i class="pi pi-pencil" aria-hidden="true"></i>
-          Editar
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="confirmarActualizacion(form)" title="Editar">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">Editar</span>
         </button>
-        <button 
-          (click)="pedirConfirmacionEliminar(form)" 
-          class="btn-eliminar"
-          [attr.aria-label]="'Eliminar formulario ' + form.name"
-          [title]="'Eliminar ' + form.name">
-          <i class="pi pi-trash" aria-hidden="true"></i>
-          Eliminar
+        <button class="action-btn delete-btn" (click)="pedirConfirmacionEliminar(form)" title="Eliminar">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">Eliminar</span>
         </button>
       </div>
     </div>
-  </section>
-
-  <!-- Mensaje cuando no hay datos -->
-  <div *ngIf="forms.length === 0" class="no-data">
-    <i class="pi pi-info-circle"></i>
-    <p>No hay formularios registrados</p>
-    <small>Haga clic en "Agregar Formulario" para comenzar</small>
   </div>
 
   <!-- Paginación -->
-  <app-pagination
-    [currentPage]="paginationConfig.currentPage"
-    [totalPages]="paginationConfig.totalPages"
-    [totalItems]="paginationConfig.totalItems"
-    [itemsPerPage]="paginationConfig.itemsPerPage"
-    (pageChange)="onPageChange($event)">
+  <app-pagination *ngIf="filteredForms.length > 0" [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages" [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage" (pageChange)="onPageChange($event)">
   </app-pagination>
-</div>
-
-<!-- ========================================
-     MODALES GLOBALES (FUERA DEL CONTENEDOR)
-     ======================================== -->
-
-<!-- Modal de alerta (éxito, error, info) -->
-<div *ngIf="showAlert" class="alert-modal-overlay">
-  <div class="alert-modal-content" [ngClass]="alertType">
-    <span class="alert-icon" *ngIf="alertType === 'creado'">✅</span>
-    <span class="alert-icon" *ngIf="alertType === 'eliminado'">🗑️</span>
-    <span class="alert-icon" *ngIf="alertType === 'error'">❌</span>
-    <span class="alert-icon" *ngIf="alertType === 'info'">ℹ️</span>
-    <span class="alert-msg">{{ alertMsg }}</span>
-  </div>
-</div>
-
-<!-- Modal de confirmación de eliminación -->
-<div *ngIf="showConfirm" class="alert-modal-overlay">
-  <div class="alert-modal-content eliminado">
-    <span class="alert-icon">🗑️</span>
-    <span class="alert-msg">¿Estás seguro de que deseas eliminar este formulario?</span>
-    <div class="modal-actions">
-      <button class="blue-btn" (click)="cancelarEliminar()">Cancelar</button>
-      <button class="red-btn" (click)="confirmarEliminar()">Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de confirmación para actualizar -->
-<div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
-  <div class="alert-modal-content eliminado">
-    <span class="alert-icon">✏️</span>
-    <span class="alert-msg">¿Está seguro que desea actualizar el formulario "{{ formAActualizar?.name }}"?</span>
-    <div class="modal-actions">
-      <button class="blue-btn" (click)="cancelarActualizacion()">Cancelar</button>
-      <button class="blue-btn" (click)="abrirModalActualizar()">Sí, Editar</button>
-    </div>
-  </div>
 </div>
 
 <!-- Modal para crear nuevo formulario -->
 <div *ngIf="showModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
-  <div class="modal-content persona-form">
-    <h2 id="create-modal-title">Agregar Nuevo Formulario</h2>
-    <form (ngSubmit)="crearForm()" autocomplete="off" #createForm="ngForm" novalidate>
-      <label for="create-name-input">
-        Nombre del Formulario:
-        <input 
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarModal()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">➕</span>
+      <h2 id="create-modal-title">Agregar Nuevo Formulario</h2>
+    </div>
+
+    <form (ngSubmit)="crearForm()" autocomplete="off" class="form-styled" #createForm="ngForm" novalidate>
+      <div class="form-group">
+        <label for="create-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Formulario
+        </label>
+        <input
           id="create-name-input"
-          type="text" 
-          [(ngModel)]="nuevoForm.name" 
-          name="name" 
+          type="text"
+          class="custom-input"
+          [(ngModel)]="nuevoForm.name"
+          name="name"
           required
-          #nameInput="ngModel" 
-          maxlength="100" 
+          #nameInput="ngModel"
+          maxlength="100"
           placeholder="Ej: Formulario de acuerdo de pago"
           aria-describedby="create-name-error"
           [attr.aria-invalid]="nameInput.invalid && nameInput.touched" />
-        <div 
+        <div
           id="create-name-error"
-          *ngIf="nameInput.invalid && nameInput.touched" 
+          *ngIf="nameInput.invalid && nameInput.touched"
           class="error-msg"
           role="alert"
           aria-live="polite">
           El nombre es requerido
         </div>
-      </label>
-      <label for="create-desc-input">
-        Descripción:
-        <textarea 
+      </div>
+
+      <div class="form-group">
+        <label for="create-desc-input">
+          <span class="label-icon">📄</span>
+          Descripción
+        </label>
+        <textarea
           id="create-desc-input"
-          [(ngModel)]="nuevoForm.description" 
-          name="description" 
+          class="custom-textarea"
+          [(ngModel)]="nuevoForm.description"
+          name="description"
           required
-          #descriptionInput="ngModel" 
-          maxlength="300" 
+          #descriptionInput="ngModel"
+          maxlength="300"
           rows="4"
           placeholder="Describe el propósito y uso del formulario..."
           aria-describedby="create-desc-error"
           [attr.aria-invalid]="descriptionInput.invalid && descriptionInput.touched"></textarea>
-        <div 
+        <div
           id="create-desc-error"
-          *ngIf="descriptionInput.invalid && descriptionInput.touched" 
+          *ngIf="descriptionInput.invalid && descriptionInput.touched"
           class="error-msg"
           role="alert"
           aria-live="polite">
           La descripción es requerida
         </div>
-      </label>
+      </div>
+
       <div class="modal-actions">
-        <button 
-          type="button" 
+        <button
+          type="button"
+          class="cancel-btn"
           (click)="cerrarModal()"
           aria-label="Cancelar creación del formulario">
+          <span class="btn-icon">❌</span>
           Cancelar
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
+          class="submit-btn"
           [disabled]="createForm.invalid || !nuevoForm.name.trim() || !nuevoForm.description.trim()"
           aria-label="Crear nuevo formulario">
+          <span class="btn-icon">➕</span>
           Crear
         </button>
       </div>
@@ -174,14 +219,23 @@
 
 <!-- Modal para actualizar formulario -->
 <div *ngIf="showUpdateModal && formSeleccionado" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="update-modal-title">
-  <div class="modal-content persona-form">
-    <h2 id="update-modal-title">Actualizar Formulario</h2>
-    <form (ngSubmit)="actualizarForm()" autocomplete="off" #updateForm="ngForm" novalidate>
-      <label for="update-name-input">
-        Nombre del Formulario:
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarModalActualizar()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">✏️</span>
+      <h2 id="update-modal-title">Actualizar Formulario</h2>
+    </div>
+
+    <form (ngSubmit)="actualizarForm()" autocomplete="off" class="form-styled" #updateForm="ngForm" novalidate>
+      <div class="form-group">
+        <label for="update-name-input">
+          <span class="label-icon">📝</span>
+          Nombre del Formulario
+        </label>
         <input
           id="update-name-input"
           type="text"
+          class="custom-input"
           [(ngModel)]="formSeleccionado.name"
           name="name"
           required
@@ -198,11 +252,16 @@
           aria-live="polite">
           El nombre es requerido
         </div>
-      </label>
-      <label for="update-desc-input">
-        Descripción:
+      </div>
+
+      <div class="form-group">
+        <label for="update-desc-input">
+          <span class="label-icon">📄</span>
+          Descripción
+        </label>
         <textarea
           id="update-desc-input"
+          class="custom-textarea"
           [(ngModel)]="formSeleccionado.description"
           name="description"
           required
@@ -220,18 +279,23 @@
           aria-live="polite">
           La descripción es requerida
         </div>
-      </label>
+      </div>
+
       <div class="modal-actions">
         <button
           type="button"
+          class="cancel-btn"
           (click)="cerrarModalActualizar()"
           aria-label="Cancelar actualización del formulario">
+          <span class="btn-icon">❌</span>
           Cancelar
         </button>
         <button
           type="submit"
+          class="submit-btn"
           [disabled]="updateForm.invalid || !formSeleccionado.name.trim() || !formSeleccionado.description.trim()"
           aria-label="Actualizar formulario">
+          <span class="btn-icon">💾</span>
           Actualizar
         </button>
       </div>

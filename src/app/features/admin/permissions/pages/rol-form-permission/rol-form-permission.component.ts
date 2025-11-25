@@ -1,25 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { MessageService, ConfirmationService } from 'primeng/api';
-
-// PrimeNG imports
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
-import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToolbarModule } from 'primeng/toolbar';
-import { CardModule } from 'primeng/card';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { takeUntil, finalize } from 'rxjs/operators';
 import { RolFormPermission, RolFormPermissionDisplay } from '../../models/rol-form-permission.model';
 import { ServiceGenericService } from '../../../../../core/services/utils/generic/service-generic.service';
-
-
+import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
+import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 
 @Component({
   selector: 'app-rol-form-permission',
@@ -28,60 +15,65 @@ import { ServiceGenericService } from '../../../../../core/services/utils/generi
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    TableModule,
-    ButtonModule,
-    InputTextModule,
-    DropdownModule,
-    DialogModule,
-    ToastModule,
-    ConfirmDialogModule,
-    ToolbarModule,
-    CardModule,
-    ProgressSpinnerModule
+    PaginationComponent
   ],
-  providers: [MessageService, ConfirmationService],
   templateUrl: './rol-form-permission.component.html',
   styleUrls: ['./rol-form-permission.component.scss']
 })
 export class RolFormPermissionComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private paginationService = inject(PaginationService);
 
   // Data
   rolFormPermissions: RolFormPermission[] = [];
   displayData: RolFormPermissionDisplay[] = [];
   filteredData: RolFormPermissionDisplay[] = [];
-  
-  // Dialog
-  displayDialog = false;
-  dialogTitle = '';
-  isEditMode = false;
-  selectedItemId: number | null = null;
-  
-  // Form
-  rolFormPermissionForm!: FormGroup;
-  
+  paginatedData: RolFormPermissionDisplay[] = [];
+
   // Loading
   loading = false;
-  
+
   // Dropdown options
   roleOptions: { label: string; value: number }[] = [];
   formOptions: { label: string; value: number }[] = [];
   permissionOptions: { label: string; value: number }[] = [];
-  
+
   // Search
-  globalFilter = '';
+  searchTerm: string = '';
+
+  // Paginación
+  paginationConfig: PaginationConfig = {
+    currentPage: 1,
+    itemsPerPage: 12,
+    totalItems: 0,
+    totalPages: 0
+  };
+
+  // Modales
+  showForm = false;
+  showUpdateForm = false;
+  showConfirm = false;
+  showUpdateConfirm = false;
+  itemToDelete: RolFormPermissionDisplay | null = null;
+  itemToUpdate: RolFormPermissionDisplay | null = null;
+
+  // Form
+  rolFormPermissionForm!: FormGroup;
+  updateForm!: FormGroup;
+
+  // Alertas estandarizadas
+  showAlert = false;
+  alertType: 'creado' | 'eliminado' | 'error' | 'info' = 'creado';
+  alertMsg = '';
 
   constructor(
     private serviceGeneric: ServiceGenericService,
-    private fb: FormBuilder,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private fb: FormBuilder
   ) {
-    this.initForm();
+    this.initForms();
   }
 
   ngOnInit(): void {
-    // Cargar datos primero
     this.loadData();
     this.loadDropdownOptions();
   }
@@ -91,8 +83,14 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initForm(): void {
+  private initForms(): void {
     this.rolFormPermissionForm = this.fb.group({
+      rolid: [null, [Validators.required]],
+      formid: [null, [Validators.required]],
+      permissionid: [null, [Validators.required]]
+    });
+
+    this.updateForm = this.fb.group({
       rolid: [null, [Validators.required]],
       formid: [null, [Validators.required]],
       permissionid: [null, [Validators.required]]
@@ -102,7 +100,10 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
   private loadData(): void {
     this.loading = true;
     this.serviceGeneric.getAll<RolFormPermission>('RolFormPermission')
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        finalize(() => this.loading = false),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: (data) => {
           this.rolFormPermissions = data;
@@ -112,16 +113,11 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
             formName: item.formName
           }));
           this.filteredData = [...this.displayData];
-          this.loading = false;
+          this.updatePagination();
         },
-        error: (error) => {
-          console.error('Error loading data:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al cargar los datos'
-          });
-          this.loading = false;
+        error: (e) => {
+          console.error('Error loading data:', e);
+          this.mostrarAlerta('error', 'Error al cargar los datos');
         }
       });
   }
@@ -132,16 +128,14 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: roles => {
-          console.log('Roles loaded:', roles);
-          this.roleOptions = roles.map((role: any) => ({ label: role.name || role.nombre, value: role.id }));
+          this.roleOptions = roles.map((role: any) => ({
+            label: role.name || role.nombre,
+            value: role.id
+          }));
         },
-        error: error => {
-          console.error('Error loading roles:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al cargar roles'
-          });
+        error: e => {
+          console.error('Error loading roles:', e);
+          this.mostrarAlerta('error', 'Error al cargar roles');
         }
       });
 
@@ -150,16 +144,14 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: forms => {
-          console.log('Forms loaded:', forms);
-          this.formOptions = forms.map((form: any) => ({ label: form.name || form.nombre, value: form.id }));
+          this.formOptions = forms.map((form: any) => ({
+            label: form.name || form.nombre,
+            value: form.id
+          }));
         },
-        error: error => {
-          console.error('Error loading forms:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al cargar formularios'
-          });
+        error: e => {
+          console.error('Error loading forms:', e);
+          this.mostrarAlerta('error', 'Error al cargar formularios');
         }
       });
 
@@ -168,225 +160,268 @@ export class RolFormPermissionComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: perms => {
-          console.log('Permissions loaded:', perms);
-          this.permissionOptions = perms.map((perm: any) => ({ label: perm.name || perm.nombre, value: perm.id }));
+          this.permissionOptions = perms.map((perm: any) => ({
+            label: perm.name || perm.nombre,
+            value: perm.id
+          }));
         },
-        error: error => {
-          console.error('Error loading permissions:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al cargar permisos'
-          });
+        error: e => {
+          console.error('Error loading permissions:', e);
+          this.mostrarAlerta('error', 'Error al cargar permisos');
         }
       });
   }
 
-  onGlobalFilter(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.globalFilter = target.value;
-    this.applyGlobalFilter();
-  }
-
-  private applyGlobalFilter(): void {
-    if (!this.globalFilter) {
+  // Búsqueda
+  filterData(): void {
+    if (!this.searchTerm.trim()) {
       this.filteredData = [...this.displayData];
-      return;
+    } else {
+      const term = this.searchTerm.toLowerCase().trim();
+      this.filteredData = this.displayData.filter(item =>
+        item.rolName.toLowerCase().includes(term) ||
+        item.formName.toLowerCase().includes(term) ||
+        item.permissionName.toLowerCase().includes(term)
+      );
     }
-
-    const filterValue = this.globalFilter.toLowerCase();
-    this.filteredData = this.displayData.filter(item =>
-      item.rolName.toLowerCase().includes(filterValue) ||
-      item.formName.toLowerCase().includes(filterValue) ||
-      item.permissionName.toLowerCase().includes(filterValue)
-    );
+    this.paginationConfig.currentPage = 1;
+    this.updatePagination();
   }
 
-  openNew(): void {
-    this.isEditMode = false;
-    this.selectedItemId = null;
-    this.dialogTitle = 'Nuevo Rol-Formulario-Permiso';
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterData();
+  }
+
+  // Alertas estandarizadas
+  mostrarAlerta(tipo: 'creado' | 'eliminado' | 'error' | 'info', mensaje: string): void {
+    this.alertType = tipo;
+    this.alertMsg = mensaje;
+    this.showAlert = true;
+    setTimeout(() => this.showAlert = false, 2500);
+  }
+
+  // Métodos para manejar formularios
+  abrirFormulario(): void {
+    this.showForm = true;
     this.rolFormPermissionForm.reset();
-    this.displayDialog = true;
   }
 
-  editItem(rowData: RolFormPermissionDisplay): void {
-    const originalItem = this.rolFormPermissions.find(item =>
-      item.rolName === rowData.rolName &&
-      item.formName === rowData.formName &&
-      item.permissionName === rowData.permissionName
-    );
-
-    if (originalItem) {
-      this.isEditMode = true;
-      this.selectedItemId = originalItem.id;
-      this.dialogTitle = 'Editar Rol-Formulario-Permiso';
-      
-      this.rolFormPermissionForm.patchValue({
-        rolid: originalItem.rolid,
-        formid: originalItem.formid,
-        permissionid: originalItem.permissionid
-      });
-      
-      this.displayDialog = true;
-    }
+  cerrarFormulario(): void {
+    this.showForm = false;
+    this.rolFormPermissionForm.reset();
   }
 
-  deleteItem(rowData: RolFormPermissionDisplay): void {
-    const originalItem = this.rolFormPermissions.find(item =>
-      item.rolName === rowData.rolName &&
-      item.formName === rowData.formName &&
-      item.permissionName === rowData.permissionName
-    );
-
-    if (originalItem) {
-      this.confirmationService.confirm({
-        message: `¿Está seguro de eliminar el permiso "${rowData.permissionName}" para el rol "${rowData.rolName}" en el formulario "${rowData.formName}"?`,
-        header: 'Confirmar Eliminación',
-        icon: 'pi pi-exclamation-triangle',
-        accept: () => {
-          this.performDelete(originalItem.id);
-        }
-      });
-    }
-  }
-
-  private performDelete(id: number): void {
-    this.serviceGeneric.delete('RolFormPermission', id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Registro eliminado correctamente'
-          });
-          this.loadData();
-        },
-        error: (error) => {
-          console.error('Error deleting item:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error al eliminar el registro'
-          });
-        }
-      });
-  }
-
-  saveItem(): void {
+  crearItem(): void {
     if (this.rolFormPermissionForm.valid) {
       const formValue = this.rolFormPermissionForm.value;
 
-      // Check for duplicates in create mode
-      if (!this.isEditMode) {
-        const existingItem = this.rolFormPermissions.find(item =>
-          item.rolid === formValue.rolid &&
-          item.formid === formValue.formid &&
-          item.permissionid === formValue.permissionid
-        );
+      // Verificar duplicados
+      const existingItem = this.rolFormPermissions.find(item =>
+        item.rolid === formValue.rolid &&
+        item.formid === formValue.formid &&
+        item.permissionid === formValue.permissionid
+      );
 
-        if (existingItem) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Advertencia',
-            detail: 'Ya existe un registro con esta combinación de rol, formulario y permiso'
-          });
-          return;
-        }
+      if (existingItem) {
+        this.mostrarAlerta('error', 'Ya existe un registro con esta combinación');
+        return;
       }
 
-      if (this.isEditMode && this.selectedItemId) {
-        const updateData = {
-          id: this.selectedItemId,
-          rolid: formValue.rolid,
-          formid: formValue.formid,
-          permissionid: formValue.permissionid
-        };
-
-        this.serviceGeneric.update('RolFormPermission', this.selectedItemId, updateData)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Éxito',
-                detail: 'Registro actualizado correctamente'
-              });
-              this.closeDialog();
-              this.loadData();
-            },
-            error: (error: any) => {
-              console.error('Error updating item:', error);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Error al actualizar el registro'
-              });
+      this.loading = true;
+      this.serviceGeneric.create('RolFormPermission', formValue)
+        .pipe(
+          finalize(() => this.loading = false),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: () => {
+            this.mostrarAlerta('creado', 'Registro creado correctamente');
+            this.loadData();
+            this.cerrarFormulario();
+          },
+          error: (e: any) => {
+            console.error('Error creating item:', e);
+            let errorMessage = 'Error al crear el registro';
+            if (e?.error?.message?.includes('duplicate') || e?.message?.includes('duplicate')) {
+              errorMessage = 'Ya existe un registro con esta combinación';
             }
-          });
-      } else {
-        const createData = {
-          rolid: formValue.rolid,
-          formid: formValue.formid,
-          permissionid: formValue.permissionid
-        };
-
-        this.serviceGeneric.create('RolFormPermission', createData)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Éxito',
-                detail: 'Registro creado correctamente'
-              });
-              this.closeDialog();
-              this.loadData();
-            },
-            error: (error: any) => {
-              console.error('Error creating item:', error);
-              let errorMessage = 'Error al crear el registro';
-              if (error?.error?.message?.includes('duplicate') || error?.message?.includes('duplicate')) {
-                errorMessage = 'Ya existe un registro con esta combinación';
-              }
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: errorMessage
-              });
-            }
-          });
-      }
+            this.mostrarAlerta('error', errorMessage);
+          }
+        });
     } else {
-      this.markFormGroupTouched();
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos');
     }
   }
 
-  private markFormGroupTouched(): void {
-    Object.keys(this.rolFormPermissionForm.controls).forEach(key => {
-      const control = this.rolFormPermissionForm.get(key);
-      control?.markAsTouched();
-    });
+  // Métodos para editar
+  confirmarActualizacion(rowData: RolFormPermissionDisplay): void {
+    this.itemToUpdate = rowData;
+    this.showUpdateConfirm = true;
   }
 
-  closeDialog(): void {
-    this.displayDialog = false;
-    this.rolFormPermissionForm.reset();
-    this.isEditMode = false;
-    this.selectedItemId = null;
+  cancelarActualizacion(): void {
+    this.itemToUpdate = null;
+    this.showUpdateConfirm = false;
   }
 
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.rolFormPermissionForm.get(fieldName);
+  abrirFormularioActualizar(): void {
+    if (this.itemToUpdate) {
+      const originalItem = this.rolFormPermissions.find(item =>
+        item.rolName === this.itemToUpdate!.rolName &&
+        item.formName === this.itemToUpdate!.formName &&
+        item.permissionName === this.itemToUpdate!.permissionName
+      );
+
+      if (originalItem) {
+        this.updateForm.patchValue({
+          rolid: originalItem.rolid,
+          formid: originalItem.formid,
+          permissionid: originalItem.permissionid
+        });
+        this.showUpdateForm = true;
+        this.showUpdateConfirm = false;
+      }
+    }
+  }
+
+  cerrarFormularioActualizar(): void {
+    this.showUpdateForm = false;
+    this.updateForm.reset();
+    this.itemToUpdate = null;
+  }
+
+  actualizarItem(): void {
+    if (this.updateForm.valid && this.itemToUpdate) {
+      const originalItem = this.rolFormPermissions.find(item =>
+        item.rolName === this.itemToUpdate!.rolName &&
+        item.formName === this.itemToUpdate!.formName &&
+        item.permissionName === this.itemToUpdate!.permissionName
+      );
+
+      if (!originalItem?.id) {
+        this.mostrarAlerta('error', 'No se encontró el registro');
+        return;
+      }
+
+      this.loading = true;
+      const updateData = {
+        id: originalItem.id,
+        ...this.updateForm.value
+      };
+
+      this.serviceGeneric.update('RolFormPermission', originalItem.id, updateData)
+        .pipe(
+          finalize(() => this.loading = false),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: () => {
+            this.mostrarAlerta('creado', 'Registro actualizado correctamente');
+            this.loadData();
+            this.cerrarFormularioActualizar();
+          },
+          error: (e: any) => {
+            console.error('Error updating item:', e);
+            this.mostrarAlerta('error', 'Error al actualizar el registro');
+          }
+        });
+    } else {
+      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos');
+    }
+  }
+
+  // Métodos para eliminar
+  confirmarEliminacion(rowData: RolFormPermissionDisplay): void {
+    this.itemToDelete = rowData;
+    this.showConfirm = true;
+  }
+
+  cancelarEliminacion(): void {
+    this.itemToDelete = null;
+    this.showConfirm = false;
+  }
+
+  eliminarItem(): void {
+    if (this.itemToDelete) {
+      const originalItem = this.rolFormPermissions.find(item =>
+        item.rolName === this.itemToDelete!.rolName &&
+        item.formName === this.itemToDelete!.formName &&
+        item.permissionName === this.itemToDelete!.permissionName
+      );
+
+      if (!originalItem?.id) {
+        this.mostrarAlerta('error', 'No se encontró el registro');
+        return;
+      }
+
+      this.loading = true;
+      this.serviceGeneric.delete('RolFormPermission', originalItem.id)
+        .pipe(
+          finalize(() => this.loading = false),
+          takeUntil(this.destroy$)
+        )
+        .subscribe({
+          next: () => {
+            this.mostrarAlerta('eliminado', 'Registro eliminado correctamente');
+            this.loadData();
+            this.cancelarEliminacion();
+          },
+          error: (e: any) => {
+            console.error('Error deleting item:', e);
+            this.mostrarAlerta('error', 'Error al eliminar el registro');
+          }
+        });
+    }
+  }
+
+  // Métodos de paginación
+  updatePagination(): void {
+    this.paginationConfig = this.paginationService.updatePagination(
+      this.paginationConfig,
+      this.filteredData.length
+    );
+    this.updatePaginatedItems();
+  }
+
+  updatePaginatedItems(): void {
+    const { currentPage, itemsPerPage } = this.paginationConfig;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    this.paginatedData = this.filteredData.slice(startIndex, endIndex);
+  }
+
+  onPageChange(page: number): void {
+    this.paginationConfig.currentPage = page;
+    this.updatePaginatedItems();
+  }
+
+  // Métodos auxiliares
+  isFieldInvalid(fieldName: string, form: FormGroup = this.rolFormPermissionForm): boolean {
+    const field = form.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
-  getFieldError(fieldName: string): string {
-    const field = this.rolFormPermissionForm.get(fieldName);
+  getFieldError(fieldName: string, form: FormGroup = this.rolFormPermissionForm): string {
+    const field = form.get(fieldName);
     if (field?.errors?.['required']) {
       return 'Este campo es requerido';
     }
     return '';
+  }
+
+  getRolLabel(id: number): string {
+    const option = this.roleOptions.find(opt => opt.value === id);
+    return option ? option.label : '';
+  }
+
+  getFormLabel(id: number): string {
+    const option = this.formOptions.find(opt => opt.value === id);
+    return option ? option.label : '';
+  }
+
+  getPermissionLabel(id: number): string {
+    const option = this.permissionOptions.find(opt => opt.value === id);
+    return option ? option.label : '';
   }
 }

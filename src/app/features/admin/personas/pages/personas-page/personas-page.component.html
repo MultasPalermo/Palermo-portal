@@ -22,214 +22,6 @@
     </div>
   </div>
 
-  <div class="personas-header">
-    <div class="header-title">
-      <span class="icon"><i class="material-icons">groups</i></span>
-      <span class="title">Personas del Sistema</span>
-    </div>
-    <button class="add-btn" (click)="abrirFormulario()">+ Agregar Persona</button>
-  </div>
-  <div class="search-bar">
-   <input (input)="onSearch($any($event.target).value)" placeholder="Buscar persona..." />
-  </div>
-
-  <!-- Modal para agregar persona -->
-  <div *ngIf="showForm" class="modal-overlay">
-    <div class="modal-content persona-form">
-      <h2>Crear Usuario</h2>
-      <form [formGroup]="personaForm" (ngSubmit)="crearPersona()">
-        <label>
-          Nombre:
-          <input type="text" formControlName="firstName" required maxlength="50" />
-          <div *ngIf="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched" class="error-msg">
-            El nombre es requerido
-          </div>
-        </label>
-        <label>
-          Apellido:
-          <input type="text" formControlName="lastName" required maxlength="50" />
-          <div *ngIf="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched" class="error-msg">
-            El apellido es requerido
-          </div>
-        </label>
-        <label>
-          Teléfono:
-          <input type="text" formControlName="phoneNumber" required maxlength="15" />
-          <div *ngIf="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched" class="error-msg">
-            Teléfono requerido (7-15 dígitos)
-          </div>
-        </label>
-        <label>
-          Dirección:
-          <input type="text" formControlName="address" required maxlength="100" />
-          <div *ngIf="personaForm.get('address')?.invalid && personaForm.get('address')?.touched" class="error-msg">
-            Dirección requerida
-          </div>
-        </label>
-        <label>
-          Municipio:
-          <select formControlName="municipalityId" required>
-            <option value="">Seleccionar municipio</option>
-            <option *ngFor="let municipio of municipios" [value]="municipio.id">
-              {{ municipio.name }}
-            </option>
-            <option *ngIf="municipios.length === 0" value="" disabled>No se encuentran municipios</option>
-          </select>
-          <div *ngIf="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched" class="error-msg">
-            Debe seleccionar un municipio
-          </div>
-        </label>
-        <div class="modal-actions">
-          <button type="button" (click)="cerrarFormulario()">Cancelar</button>
-          <button type="submit" [disabled]="personaForm.invalid">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal para agregar persona -->
-  <div *ngIf="showForm" class="modal-overlay">
-    <div class="modal-content persona-form">
-      <h2>Crear Usuario</h2>
-      <form [formGroup]="personaForm" (ngSubmit)="crearPersona()">
-        <label>
-          Nombre:
-          <input type="text" formControlName="firstName" required maxlength="50" />
-          <div *ngIf="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched" class="error-msg">
-            El nombre es requerido
-          </div>
-        </label>
-        <label>
-          Apellido:
-          <input type="text" formControlName="lastName" required maxlength="50" />
-          <div *ngIf="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched" class="error-msg">
-            El apellido es requerido
-          </div>
-        </label>
-        <label>
-          Teléfono:
-          <input type="text" formControlName="phoneNumber" required maxlength="15" />
-          <div *ngIf="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched" class="error-msg">
-            Teléfono requerido (7-15 dígitos)
-          </div>
-        </label>
-        <label>
-          Dirección:
-          <input type="text" formControlName="address" required maxlength="100" />
-          <div *ngIf="personaForm.get('address')?.invalid && personaForm.get('address')?.touched" class="error-msg">
-            Dirección requerida
-          </div>
-        </label>
-        <label>
-          Municipio:
-          <select formControlName="municipalityId" required>
-            <option value="">Seleccionar municipio</option>
-            <option *ngFor="let municipio of municipios" [value]="municipio.id">
-              {{ municipio.name }}
-            </option>
-            <option *ngIf="municipios.length === 0" value="" disabled>No se encuentran municipios</option>
-          </select>
-          <div *ngIf="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched" class="error-msg">
-            Debe seleccionar un municipio
-          </div>
-        </label>
-        <div class="modal-actions">
-          <button type="button" (click)="cerrarFormulario()">Cancelar</button>
-          <button type="submit" [disabled]="personaForm.invalid">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="personas-list">
-    <div class="persona-row" *ngFor="let persona of paginatedPersonas" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; border: 1px solid #e0e0e0; border-radius: 8px;">
-      <div class="persona-content" style="display: flex; align-items: center; flex: 1;">
-        <div class="avatar" style="margin-right: 15px;">
-          {{ persona.firstName[0] }}{{ persona.lastName[0] }}
-        </div>
-        <div class="persona-info">
-          <div class="persona-nombre" style="font-weight: bold; margin-bottom: 8px;">
-            {{ persona.firstName }} {{ persona.lastName }}
-          </div>
-          <div class="persona-ids" style="display: flex; gap: 15px;">
-            <div class="id-item">
-              <span class="id-label" style="font-weight: 500; margin-right: 5px;">Municipio:</span>
-              <span class="id-value">{{ persona.municipalityId ? getMunicipioNombre(persona.municipalityId) : 'Sin municipio' }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="persona-actions">
-        <button class="update-btn" (click)="$event.stopPropagation(); confirmarActualizacion(persona);">✏️ Actualizar</button>
-        <button class="delete-btn" (click)="pedirConfirmacionEliminar(persona)">🗑️ Eliminar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Paginación -->
-  <app-pagination
-    [currentPage]="paginationConfig.currentPage"
-    [totalPages]="paginationConfig.totalPages"
-    [totalItems]="paginationConfig.totalItems"
-    [itemsPerPage]="paginationConfig.itemsPerPage"
-    (pageChange)="onPageChange($event)">
-  </app-pagination>
-</div>
-
-<!-- Modal para actualizar persona -->
-  <div *ngIf="showUpdateModal && personaSeleccionada" class="modal-overlay">
-    <div class="modal-content persona-form">
-      <h2>Actualizar Usuario</h2>
-      <form [formGroup]="updateForm" (ngSubmit)="actualizarPersona()" novalidate>
-        <label>
-          Nombre:
-          <input type="text" formControlName="firstName" required maxlength="50" />
-          <div *ngIf="updateForm.get('firstName')?.invalid && updateForm.get('firstName')?.touched" class="error-msg">
-            El nombre es requerido
-          </div>
-        </label>
-        <label>
-          Apellido:
-          <input type="text" formControlName="lastName" required maxlength="50" />
-          <div *ngIf="updateForm.get('lastName')?.invalid && updateForm.get('lastName')?.touched" class="error-msg">
-            El apellido es requerido
-          </div>
-        </label>
-        <label>
-          Municipio:
-          <select formControlName="municipalityId" required>
-            <option value="">Seleccionar municipio</option>
-            <option *ngFor="let municipio of municipios" [value]="municipio.id">
-              {{ municipio.name }}
-            </option>
-            <option *ngIf="municipios.length === 0" value="" disabled>No se encuentran municipios</option>
-          </select>
-          <div *ngIf="updateForm.get('municipalityId')?.invalid && updateForm.get('municipalityId')?.touched" class="error-msg">
-            Debe seleccionar un municipio
-          </div>
-        </label>
-        <label>
-          Teléfono:
-          <input type="text" formControlName="phoneNumber" required maxlength="15" />
-          <div *ngIf="updateForm.get('phoneNumber')?.invalid && updateForm.get('phoneNumber')?.touched" class="error-msg">
-            Teléfono requerido (7-15 dígitos)
-          </div>
-        </label>
-        <label>
-          Dirección:
-          <input type="text" formControlName="address" required maxlength="100" />
-          <div *ngIf="updateForm.get('address')?.invalid && updateForm.get('address')?.touched" class="error-msg">
-            Dirección requerida
-          </div>
-        </label>
-        <div class="modal-actions">
-          <button type="button" (click)="cerrarModalActualizar()">Cancelar</button>
-          <button type="submit" [disabled]="updateForm.invalid">Actualizar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- Modal de confirmación para actualizar -->
   <div *ngIf="showUpdateConfirm" class="alert-modal-overlay">
     <div class="alert-modal-content eliminado">
@@ -242,4 +34,329 @@
     </div>
   </div>
 
+  <!-- Header -->
+  <div class="personas-header">
+    <div class="header-left">
+      <span class="icon">👥</span>
+      <h1 class="title">Personas</h1>
+    </div>
+    <button class="add-btn" (click)="abrirFormulario()">
+      <span class="btn-icon">➕</span>
+      Agregar Persona
+    </button>
+  </div>
 
+  <!-- Barra de búsqueda -->
+  <div class="search-container">
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Buscar por nombre o apellido..."
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+    <div class="search-results" *ngIf="filteredPersonas.length !== personas.length">
+      <span class="results-count">
+        {{ filteredPersonas.length }} resultado(s) encontrado(s)
+      </span>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="filteredPersonas.length === 0" class="no-results">
+    <span class="no-results-icon">📭</span>
+    <h3>No se encontraron resultados</h3>
+    <p>No hay personas registradas</p>
+    <small>Haga clic en "Agregar Persona" para comenzar</small>
+  </div>
+
+  <!-- Lista de Personas -->
+  <div class="personas-list" *ngIf="filteredPersonas.length > 0">
+    <div class="persona-card" *ngFor="let persona of paginatedPersonas">
+      <div class="card-badge">
+        <div class="avatar">
+          {{ persona.firstName[0] }}{{ persona.lastName[0] }}
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="card-title-section">
+          <h3 class="card-title">{{ persona.firstName }} {{ persona.lastName }}</h3>
+          <p class="card-description">{{ persona.municipalityId ? getMunicipioNombre(persona.municipalityId) : 'Sin municipio' }}</p>
+        </div>
+        <div class="card-divider"></div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-icon">📱</span>
+            <div class="info-details">
+              <span class="info-label">Teléfono</span>
+              <span class="info-value">{{ persona.phoneNumber || 'N/A' }}</span>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📍</span>
+            <div class="info-details">
+              <span class="info-label">Dirección</span>
+              <span class="info-value">{{ persona.address || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn edit-btn" (click)="confirmarActualizacion(persona)" title="Editar">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">Editar</span>
+        </button>
+        <button class="action-btn delete-btn" (click)="pedirConfirmacionEliminar(persona)" title="Eliminar">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">Eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <app-pagination *ngIf="filteredPersonas.length > 0" [currentPage]="paginationConfig.currentPage"
+    [totalPages]="paginationConfig.totalPages" [totalItems]="paginationConfig.totalItems"
+    [itemsPerPage]="paginationConfig.itemsPerPage" (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>
+
+<!-- Modal para crear persona -->
+<div *ngIf="showForm" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarFormulario()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">➕</span>
+      <h2>Agregar Nueva Persona</h2>
+    </div>
+
+    <form [formGroup]="personaForm" (ngSubmit)="crearPersona()" autocomplete="off" class="form-styled">
+      <div class="form-group">
+        <label for="create-firstName">
+          <span class="label-icon">👤</span>
+          Nombre
+        </label>
+        <input
+          id="create-firstName"
+          type="text"
+          class="custom-input"
+          formControlName="firstName"
+          maxlength="50"
+          placeholder="Ej: Juan"
+        />
+        <div *ngIf="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched" class="error-msg">
+          El nombre es requerido (2-50 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-lastName">
+          <span class="label-icon">👤</span>
+          Apellido
+        </label>
+        <input
+          id="create-lastName"
+          type="text"
+          class="custom-input"
+          formControlName="lastName"
+          maxlength="50"
+          placeholder="Ej: Pérez"
+        />
+        <div *ngIf="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched" class="error-msg">
+          El apellido es requerido (2-50 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-phoneNumber">
+          <span class="label-icon">📱</span>
+          Teléfono
+        </label>
+        <input
+          id="create-phoneNumber"
+          type="text"
+          class="custom-input"
+          formControlName="phoneNumber"
+          maxlength="15"
+          placeholder="Ej: 3001234567"
+        />
+        <div *ngIf="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched" class="error-msg">
+          Teléfono requerido (7-15 dígitos)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-address">
+          <span class="label-icon">📍</span>
+          Dirección
+        </label>
+        <input
+          id="create-address"
+          type="text"
+          class="custom-input"
+          formControlName="address"
+          maxlength="100"
+          placeholder="Ej: Calle 123 # 45-67"
+        />
+        <div *ngIf="personaForm.get('address')?.invalid && personaForm.get('address')?.touched" class="error-msg">
+          Dirección requerida (5-100 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="create-municipalityId">
+          <span class="label-icon">🏛️</span>
+          Municipio
+        </label>
+        <select
+          id="create-municipalityId"
+          class="custom-select"
+          formControlName="municipalityId"
+        >
+          <option [value]="null">Seleccionar municipio</option>
+          <option *ngFor="let municipio of municipios" [value]="municipio.id">
+            {{ municipio.name }}
+          </option>
+          <option *ngIf="municipios.length === 0" [value]="null" disabled>No se encuentran municipios</option>
+        </select>
+        <div *ngIf="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched" class="error-msg">
+          Debe seleccionar un municipio
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarFormulario()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="personaForm.invalid"
+        >
+          <span class="btn-icon">➕</span>
+          Crear
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para actualizar persona -->
+<div *ngIf="showUpdateModal && personaSeleccionada" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" (click)="cerrarModalActualizar()" title="Cerrar">&times;</button>
+    <div class="modal-header">
+      <span class="modal-icon">✏️</span>
+      <h2>Actualizar Persona</h2>
+    </div>
+
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarPersona()" autocomplete="off" class="form-styled" novalidate>
+      <div class="form-group">
+        <label for="update-firstName">
+          <span class="label-icon">👤</span>
+          Nombre
+        </label>
+        <input
+          id="update-firstName"
+          type="text"
+          class="custom-input"
+          formControlName="firstName"
+          maxlength="50"
+        />
+        <div *ngIf="updateForm.get('firstName')?.invalid && updateForm.get('firstName')?.touched" class="error-msg">
+          El nombre es requerido (2-50 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="update-lastName">
+          <span class="label-icon">👤</span>
+          Apellido
+        </label>
+        <input
+          id="update-lastName"
+          type="text"
+          class="custom-input"
+          formControlName="lastName"
+          maxlength="50"
+        />
+        <div *ngIf="updateForm.get('lastName')?.invalid && updateForm.get('lastName')?.touched" class="error-msg">
+          El apellido es requerido (2-50 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="update-phoneNumber">
+          <span class="label-icon">📱</span>
+          Teléfono
+        </label>
+        <input
+          id="update-phoneNumber"
+          type="text"
+          class="custom-input"
+          formControlName="phoneNumber"
+          maxlength="15"
+        />
+        <div *ngIf="updateForm.get('phoneNumber')?.invalid && updateForm.get('phoneNumber')?.touched" class="error-msg">
+          Teléfono requerido (7-15 dígitos)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="update-address">
+          <span class="label-icon">📍</span>
+          Dirección
+        </label>
+        <input
+          id="update-address"
+          type="text"
+          class="custom-input"
+          formControlName="address"
+          maxlength="100"
+        />
+        <div *ngIf="updateForm.get('address')?.invalid && updateForm.get('address')?.touched" class="error-msg">
+          Dirección requerida (5-100 caracteres)
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="update-municipalityId">
+          <span class="label-icon">🏛️</span>
+          Municipio
+        </label>
+        <select
+          id="update-municipalityId"
+          class="custom-select"
+          formControlName="municipalityId"
+        >
+          <option [value]="null">Seleccionar municipio</option>
+          <option *ngFor="let municipio of municipios" [value]="municipio.id">
+            {{ municipio.name }}
+          </option>
+          <option *ngIf="municipios.length === 0" [value]="null" disabled>No se encuentran municipios</option>
+        </select>
+        <div *ngIf="updateForm.get('municipalityId')?.invalid && updateForm.get('municipalityId')?.touched" class="error-msg">
+          Debe seleccionar un municipio
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="cerrarModalActualizar()">
+          <span class="btn-icon">❌</span>
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="updateForm.invalid"
+        >
+          <span class="btn-icon">💾</span>
+          Actualizar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
