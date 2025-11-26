@@ -12,9 +12,9 @@
     <div class="prejudicial-group flex flex-col lg:flex-row gap-4 lg:gap-6 mb-6">
       <!-- Columna Multas Muy Recientes (< 2 días) -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-green-100 border-l-4 border-green-500 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-green-800">Multas Recientes</h2>
-          <span class="text-sm text-green-600">{{ prejudicialVeryRecent.length }} multas</span>
+        <div class="column-header column-header-multas-recientes border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #4caf50;">Multas Recientes</h2>
+          <span class="text-sm" style="color: #2e7d32;">{{ prejudicialVeryRecent.length }} multas</span>
         </div>
         <app-generic-card [items]="prejudicialVeryRecent" borderColor="border-green-500" backgroundColor="bg-green-50"
           (cardClick)="openModal($event)"></app-generic-card>
@@ -22,9 +22,9 @@
 
       <!-- Columna Cobro Prejuridico 0-3 días -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-yellow-100 border-l-4 border-yellow-500 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 3 días</h2>
-          <span class="text-sm text-yellow-600">{{ prejudicial0to3.length }} multas</span>
+        <div class="column-header column-header-prejuridico-3dias border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #f57c00;">Prejuridico 3 días</h2>
+          <span class="text-sm" style="color: #e65100;">{{ prejudicial0to3.length }} multas</span>
         </div>
         <app-generic-card [items]="prejudicial0to3" borderColor="border-yellow-500" backgroundColor="bg-yellow-50"
           (cardClick)="openModal($event)"></app-generic-card>
@@ -32,16 +32,16 @@
 
       <!-- Columna Cobro Prejuridico 3-15 días -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-yellow-200 border-l-4 border-yellow-600 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-yellow-800">Prejuridico 15 días</h2>
-          <span class="text-sm text-yellow-700">{{ prejudicial3to15.length }} multas</span>
+        <div class="column-header column-header-prejuridico-15dias border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #e65100;">Prejuridico 15 días</h2>
+          <span class="text-sm" style="color: #bf360c;">{{ prejudicial3to15.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicial3to15" borderColor="border-yellow-600" backgroundColor="bg-orange-50"
+        <app-generic-card [items]="prejudicial3to15" borderColor="border-orange-500" backgroundColor="bg-orange-50"
           (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Modal de Detalles -->
-      <p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [style]="{width: '90vw', maxWidth: '600px'}"
+      <p-dialog [(visible)]="visible" [modal]="true" [closable]="true" [draggable]="false" [style]="{width: '600px', maxWidth: '500px', maxHeight: '70vh'}"
         header="Detalles de la Multa" (onHide)="closeModal()">
 
         <div *ngIf="selectedItem" class="modal-content">
@@ -174,19 +174,19 @@
     <div class="juridico-avanzado-group flex flex-col lg:flex-row gap-4 lg:gap-6">
       <!-- Columna Cobro Prejuridico 15-25 días -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-yellow-300 border-l-4 border-yellow-700 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-yellow-900">Prejuridico 25 días</h2>
-          <span class="text-sm text-yellow-800">{{ prejudicial15to25.length }} multas</span>
+        <div class="column-header column-header-prejuridico-25dias border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #d32f2f;">Prejuridico 25 días</h2>
+          <span class="text-sm" style="color: #b71c1c;">{{ prejudicial15to25.length }} multas</span>
         </div>
-        <app-generic-card [items]="prejudicial15to25" borderColor="border-yellow-700" backgroundColor="bg-yellow-100"
+        <app-generic-card [items]="prejudicial15to25" borderColor="border-red-500" backgroundColor="bg-red-50"
           (cardClick)="openModal($event)"></app-generic-card>
       </div>
 
       <!-- Columna Cobro Jurídico -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-blue-100 border-l-4 border-blue-500 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-blue-800">Cobro Jurídico</h2>
-          <span class="text-sm text-blue-600">{{ juridico.length }} multas</span>
+        <div class="column-header column-header-juridico border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #1976d2;">Cobro Jurídico</h2>
+          <span class="text-sm" style="color: #0d47a1;">{{ juridico.length }} multas</span>
         </div>
         <app-generic-card [items]="juridico" borderColor="border-blue-500" backgroundColor="bg-blue-50"
           (cardClick)="openModal($event)"></app-generic-card>
@@ -194,9 +194,9 @@
 
       <!-- Columna Cobro Coactivo -->
       <div class="kanban-column flex-1 min-w-80">
-        <div class="column-header bg-red-100 border-l-4 border-red-500 p-4 rounded-t-lg">
-          <h2 class="text-lg font-semibold text-red-800">Cobro Coactivo</h2>
-          <span class="text-sm text-red-600">{{ coactivo.length }} multas</span>
+        <div class="column-header column-header-coactivo border-l-4 p-4 rounded-t-lg">
+          <h2 class="text-lg font-semibold" style="color: #f44336;">Cobro Coactivo</h2>
+          <span class="text-sm" style="color: #b71c1c;">{{ coactivo.length }} multas</span>
         </div>
         <app-generic-card [items]="coactivo" borderColor="border-red-500" backgroundColor="bg-red-50"
           (cardClick)="openModal($event)"></app-generic-card>
