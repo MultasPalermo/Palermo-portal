@@ -24,15 +24,22 @@
   <div *ngIf="!loading()" class="dashboard-content">
     
     <!-- Mensaje informativo -->
-    <div class="info-banner" *ngIf="stats().totalMultas > 0 && !error()">
+    <div class="info-banner" *ngIf="(stats().totalMultas > 0 || stats().totalAcuerdosPago > 0) && !error()">
       <i class="pi pi-info-circle"></i>
       <span *ngIf="usandoDatosReales()">Mostrando datos en tiempo real del sistema</span>
       <span *ngIf="!usandoDatosReales()"> Mostrando datos de ejemplo (Backend no disponible)</span>
+    </div>
+
+    <!-- Mensaje cuando no hay datos -->
+    <div class="info-banner" *ngIf="stats().totalMultas === 0 && stats().totalAcuerdosPago === 0 && !loading() && !error()">
+      <i class="pi pi-info-circle"></i>
+      <span>No hay datos disponibles en el sistema</span>
     </div>
     
     <!-- Estadísticas principales -->
     <div class="stats-grid">
       <app-stat-card
+        *ngIf="stats().totalMultas > 0"
         icon="pi pi-file"
         [value]="stats().totalMultas"
         label="Total de Multas"
@@ -40,6 +47,7 @@
       ></app-stat-card>
 
       <app-stat-card
+        *ngIf="stats().multasPendientes > 0"
         icon="pi pi-clock"
         [value]="stats().multasPendientes"
         label="Multas Pendientes"
@@ -47,6 +55,7 @@
       ></app-stat-card>
 
       <app-stat-card
+        *ngIf="stats().multasPagadas > 0"
         icon="pi pi-check-circle"
         [value]="stats().multasPagadas"
         label="Multas Pagadas"
@@ -54,113 +63,81 @@
       ></app-stat-card>
 
       <app-stat-card
+        *ngIf="stats().multasVencidas > 0"
         icon="pi pi-exclamation-circle"
         [value]="stats().multasVencidas"
         label="Multas Vencidas"
         colorClass="green-darker"
       ></app-stat-card>
-
-      <app-stat-card
-        icon="pi pi-users"
-        [value]="stats().totalUsuarios"
-        label="Total de Usuarios"
-        colorClass="green-medium"
-      ></app-stat-card>
-
-      <app-stat-card
-        icon="pi pi-calendar"
-        [value]="stats().multasDelMes"
-        label="Multas del Mes"
-        colorClass="green-light"
-      ></app-stat-card>
     </div>
 
-    <!-- Gráficos y detalles -->
+    <!-- Resumen financiero -->
     <div class="charts-grid">
-      
-      <!-- Multas por Estado -->
-      <div class="chart-card">
+      <!-- Resumen de Acuerdos de Pago -->
+      <div class="chart-card financial-summary" *ngIf="stats().totalAcuerdosPago > 0">
         <h3 class="chart-title">
-          <i class="pi pi-chart-pie"></i>
-          Distribución por Estado
+          <i class="pi pi-bookmark"></i>
+          Acuerdos de Pago
+        </h3>
+        <div class="chart-content">
+          <div class="financial-item">
+            <span class="financial-label">Total de Acuerdos</span>
+            <span class="financial-value">{{ stats().totalAcuerdosPago }}</span>
+          </div>
+          <div class="financial-item">
+            <span class="financial-label">Monto Total</span>
+            <span class="financial-value">{{ stats().montoTotalAcuerdos | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Métodos de Pago Más Usados -->
+      <div class="chart-card" *ngIf="stats().metodosPago.length > 0">
+        <h3 class="chart-title">
+          <i class="pi pi-credit-card"></i>
+          Métodos de Pago
         </h3>
         <div class="chart-content">
           <div class="estado-list">
-            <div *ngFor="let item of multasPorEstado()" class="estado-item">
+            <div class="estado-item" *ngFor="let metodo of stats().metodosPago; let i = index">
               <div class="estado-info">
-                <span class="estado-nombre">{{ item.estado }}</span>
-                <span class="estado-cantidad">{{ item.cantidad }}</span>
+                <span class="estado-nombre">{{ metodo.nombre }}</span>
+                <span class="estado-cantidad">{{ metodo.cantidad }} ({{ metodo.porcentaje | number:'1.0-0' }}%)</span>
               </div>
               <div class="progress-bar">
-                <div 
-                  class="progress-fill" 
-                  [style.width.%]="item.porcentaje"
-                  [ngClass]="{
-                    'bg-green-light': item.estado === 'Pendiente',
-                    'bg-green-medium': item.estado === 'Pagada',
-                    'bg-green-dark': item.estado === 'Vencida'
-                  }"
-                ></div>
-              </div>
-              <span class="estado-porcentaje">{{ item.porcentaje }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Multas por Mes -->
-      <div class="chart-card">
-        <h3 class="chart-title">
-          <i class="pi pi-chart-line"></i>
-          Multas por Mes (Últimos 6 meses)
-        </h3>
-        <div class="chart-content">
-          <div class="bar-chart">
-            <div *ngFor="let item of multasPorMes(); let i = index" class="bar-item">
-              <div class="bar-container">
-                <div 
-                  class="bar" 
-                  [style.height.%]="(item.cantidad / 60) * 100"
-                  [title]="item.cantidad + ' multas'"
-                  [attr.data-index]="i"
-                >
-                  <span class="bar-value">{{ item.cantidad }}</span>
+                <div class="progress-fill"
+                     [ngClass]="i === 0 ? 'bg-green-light' : i === 1 ? 'bg-green-medium' : 'bg-green-dark'"
+                     [style.width.%]="metodo.porcentaje">
                 </div>
               </div>
-              <span class="bar-label">{{ item.mes }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Resumen Financiero -->
-      <div class="chart-card financial-summary">
+      <!-- Frecuencias de Pago -->
+      <div class="chart-card" *ngIf="stats().frecuenciasPago.length > 0">
         <h3 class="chart-title">
-          <i class="pi pi-dollar"></i>
-          Resumen Financiero
+          <i class="pi pi-calendar"></i>
+          Frecuencias de Pago
         </h3>
         <div class="chart-content">
-          <div class="financial-item">
-            <span class="financial-label">Monto Total en Multas</span>
-            <span class="financial-value">{{ stats().montoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-          </div>
-          <div class="financial-item">
-            <span class="financial-label">Promedio por Multa</span>
-            <span class="financial-value">
-              {{ stats().totalMultas > 0 ? (stats().montoTotal / stats().totalMultas) : 0 | currency:'COP':'symbol-narrow':'1.0-0' }}
-            </span>
-          </div>
-          <div class="financial-item">
-            <span class="financial-label">Multas Pagadas (%)</span>
-            <span class="financial-value success-text">{{ calcularPorcentajePagadas() | number:'1.1-1' }}%</span>
-          </div>
-          <div class="financial-item">
-            <span class="financial-label">Multas Pendientes (%)</span>
-            <span class="financial-value warning-text">{{ calcularPorcentajePendientes() | number:'1.1-1' }}%</span>
+          <div class="estado-list">
+            <div class="estado-item" *ngFor="let frecuencia of stats().frecuenciasPago; let i = index">
+              <div class="estado-info">
+                <span class="estado-nombre">{{ frecuencia.nombre }}</span>
+                <span class="estado-cantidad">{{ frecuencia.cantidad }} ({{ frecuencia.porcentaje | number:'1.0-0' }}%)</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill"
+                     [ngClass]="i === 0 ? 'bg-green-light' : i === 1 ? 'bg-green-medium' : 'bg-green-dark'"
+                     [style.width.%]="frecuencia.porcentaje">
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
