@@ -100,4 +100,13 @@ export class AuthService extends ApiService {
       switchMap(() => this.GetMe())
     );
   }
+
+  /** Reset password */
+  ResetPasswordAsync(dto: { email: string; newPassword: string }) {
+    return this.http.post<any>(
+      this.url('Auth', 'newPassword'),
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
 }

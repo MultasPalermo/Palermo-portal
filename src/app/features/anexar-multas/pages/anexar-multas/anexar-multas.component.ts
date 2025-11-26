@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +10,8 @@ import Swal from 'sweetalert2';
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import { DocumentSessionService } from '../../../../core/services/documents/document-session.service';
 import { PaymentService } from '../../../../core/services/payments/payment.service';
+import { validateRegisterEmail } from '../../../../shared/utils/validator/login-register';
+import { environment } from '../../../../../environments/environment';
 
 
 
@@ -42,7 +45,8 @@ export class AnexarMultasComponent implements OnInit {
     private router: Router,
     private api: ServiceGenericService,
     private documentSessionService: DocumentSessionService,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private http: HttpClient
   ) { }
 
   ngOnInit() {
@@ -141,7 +145,23 @@ export class AnexarMultasComponent implements OnInit {
     this.form.infractionId = null;
     this.form.smldvCount = null;
     this.infractions = [];
-    this.isExistingUser = false; 
+    this.isExistingUser = false;
+  }
+
+  private checkEmailUniqueness(email: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.http.get<any[]>(`${environment.apiURL}/Users`).subscribe({
+        next: (users) => {
+          const exists = users.some(user => user.email?.toLowerCase() === email.toLowerCase());
+          resolve(!exists);
+        },
+        error: (err) => {
+          console.error('Error verificando unicidad de email:', err);
+          // En caso de error, asumimos que es único para no bloquear
+          resolve(true);
+        }
+      });
+    });
   }
 
   onInfractionChange(infractionId: number) {
@@ -149,7 +169,7 @@ export class AnexarMultasComponent implements OnInit {
     this.form.smldvCount = selected ? selected.smldv : null;
   }
 
-  saveInfraction() {
+  async saveInfraction() {
   if (this.isLoading) return; // evita doble click
 
   // ✅ Validaciones del frontend
@@ -188,11 +208,20 @@ export class AnexarMultasComponent implements OnInit {
     return;
   }
 
-  // Validación básica de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(this.form.email)) {
-    Swal.fire('⚠️', 'El correo electrónico no tiene un formato válido', 'warning');
+  // Validación de formato de email
+  const emailError = validateRegisterEmail(this.form.email);
+  if (emailError) {
+    Swal.fire('⚠️', emailError, 'warning');
     return;
+  }
+
+  // Validación de unicidad de email (solo si no es usuario existente)
+  if (!this.isExistingUser) {
+    const isUnique = await this.checkEmailUniqueness(this.form.email);
+    if (!isUnique) {
+      Swal.fire('⚠️', 'El correo electrónico ya está registrado en el sistema', 'warning');
+      return;
+    }
   }
 
   this.isLoading = true; // ahora sí bloqueamos mientras se registra

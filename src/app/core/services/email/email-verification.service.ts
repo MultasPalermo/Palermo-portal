@@ -47,4 +47,23 @@ export class EmailVerificationService extends ApiService {
       { headers: this.getHeaders() }
     );
   }
+
+  // ===============================
+// 📌 Recuperación de contraseña
+// ===============================
+SendVerificationPasswordAsync(dto: { Email: string }) {
+  return this.http.post<any>(
+    this.url('Auth', 'code'),
+    dto,
+    { headers: this.getHeaders() }
+  );
+}
+
+ValidateCodePassword(dto: { Email: string; Code: string }) {
+  return this.http.post<any>(
+    this.url('Auth', 'validate'),
+    dto,
+    { headers: this.getHeaders() }
+  );
+}
 }
