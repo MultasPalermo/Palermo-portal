@@ -147,11 +147,12 @@
       <h2>Agregar Nuevo Municipio</h2>
     </div>
 
-    <form [formGroup]="municipalityForm" (ngSubmit)="crearMunicipio()" autocomplete="off" class="form-styled">
+    <form [formGroup]="municipalityForm" (ngSubmit)="crearMunicipio()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Municipio
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
@@ -159,11 +160,25 @@
           class="custom-input"
           formControlName="name"
           maxlength="60"
-          placeholder="Ej: Medellín" />
+          placeholder="Ej: Medellín"
+          aria-describedby="create-name-hint create-name-error"
+          [attr.aria-invalid]="municipalityForm.get('name')?.invalid && municipalityForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 2 caracteres, máximo 60.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ municipalityForm.get('name')?.value?.length || 0 }}/60 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name')"
-          class="error-msg">
-          {{ getFieldError('name') }}
+          id="create-name-error"
+          *ngIf="municipalityForm.get('name')?.invalid && municipalityForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="municipalityForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="municipalityForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="municipalityForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 60 caracteres.</span>
         </div>
       </div>
 
@@ -171,6 +186,7 @@
         <label for="create-daneCode-input">
           <span class="label-icon">🔢</span>
           Código DANE
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-daneCode-input"
@@ -178,11 +194,25 @@
           class="custom-input"
           formControlName="daneCode"
           maxlength="5"
-          placeholder="Ej: 05001" />
+          placeholder="Ej: 05001"
+          aria-describedby="create-daneCode-hint create-daneCode-error"
+          [attr.aria-invalid]="municipalityForm.get('daneCode')?.invalid && municipalityForm.get('daneCode')?.touched"
+        />
+        <div class="input-hint" id="create-daneCode-hint">
+          <small>Máximo 5 dígitos numéricos.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ municipalityForm.get('daneCode')?.value?.length || 0 }}/5 dígitos</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('daneCode')"
-          class="error-msg">
-          {{ getFieldError('daneCode') }}
+          id="create-daneCode-error"
+          *ngIf="municipalityForm.get('daneCode')?.invalid && municipalityForm.get('daneCode')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="municipalityForm.get('daneCode')?.hasError('required')">El código DANE es obligatorio.</span>
+          <span *ngIf="municipalityForm.get('daneCode')?.hasError('pattern')">El código DANE debe contener solo números.</span>
+          <span *ngIf="municipalityForm.get('daneCode')?.hasError('maxlength')">El código DANE no puede superar los 5 dígitos.</span>
         </div>
       </div>
 
@@ -190,11 +220,15 @@
         <label for="create-departmentId-input">
           <span class="label-icon">🏛️</span>
           Departamento
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="create-departmentId-input"
           class="custom-input"
-          formControlName="departmentId">
+          formControlName="departmentId"
+          aria-describedby="create-departmentId-hint create-departmentId-error"
+          [attr.aria-invalid]="municipalityForm.get('departmentId')?.invalid && municipalityForm.get('departmentId')?.touched"
+        >
           <option value="" disabled>Seleccione un departamento</option>
           <option value="1">Antioquia</option>
           <option value="2">Cundinamarca</option>
@@ -202,10 +236,16 @@
           <option value="4">Atlántico</option>
           <option value="5">Bolívar</option>
         </select>
+        <div class="input-hint" id="create-departmentId-hint">
+          <small>Seleccione el departamento al que pertenece el municipio.</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('departmentId')"
-          class="error-msg">
-          {{ getFieldError('departmentId') }}
+          id="create-departmentId-error"
+          *ngIf="municipalityForm.get('departmentId')?.invalid && municipalityForm.get('departmentId')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="municipalityForm.get('departmentId')?.hasError('required')">El departamento es obligatorio.</span>
         </div>
       </div>
 
@@ -235,22 +275,37 @@
       <h2>Actualizar Municipio</h2>
     </div>
 
-    <form [formGroup]="updateForm" (ngSubmit)="actualizarMunicipio()" autocomplete="off" class="form-styled">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarMunicipio()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Municipio
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
           type="text"
           class="custom-input"
           formControlName="name"
-          maxlength="60" />
+          maxlength="60"
+          aria-describedby="update-name-hint update-name-error"
+          [attr.aria-invalid]="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 2 caracteres, máximo 60.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('name')?.value?.length || 0 }}/60 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name', updateForm)"
-          class="error-msg">
-          {{ getFieldError('name', updateForm) }}
+          id="update-name-error"
+          *ngIf="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 60 caracteres.</span>
         </div>
       </div>
 
@@ -258,17 +313,32 @@
         <label for="update-daneCode-input">
           <span class="label-icon">🔢</span>
           Código DANE
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-daneCode-input"
           type="text"
           class="custom-input"
           formControlName="daneCode"
-          maxlength="5" />
+          maxlength="5"
+          aria-describedby="update-daneCode-hint update-daneCode-error"
+          [attr.aria-invalid]="updateForm.get('daneCode')?.invalid && updateForm.get('daneCode')?.touched"
+        />
+        <div class="input-hint" id="update-daneCode-hint">
+          <small>Máximo 5 dígitos numéricos.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('daneCode')?.value?.length || 0 }}/5 dígitos</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('daneCode', updateForm)"
-          class="error-msg">
-          {{ getFieldError('daneCode', updateForm) }}
+          id="update-daneCode-error"
+          *ngIf="updateForm.get('daneCode')?.invalid && updateForm.get('daneCode')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('daneCode')?.hasError('required')">El código DANE es obligatorio.</span>
+          <span *ngIf="updateForm.get('daneCode')?.hasError('pattern')">El código DANE debe contener solo números.</span>
+          <span *ngIf="updateForm.get('daneCode')?.hasError('maxlength')">El código DANE no puede superar los 5 dígitos.</span>
         </div>
       </div>
 
@@ -276,11 +346,15 @@
         <label for="update-departmentId-input">
           <span class="label-icon">🏛️</span>
           Departamento
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="update-departmentId-input"
           class="custom-input"
-          formControlName="departmentId">
+          formControlName="departmentId"
+          aria-describedby="update-departmentId-hint update-departmentId-error"
+          [attr.aria-invalid]="updateForm.get('departmentId')?.invalid && updateForm.get('departmentId')?.touched"
+        >
           <option value="" disabled>Seleccione un departamento</option>
           <option value="1">Antioquia</option>
           <option value="2">Cundinamarca</option>
@@ -288,10 +362,16 @@
           <option value="4">Atlántico</option>
           <option value="5">Bolívar</option>
         </select>
+        <div class="input-hint" id="update-departmentId-hint">
+          <small>Seleccione el departamento al que pertenece el municipio.</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('departmentId', updateForm)"
-          class="error-msg">
-          {{ getFieldError('departmentId', updateForm) }}
+          id="update-departmentId-error"
+          *ngIf="updateForm.get('departmentId')?.invalid && updateForm.get('departmentId')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('departmentId')?.hasError('required')">El departamento es obligatorio.</span>
         </div>
       </div>
 

@@ -140,11 +140,12 @@
       <h2>Agregar Nuevo Tipo de Documento</h2>
     </div>
 
-    <form [formGroup]="documentTypeForm" (ngSubmit)="crearDocumentTypeDto()" autocomplete="off" class="form-styled">
+    <form [formGroup]="documentTypeForm" (ngSubmit)="crearDocumentTypeDto()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Tipo de Documento
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
@@ -152,11 +153,25 @@
           class="custom-input"
           formControlName="name"
           maxlength="100"
-          placeholder="Ej: Cédula de Ciudadanía" />
+          placeholder="Ej: Cédula de Ciudadanía"
+          aria-describedby="create-name-hint create-name-error"
+          [attr.aria-invalid]="documentTypeForm.get('name')?.invalid && documentTypeForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 2 caracteres, máximo 100.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ documentTypeForm.get('name')?.value?.length || 0 }}/100 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name')"
-          class="error-msg">
-          {{ getFieldError('name') }}
+          id="create-name-error"
+          *ngIf="documentTypeForm.get('name')?.invalid && documentTypeForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="documentTypeForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="documentTypeForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="documentTypeForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 100 caracteres.</span>
         </div>
       </div>
 
@@ -164,6 +179,7 @@
         <label for="create-abbreviation-input">
           <span class="label-icon">🔤</span>
           Abreviatura
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-abbreviation-input"
@@ -171,11 +187,25 @@
           class="custom-input"
           formControlName="abbreviation"
           maxlength="10"
-          placeholder="Ej: CC" />
+          placeholder="Ej: CC"
+          aria-describedby="create-abbreviation-hint create-abbreviation-error"
+          [attr.aria-invalid]="documentTypeForm.get('abbreviation')?.invalid && documentTypeForm.get('abbreviation')?.touched"
+        />
+        <div class="input-hint" id="create-abbreviation-hint">
+          <small>Mínimo 1 carácter, máximo 10.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ documentTypeForm.get('abbreviation')?.value?.length || 0 }}/10 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('abbreviation')"
-          class="error-msg">
-          {{ getFieldError('abbreviation') }}
+          id="create-abbreviation-error"
+          *ngIf="documentTypeForm.get('abbreviation')?.invalid && documentTypeForm.get('abbreviation')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="documentTypeForm.get('abbreviation')?.hasError('required')">La abreviatura es obligatoria.</span>
+          <span *ngIf="documentTypeForm.get('abbreviation')?.hasError('minlength')">La abreviatura debe tener al menos 1 carácter.</span>
+          <span *ngIf="documentTypeForm.get('abbreviation')?.hasError('maxlength')">La abreviatura no puede superar los 10 caracteres.</span>
         </div>
       </div>
 
@@ -205,22 +235,37 @@
       <h2>Actualizar Tipo de Documento</h2>
     </div>
 
-    <form [formGroup]="updateForm" (ngSubmit)="actualizarDocumentTypeDto()" autocomplete="off" class="form-styled">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarDocumentTypeDto()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Tipo de Documento
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
           type="text"
           class="custom-input"
           formControlName="name"
-          maxlength="100" />
+          maxlength="100"
+          aria-describedby="update-name-hint update-name-error"
+          [attr.aria-invalid]="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 2 caracteres, máximo 100.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('name')?.value?.length || 0 }}/100 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name', updateForm)"
-          class="error-msg">
-          {{ getFieldError('name', updateForm) }}
+          id="update-name-error"
+          *ngIf="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 100 caracteres.</span>
         </div>
       </div>
 
@@ -228,17 +273,32 @@
         <label for="update-abbreviation-input">
           <span class="label-icon">🔤</span>
           Abreviatura
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-abbreviation-input"
           type="text"
           class="custom-input"
           formControlName="abbreviation"
-          maxlength="10" />
+          maxlength="10"
+          aria-describedby="update-abbreviation-hint update-abbreviation-error"
+          [attr.aria-invalid]="updateForm.get('abbreviation')?.invalid && updateForm.get('abbreviation')?.touched"
+        />
+        <div class="input-hint" id="update-abbreviation-hint">
+          <small>Mínimo 1 carácter, máximo 10.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('abbreviation')?.value?.length || 0 }}/10 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('abbreviation', updateForm)"
-          class="error-msg">
-          {{ getFieldError('abbreviation', updateForm) }}
+          id="update-abbreviation-error"
+          *ngIf="updateForm.get('abbreviation')?.invalid && updateForm.get('abbreviation')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('abbreviation')?.hasError('required')">La abreviatura es obligatoria.</span>
+          <span *ngIf="updateForm.get('abbreviation')?.hasError('minlength')">La abreviatura debe tener al menos 1 carácter.</span>
+          <span *ngIf="updateForm.get('abbreviation')?.hasError('maxlength')">La abreviatura no puede superar los 10 caracteres.</span>
         </div>
       </div>
 

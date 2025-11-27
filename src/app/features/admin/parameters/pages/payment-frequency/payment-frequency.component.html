@@ -147,11 +147,12 @@
       <h2>Agregar Nueva Frecuencia de Pago</h2>
     </div>
 
-    <form [formGroup]="paymentFrequencyForm" (ngSubmit)="crearPaymentFrequency()" autocomplete="off" class="form-styled">
+    <form [formGroup]="paymentFrequencyForm" (ngSubmit)="crearPaymentFrequency()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-intervalPage-input">
           <span class="label-icon">📝</span>
           Frecuencia de Pago
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-intervalPage-input"
@@ -159,11 +160,25 @@
           class="custom-input"
           formControlName="intervalPage"
           maxlength="50"
-          placeholder="Ej: Mensual" />
+          placeholder="Ej: Mensual"
+          aria-describedby="create-intervalPage-hint create-intervalPage-error"
+          [attr.aria-invalid]="paymentFrequencyForm.get('intervalPage')?.invalid && paymentFrequencyForm.get('intervalPage')?.touched"
+        />
+        <div class="input-hint" id="create-intervalPage-hint">
+          <small>Mínimo 2 caracteres, máximo 50.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ paymentFrequencyForm.get('intervalPage')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('intervalPage')"
-          class="error-msg">
-          {{ getFieldError('intervalPage') }}
+          id="create-intervalPage-error"
+          *ngIf="paymentFrequencyForm.get('intervalPage')?.invalid && paymentFrequencyForm.get('intervalPage')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="paymentFrequencyForm.get('intervalPage')?.hasError('required')">La frecuencia de pago es obligatoria.</span>
+          <span *ngIf="paymentFrequencyForm.get('intervalPage')?.hasError('minlength')">La frecuencia debe tener al menos 2 caracteres.</span>
+          <span *ngIf="paymentFrequencyForm.get('intervalPage')?.hasError('maxlength')">La frecuencia no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -171,17 +186,27 @@
         <label for="create-IntervalType-input">
           <span class="label-icon">⏱️</span>
           Tipo de Intervalo
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="create-IntervalType-input"
           class="custom-input"
-          formControlName="IntervalType">
+          formControlName="IntervalType"
+          aria-describedby="create-IntervalType-hint create-IntervalType-error"
+          [attr.aria-invalid]="paymentFrequencyForm.get('IntervalType')?.invalid && paymentFrequencyForm.get('IntervalType')?.touched"
+        >
           <option *ngFor="let option of intervalTypeOptions" [value]="option.value">{{ option.label }}</option>
         </select>
+        <div class="input-hint" id="create-IntervalType-hint">
+          <small>Seleccione el tipo de intervalo (días, semanas, meses, etc.).</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('IntervalType')"
-          class="error-msg">
-          {{ getFieldError('IntervalType') }}
+          id="create-IntervalType-error"
+          *ngIf="paymentFrequencyForm.get('IntervalType')?.invalid && paymentFrequencyForm.get('IntervalType')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="paymentFrequencyForm.get('IntervalType')?.hasError('required')">El tipo de intervalo es obligatorio.</span>
         </div>
       </div>
 
@@ -189,6 +214,7 @@
         <label for="create-IntervalValue-input">
           <span class="label-icon">🔢</span>
           Valor de Frecuencia
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-IntervalValue-input"
@@ -196,11 +222,21 @@
           class="custom-input"
           formControlName="IntervalValue"
           min="1"
-          placeholder="Ej: 1" />
+          placeholder="Ej: 1"
+          aria-describedby="create-IntervalValue-hint create-IntervalValue-error"
+          [attr.aria-invalid]="paymentFrequencyForm.get('IntervalValue')?.invalid && paymentFrequencyForm.get('IntervalValue')?.touched"
+        />
+        <div class="input-hint" id="create-IntervalValue-hint">
+          <small>Valor numérico positivo (mínimo 1).</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('IntervalValue')"
-          class="error-msg">
-          {{ getFieldError('IntervalValue') }}
+          id="create-IntervalValue-error"
+          *ngIf="paymentFrequencyForm.get('IntervalValue')?.invalid && paymentFrequencyForm.get('IntervalValue')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="paymentFrequencyForm.get('IntervalValue')?.hasError('required')">El valor de frecuencia es obligatorio.</span>
+          <span *ngIf="paymentFrequencyForm.get('IntervalValue')?.hasError('min')">El valor debe ser mayor o igual a 1.</span>
         </div>
       </div>
 
@@ -230,22 +266,37 @@
       <h2>Actualizar Frecuencia de Pago</h2>
     </div>
 
-    <form [formGroup]="updateForm" (ngSubmit)="actualizarPaymentFrequency()" autocomplete="off" class="form-styled">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarPaymentFrequency()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="update-intervalPage-input">
           <span class="label-icon">📝</span>
           Frecuencia de Pago
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-intervalPage-input"
           type="text"
           class="custom-input"
           formControlName="intervalPage"
-          maxlength="50" />
+          maxlength="50"
+          aria-describedby="update-intervalPage-hint update-intervalPage-error"
+          [attr.aria-invalid]="updateForm.get('intervalPage')?.invalid && updateForm.get('intervalPage')?.touched"
+        />
+        <div class="input-hint" id="update-intervalPage-hint">
+          <small>Mínimo 2 caracteres, máximo 50.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('intervalPage')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('intervalPage', updateForm)"
-          class="error-msg">
-          {{ getFieldError('intervalPage', updateForm) }}
+          id="update-intervalPage-error"
+          *ngIf="updateForm.get('intervalPage')?.invalid && updateForm.get('intervalPage')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('intervalPage')?.hasError('required')">La frecuencia de pago es obligatoria.</span>
+          <span *ngIf="updateForm.get('intervalPage')?.hasError('minlength')">La frecuencia debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('intervalPage')?.hasError('maxlength')">La frecuencia no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -253,17 +304,27 @@
         <label for="update-IntervalType-input">
           <span class="label-icon">⏱️</span>
           Tipo de Intervalo
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="update-IntervalType-input"
           class="custom-input"
-          formControlName="IntervalType">
+          formControlName="IntervalType"
+          aria-describedby="update-IntervalType-hint update-IntervalType-error"
+          [attr.aria-invalid]="updateForm.get('IntervalType')?.invalid && updateForm.get('IntervalType')?.touched"
+        >
           <option *ngFor="let option of intervalTypeOptions" [value]="option.value">{{ option.label }}</option>
         </select>
+        <div class="input-hint" id="update-IntervalType-hint">
+          <small>Seleccione el tipo de intervalo (días, semanas, meses, etc.).</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('IntervalType', updateForm)"
-          class="error-msg">
-          {{ getFieldError('IntervalType', updateForm) }}
+          id="update-IntervalType-error"
+          *ngIf="updateForm.get('IntervalType')?.invalid && updateForm.get('IntervalType')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('IntervalType')?.hasError('required')">El tipo de intervalo es obligatorio.</span>
         </div>
       </div>
 
@@ -271,17 +332,28 @@
         <label for="update-IntervalValue-input">
           <span class="label-icon">🔢</span>
           Valor de Frecuencia
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-IntervalValue-input"
           type="number"
           class="custom-input"
           formControlName="IntervalValue"
-          min="1" />
+          min="1"
+          aria-describedby="update-IntervalValue-hint update-IntervalValue-error"
+          [attr.aria-invalid]="updateForm.get('IntervalValue')?.invalid && updateForm.get('IntervalValue')?.touched"
+        />
+        <div class="input-hint" id="update-IntervalValue-hint">
+          <small>Valor numérico positivo (mínimo 1).</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('IntervalValue', updateForm)"
-          class="error-msg">
-          {{ getFieldError('IntervalValue', updateForm) }}
+          id="update-IntervalValue-error"
+          *ngIf="updateForm.get('IntervalValue')?.invalid && updateForm.get('IntervalValue')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('IntervalValue')?.hasError('required')">El valor de frecuencia es obligatorio.</span>
+          <span *ngIf="updateForm.get('IntervalValue')?.hasError('min')">El valor debe ser mayor o igual a 1.</span>
         </div>
       </div>
 
