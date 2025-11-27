@@ -53,23 +53,49 @@
   text-decoration: underline;
 }
 
-/* Si el botón de pago es un componente tipo p-button, puedes reforzar su estilo aquí */
-app-button-pay ::ng-deep button {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+/* 🔥 Estilo elegante tipo Fintech / MercadoPago */
+app-button-pay ::ng-deep .mp-button {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
   border: none;
-  color: white;
-  font-weight: 600;
-  border-radius: 6px;
-  padding: 0.6rem 1.2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  padding: 0.75rem 1.4rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  cursor: pointer;
 }
 
-app-button-pay ::ng-deep button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #16a34a, #15803d);
+/* Hover dinámico */
+app-button-pay ::ng-deep .mp-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.45);
+  background: linear-gradient(135deg, #27ae60, #1e8449);
 }
+
+/* Estado loading */
+app-button-pay ::ng-deep .mp-loading {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Estado disabled */
+app-button-pay ::ng-deep .mp-button:disabled {
+  background: #b8eac9;
+  color: #3f6049;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 
 
   .multas-grid {
