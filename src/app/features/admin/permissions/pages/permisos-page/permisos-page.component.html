@@ -112,11 +112,12 @@
       <h2>{{ permisoEditando ? 'Actualizar Permiso' : 'Agregar Nuevo Permiso' }}</h2>
     </div>
 
-    <form [formGroup]="permisoForm" (ngSubmit)="crearPermiso()" autocomplete="off" class="form-styled">
+    <form [formGroup]="permisoForm" (ngSubmit)="crearPermiso()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="name">
           <span class="label-icon">📝</span>
           Nombre del Permiso
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="name"
@@ -125,11 +126,24 @@
           formControlName="name"
           maxlength="50"
           placeholder="Ej: Ver usuarios"
+          aria-describedby="name-hint name-error"
+          [attr.aria-invalid]="permisoForm.get('name')?.invalid && permisoForm.get('name')?.touched"
         />
-        <div *ngIf="permisoForm.get('name')?.invalid && permisoForm.get('name')?.touched" class="error-msg">
-          <span *ngIf="permisoForm.get('name')?.errors?.['required']">El nombre es requerido</span>
-          <span *ngIf="permisoForm.get('name')?.errors?.['minlength']">Mínimo 2 caracteres</span>
-          <span *ngIf="permisoForm.get('name')?.errors?.['maxlength']">Máximo 50 caracteres</span>
+        <div class="input-hint" id="name-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Nombre descriptivo del permiso.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ permisoForm.get('name')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
+        <div
+          id="name-error"
+          *ngIf="permisoForm.get('name')?.invalid && permisoForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="permisoForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="permisoForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="permisoForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -137,6 +151,7 @@
         <label for="description">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="description"
@@ -144,12 +159,25 @@
           formControlName="description"
           maxlength="200"
           rows="4"
-          placeholder="Describe la función del permiso..."
+          placeholder="Describe la función del permiso... (mínimo 5 caracteres)"
+          aria-describedby="description-hint description-error"
+          [attr.aria-invalid]="permisoForm.get('description')?.invalid && permisoForm.get('description')?.touched"
         ></textarea>
-        <div *ngIf="permisoForm.get('description')?.invalid && permisoForm.get('description')?.touched" class="error-msg">
-          <span *ngIf="permisoForm.get('description')?.errors?.['required']">La descripción es requerida</span>
-          <span *ngIf="permisoForm.get('description')?.errors?.['minlength']">Mínimo 5 caracteres</span>
-          <span *ngIf="permisoForm.get('description')?.errors?.['maxlength']">Máximo 200 caracteres</span>
+        <div class="input-hint" id="description-hint">
+          <small>Mínimo 5 caracteres, máximo 200. Describe claramente la función del permiso.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ permisoForm.get('description')?.value?.length || 0 }}/200 caracteres</small>
+        </div>
+        <div
+          id="description-error"
+          *ngIf="permisoForm.get('description')?.invalid && permisoForm.get('description')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="permisoForm.get('description')?.hasError('required')">La descripción es obligatoria.</span>
+          <span *ngIf="permisoForm.get('description')?.hasError('minlength')">La descripción debe tener al menos 5 caracteres.</span>
+          <span *ngIf="permisoForm.get('description')?.hasError('maxlength')">La descripción no puede superar los 200 caracteres.</span>
         </div>
       </div>
 

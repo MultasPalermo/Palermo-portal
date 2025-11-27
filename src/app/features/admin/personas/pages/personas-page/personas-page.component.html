@@ -132,11 +132,12 @@
       <h2>Agregar Nueva Persona</h2>
     </div>
 
-    <form [formGroup]="personaForm" (ngSubmit)="crearPersona()" autocomplete="off" class="form-styled">
+    <form [formGroup]="personaForm" (ngSubmit)="crearPersona()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-firstName">
           <span class="label-icon">👤</span>
           Nombre
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-firstName"
@@ -145,9 +146,24 @@
           formControlName="firstName"
           maxlength="50"
           placeholder="Ej: Juan"
+          aria-describedby="create-firstName-hint create-firstName-error"
+          [attr.aria-invalid]="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched"
         />
-        <div *ngIf="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched" class="error-msg">
-          El nombre es requerido (2-50 caracteres)
+        <div class="input-hint" id="create-firstName-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ personaForm.get('firstName')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
+        <div
+          id="create-firstName-error"
+          *ngIf="personaForm.get('firstName')?.invalid && personaForm.get('firstName')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="personaForm.get('firstName')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="personaForm.get('firstName')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="personaForm.get('firstName')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -155,6 +171,7 @@
         <label for="create-lastName">
           <span class="label-icon">👤</span>
           Apellido
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-lastName"
@@ -163,9 +180,24 @@
           formControlName="lastName"
           maxlength="50"
           placeholder="Ej: Pérez"
+          aria-describedby="create-lastName-hint create-lastName-error"
+          [attr.aria-invalid]="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched"
         />
-        <div *ngIf="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched" class="error-msg">
-          El apellido es requerido (2-50 caracteres)
+        <div class="input-hint" id="create-lastName-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ personaForm.get('lastName')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
+        <div
+          id="create-lastName-error"
+          *ngIf="personaForm.get('lastName')?.invalid && personaForm.get('lastName')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="personaForm.get('lastName')?.hasError('required')">El apellido es obligatorio.</span>
+          <span *ngIf="personaForm.get('lastName')?.hasError('minlength')">El apellido debe tener al menos 2 caracteres.</span>
+          <span *ngIf="personaForm.get('lastName')?.hasError('maxlength')">El apellido no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -173,17 +205,32 @@
         <label for="create-phoneNumber">
           <span class="label-icon">📱</span>
           Teléfono
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-phoneNumber"
-          type="text"
+          type="tel"
           class="custom-input"
           formControlName="phoneNumber"
           maxlength="15"
           placeholder="Ej: 3001234567"
+          aria-describedby="create-phoneNumber-hint create-phoneNumber-error"
+          [attr.aria-invalid]="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched"
         />
-        <div *ngIf="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched" class="error-msg">
-          Teléfono requerido (7-15 dígitos)
+        <div class="input-hint" id="create-phoneNumber-hint">
+          <small>Entre 7 y 15 dígitos. Solo números.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ personaForm.get('phoneNumber')?.value?.length || 0 }}/15 dígitos</small>
+        </div>
+        <div
+          id="create-phoneNumber-error"
+          *ngIf="personaForm.get('phoneNumber')?.invalid && personaForm.get('phoneNumber')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="personaForm.get('phoneNumber')?.hasError('required')">El teléfono es obligatorio.</span>
+          <span *ngIf="personaForm.get('phoneNumber')?.hasError('pattern')">El teléfono debe contener solo números (7-15 dígitos).</span>
         </div>
       </div>
 
@@ -191,6 +238,7 @@
         <label for="create-address">
           <span class="label-icon">📍</span>
           Dirección
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-address"
@@ -199,9 +247,24 @@
           formControlName="address"
           maxlength="100"
           placeholder="Ej: Calle 123 # 45-67"
+          aria-describedby="create-address-hint create-address-error"
+          [attr.aria-invalid]="personaForm.get('address')?.invalid && personaForm.get('address')?.touched"
         />
-        <div *ngIf="personaForm.get('address')?.invalid && personaForm.get('address')?.touched" class="error-msg">
-          Dirección requerida (5-100 caracteres)
+        <div class="input-hint" id="create-address-hint">
+          <small>Mínimo 5 caracteres, máximo 100. Dirección completa.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ personaForm.get('address')?.value?.length || 0 }}/100 caracteres</small>
+        </div>
+        <div
+          id="create-address-error"
+          *ngIf="personaForm.get('address')?.invalid && personaForm.get('address')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="personaForm.get('address')?.hasError('required')">La dirección es obligatoria.</span>
+          <span *ngIf="personaForm.get('address')?.hasError('minlength')">La dirección debe tener al menos 5 caracteres.</span>
+          <span *ngIf="personaForm.get('address')?.hasError('maxlength')">La dirección no puede superar los 100 caracteres.</span>
         </div>
       </div>
 
@@ -209,11 +272,14 @@
         <label for="create-municipalityId">
           <span class="label-icon">🏛️</span>
           Municipio
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="create-municipalityId"
           class="custom-select"
           formControlName="municipalityId"
+          aria-describedby="create-municipalityId-hint create-municipalityId-error"
+          [attr.aria-invalid]="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched"
         >
           <option [value]="null">Seleccionar municipio</option>
           <option *ngFor="let municipio of municipios" [value]="municipio.id">
@@ -221,8 +287,16 @@
           </option>
           <option *ngIf="municipios.length === 0" [value]="null" disabled>No se encuentran municipios</option>
         </select>
-        <div *ngIf="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched" class="error-msg">
-          Debe seleccionar un municipio
+        <div class="input-hint" id="create-municipalityId-hint">
+          <small>Seleccione el municipio de residencia.</small>
+        </div>
+        <div
+          id="create-municipalityId-error"
+          *ngIf="personaForm.get('municipalityId')?.invalid && personaForm.get('municipalityId')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="personaForm.get('municipalityId')?.hasError('required') || personaForm.get('municipalityId')?.hasError('min')">Debe seleccionar un municipio.</span>
         </div>
       </div>
 
@@ -258,6 +332,7 @@
         <label for="update-firstName">
           <span class="label-icon">👤</span>
           Nombre
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-firstName"
@@ -265,9 +340,25 @@
           class="custom-input"
           formControlName="firstName"
           maxlength="50"
+          placeholder="Ej: Juan"
+          aria-describedby="update-firstName-hint update-firstName-error"
+          [attr.aria-invalid]="updateForm.get('firstName')?.invalid && updateForm.get('firstName')?.touched"
         />
-        <div *ngIf="updateForm.get('firstName')?.invalid && updateForm.get('firstName')?.touched" class="error-msg">
-          El nombre es requerido (2-50 caracteres)
+        <div class="input-hint" id="update-firstName-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('firstName')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
+        <div
+          id="update-firstName-error"
+          *ngIf="updateForm.get('firstName')?.invalid && updateForm.get('firstName')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('firstName')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="updateForm.get('firstName')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('firstName')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -275,6 +366,7 @@
         <label for="update-lastName">
           <span class="label-icon">👤</span>
           Apellido
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-lastName"
@@ -282,9 +374,25 @@
           class="custom-input"
           formControlName="lastName"
           maxlength="50"
+          placeholder="Ej: Pérez"
+          aria-describedby="update-lastName-hint update-lastName-error"
+          [attr.aria-invalid]="updateForm.get('lastName')?.invalid && updateForm.get('lastName')?.touched"
         />
-        <div *ngIf="updateForm.get('lastName')?.invalid && updateForm.get('lastName')?.touched" class="error-msg">
-          El apellido es requerido (2-50 caracteres)
+        <div class="input-hint" id="update-lastName-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('lastName')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
+        <div
+          id="update-lastName-error"
+          *ngIf="updateForm.get('lastName')?.invalid && updateForm.get('lastName')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('lastName')?.hasError('required')">El apellido es obligatorio.</span>
+          <span *ngIf="updateForm.get('lastName')?.hasError('minlength')">El apellido debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('lastName')?.hasError('maxlength')">El apellido no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -292,16 +400,32 @@
         <label for="update-phoneNumber">
           <span class="label-icon">📱</span>
           Teléfono
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-phoneNumber"
-          type="text"
+          type="tel"
           class="custom-input"
           formControlName="phoneNumber"
           maxlength="15"
+          placeholder="Ej: 3001234567"
+          aria-describedby="update-phoneNumber-hint update-phoneNumber-error"
+          [attr.aria-invalid]="updateForm.get('phoneNumber')?.invalid && updateForm.get('phoneNumber')?.touched"
         />
-        <div *ngIf="updateForm.get('phoneNumber')?.invalid && updateForm.get('phoneNumber')?.touched" class="error-msg">
-          Teléfono requerido (7-15 dígitos)
+        <div class="input-hint" id="update-phoneNumber-hint">
+          <small>Entre 7 y 15 dígitos. Solo números.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('phoneNumber')?.value?.length || 0 }}/15 dígitos</small>
+        </div>
+        <div
+          id="update-phoneNumber-error"
+          *ngIf="updateForm.get('phoneNumber')?.invalid && updateForm.get('phoneNumber')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('phoneNumber')?.hasError('required')">El teléfono es obligatorio.</span>
+          <span *ngIf="updateForm.get('phoneNumber')?.hasError('pattern')">El teléfono debe contener solo números (7-15 dígitos).</span>
         </div>
       </div>
 
@@ -309,6 +433,7 @@
         <label for="update-address">
           <span class="label-icon">📍</span>
           Dirección
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-address"
@@ -316,9 +441,25 @@
           class="custom-input"
           formControlName="address"
           maxlength="100"
+          placeholder="Ej: Calle 123 # 45-67"
+          aria-describedby="update-address-hint update-address-error"
+          [attr.aria-invalid]="updateForm.get('address')?.invalid && updateForm.get('address')?.touched"
         />
-        <div *ngIf="updateForm.get('address')?.invalid && updateForm.get('address')?.touched" class="error-msg">
-          Dirección requerida (5-100 caracteres)
+        <div class="input-hint" id="update-address-hint">
+          <small>Mínimo 5 caracteres, máximo 100. Dirección completa.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('address')?.value?.length || 0 }}/100 caracteres</small>
+        </div>
+        <div
+          id="update-address-error"
+          *ngIf="updateForm.get('address')?.invalid && updateForm.get('address')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('address')?.hasError('required')">La dirección es obligatoria.</span>
+          <span *ngIf="updateForm.get('address')?.hasError('minlength')">La dirección debe tener al menos 5 caracteres.</span>
+          <span *ngIf="updateForm.get('address')?.hasError('maxlength')">La dirección no puede superar los 100 caracteres.</span>
         </div>
       </div>
 
@@ -326,11 +467,14 @@
         <label for="update-municipalityId">
           <span class="label-icon">🏛️</span>
           Municipio
+          <span class="required-asterisk">*</span>
         </label>
         <select
           id="update-municipalityId"
           class="custom-select"
           formControlName="municipalityId"
+          aria-describedby="update-municipalityId-hint update-municipalityId-error"
+          [attr.aria-invalid]="updateForm.get('municipalityId')?.invalid && updateForm.get('municipalityId')?.touched"
         >
           <option [value]="null">Seleccionar municipio</option>
           <option *ngFor="let municipio of municipios" [value]="municipio.id">
@@ -338,8 +482,16 @@
           </option>
           <option *ngIf="municipios.length === 0" [value]="null" disabled>No se encuentran municipios</option>
         </select>
-        <div *ngIf="updateForm.get('municipalityId')?.invalid && updateForm.get('municipalityId')?.touched" class="error-msg">
-          Debe seleccionar un municipio
+        <div class="input-hint" id="update-municipalityId-hint">
+          <small>Seleccione el municipio de residencia.</small>
+        </div>
+        <div
+          id="update-municipalityId-error"
+          *ngIf="updateForm.get('municipalityId')?.invalid && updateForm.get('municipalityId')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('municipalityId')?.hasError('required') || updateForm.get('municipalityId')?.hasError('min')">Debe seleccionar un municipio.</span>
         </div>
       </div>
 

@@ -127,7 +127,10 @@ export class FormPageComponent implements OnInit {
    * Limpia los datos del formulario nuevo
    */
   private limpiarNuevoForm(): void {
-    this.nuevoForm = { name: '', description: '' };
+    this.nuevoForm = {
+      name: '',
+      description: ''
+    };
   }
 
   confirmarActualizacion(form: Form) {

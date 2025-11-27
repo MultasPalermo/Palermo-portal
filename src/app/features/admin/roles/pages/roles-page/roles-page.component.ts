@@ -7,6 +7,7 @@ import { PaginationComponent } from '../../../../../shared/components/pagination
 import { RolesService } from '../../../../../core/services/ModelSecurity/roles.service';
 import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 import { Rol } from '../../../../../shared/modeloModelados/modelSecurity/rol';
+import { validateRolName, validateRolDescription } from '../../../../../shared/utils/validator/validator-form/rol';
 
 @Component({
   selector: 'app-roles-page',
@@ -143,32 +144,21 @@ export class RolesPageComponent implements OnInit {
   }
 
   crearRol() {
-    // Validar que los campos no estén vacíos
-    if (!this.nuevoRol["name"] || !this.nuevoRol["description"]) {
-      this.mostrarAlerta('Por favor, complete todos los campos', 'error');
+    const validationResult = this.validateNewRol();
+
+    if (!validationResult.isValid) {
+      this.mostrarAlerta(validationResult.error!, 'error');
       return;
     }
 
-    // Validar que no estén solo con espacios en blanco
-    if (this.nuevoRol["name"].trim() === '' || this.nuevoRol["description"].trim() === '') {
-      this.mostrarAlerta('Los campos no pueden estar vacíos', 'error');
-      return;
-    }
+    const rolToCreate = {
+      name: this.nuevoRol.name.trim(),
+      description: this.nuevoRol.description.trim()
+    };
 
-    // Validar límites de longitud
-    if (this.nuevoRol["name"].length < 2 || this.nuevoRol["name"].length > 50) {
-      this.mostrarAlerta('El nombre debe tener entre 2 y 50 caracteres', 'error');
-      return;
-    }
+    console.log('Creando rol:', rolToCreate); // Para depuración
 
-    if (this.nuevoRol["description"].length < 5 || this.nuevoRol["description"].length > 200) {
-      this.mostrarAlerta('La descripción debe tener entre 5 y 200 caracteres', 'error');
-      return;
-    }
-
-    console.log('Creando rol:', this.nuevoRol); // Para depuración
-
-    this.rolesService.genericService.create<Rol>(this.rolesService.endpoint, this.nuevoRol).subscribe({
+    this.rolesService.genericService.create<Rol>(this.rolesService.endpoint, rolToCreate).subscribe({
       next: (rolCreado: Rol) => {
         console.log('Rol creado exitosamente:', rolCreado); // Para depuración
         this.cerrarModal();
@@ -178,37 +168,107 @@ export class RolesPageComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error al crear rol:', error);
-        this.mostrarAlerta('Error al crear el rol: ' + (error.error?.message || error.message), 'error');
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        this.mostrarAlerta(`Error al crear el rol: ${errorMessage}`, 'error');
       }
     });
   }
 
-  actualizarRol() {
-    if (this.rolSeleccionado && this.rolSeleccionado.id) {
-      // Validar límites de longitud para actualización
-      if (this.rolSeleccionado.name.length < 2 || this.rolSeleccionado.name.length > 50) {
-        this.mostrarAlerta('El nombre debe tener entre 2 y 50 caracteres', 'error');
-        return;
-      }
+  /**
+   * Valida los datos del nuevo rol
+   */
+  private validateNewRol(): { isValid: boolean; error?: string } {
+    const nameError = validateRolName(this.nuevoRol.name);
+    const descError = validateRolDescription(this.nuevoRol.description);
 
-      if (this.rolSeleccionado.description.length < 5 || this.rolSeleccionado.description.length > 200) {
-        this.mostrarAlerta('La descripción debe tener entre 5 y 200 caracteres', 'error');
-        return;
-      }
-      this.rolesService.genericService.update<Rol>(this.rolesService.endpoint, this.rolSeleccionado.id, this.rolSeleccionado).subscribe({
-        next: (rolActualizado: Rol) => {
-          console.log('Rol actualizado exitosamente:', rolActualizado);
-          this.cerrarModalActualizar();
-          this.mostrarAlerta('Rol actualizado exitosamente.', 'creado');
-          // Recargar la lista completa desde la API para asegurar sincronización
-          this.cargarRoles(true);
-        },
-        error: (error: any) => {
-          console.error('Error al actualizar rol:', error);
-          this.mostrarAlerta('Error al actualizar el rol: ' + (error.error?.message || error.message), 'error');
-        }
-      });
+    if (nameError) {
+      return { isValid: false, error: nameError };
     }
+
+    if (descError) {
+      return { isValid: false, error: descError };
+    }
+
+    return { isValid: true };
+  }
+
+  actualizarRol() {
+    if (!this.rolSeleccionado?.id) {
+      this.mostrarAlerta('Error: No se puede actualizar el rol', 'error');
+      return;
+    }
+
+    const validationResult = this.validateUpdateRol();
+
+    if (!validationResult.isValid) {
+      this.mostrarAlerta(validationResult.error!, validationResult.type!);
+      return;
+    }
+
+    const rolToUpdate = {
+      ...this.rolSeleccionado,
+      name: this.rolSeleccionado.name.trim(),
+      description: this.rolSeleccionado.description.trim()
+    };
+
+    console.log('Actualizando rol:', rolToUpdate);
+
+    this.rolesService.genericService.update<Rol>(
+      this.rolesService.endpoint,
+      this.rolSeleccionado.id,
+      rolToUpdate
+    ).subscribe({
+      next: (rolActualizado: Rol) => {
+        console.log('Rol actualizado exitosamente:', rolActualizado);
+        this.cerrarModalActualizar();
+        this.mostrarAlerta('Rol actualizado exitosamente.', 'creado');
+        this.cargarRoles(true);
+      },
+      error: (error: any) => {
+        console.error('Error al actualizar rol:', error);
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        this.mostrarAlerta(`No se pudo actualizar el rol: ${errorMessage}`, 'error');
+      }
+    });
+  }
+
+  /**
+   * Valida los datos del rol a actualizar
+   */
+  private validateUpdateRol(): { isValid: boolean; error?: string; type?: 'error' | 'info' } {
+    if (!this.rolSeleccionado) {
+      return { isValid: false, error: 'No hay rol seleccionado', type: 'error' };
+    }
+
+    const nameError = validateRolName(this.rolSeleccionado.name);
+    const descError = validateRolDescription(this.rolSeleccionado.description);
+
+    if (nameError) {
+      return { isValid: false, error: nameError, type: 'error' };
+    }
+
+    if (descError) {
+      return { isValid: false, error: descError, type: 'error' };
+    }
+
+    // Verificar si hay cambios
+    const original = this.roles.find(r => r.id === this.rolSeleccionado!.id);
+    if (original) {
+      const nombreNuevo = this.rolSeleccionado.name.trim();
+      const descripcionNueva = this.rolSeleccionado.description.trim();
+      const nombreOriginal = original.name?.trim() || '';
+      const descripcionOriginal = original.description?.trim() || '';
+
+      if (nombreNuevo === nombreOriginal && descripcionNueva === descripcionOriginal) {
+        return {
+          isValid: false,
+          error: 'No se detectaron cambios en el rol.',
+          type: 'info'
+        };
+      }
+    }
+
+    return { isValid: true };
   }
 
   mostrarAlerta(msg: string, tipo: string) {

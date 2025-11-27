@@ -105,66 +105,102 @@
       <button class="close-btn" (click)="cerrarFormulario()">✕</button>
     </div>
 
-    <form [formGroup]="rolFormPermissionForm" (ngSubmit)="crearItem()">
+    <form [formGroup]="rolFormPermissionForm" (ngSubmit)="crearItem()" novalidate>
       <div class="form-grid">
         <!-- Rol -->
         <div class="form-group">
           <label for="rolid" class="form-label">
-            Rol <span class="required">*</span>
+            <span class="label-icon">👤</span>
+            Rol
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="rolid"
             class="form-input"
             formControlName="rolid"
-            [class.invalid]="isFieldInvalid('rolid')">
+            [class.invalid]="isFieldInvalid('rolid')"
+            [attr.aria-invalid]="isFieldInvalid('rolid')"
+            aria-describedby="rolid-hint rolid-error">
             <option value="">Seleccione un rol</option>
             <option *ngFor="let option of roleOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('rolid')">
-            {{ getFieldError('rolid') }}
-          </span>
+          <div class="input-hint" id="rolid-hint">
+            <small>Seleccione el rol al que desea asignar el permiso.</small>
+          </div>
+          <div
+            id="rolid-error"
+            *ngIf="isFieldInvalid('rolid')"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('rolid') }}</span>
+          </div>
         </div>
 
         <!-- Formulario -->
         <div class="form-group">
           <label for="formid" class="form-label">
-            Formulario <span class="required">*</span>
+            <span class="label-icon">📝</span>
+            Formulario
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="formid"
             class="form-input"
             formControlName="formid"
-            [class.invalid]="isFieldInvalid('formid')">
+            [class.invalid]="isFieldInvalid('formid')"
+            [attr.aria-invalid]="isFieldInvalid('formid')"
+            aria-describedby="formid-hint formid-error">
             <option value="">Seleccione un formulario</option>
             <option *ngFor="let option of formOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('formid')">
-            {{ getFieldError('formid') }}
-          </span>
+          <div class="input-hint" id="formid-hint">
+            <small>Seleccione el formulario donde se aplicará el permiso.</small>
+          </div>
+          <div
+            id="formid-error"
+            *ngIf="isFieldInvalid('formid')"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('formid') }}</span>
+          </div>
         </div>
 
         <!-- Permiso -->
         <div class="form-group">
           <label for="permissionid" class="form-label">
-            Permiso <span class="required">*</span>
+            <span class="label-icon">🔐</span>
+            Permiso
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="permissionid"
             class="form-input"
             formControlName="permissionid"
-            [class.invalid]="isFieldInvalid('permissionid')">
+            [class.invalid]="isFieldInvalid('permissionid')"
+            [attr.aria-invalid]="isFieldInvalid('permissionid')"
+            aria-describedby="permissionid-hint permissionid-error">
             <option value="">Seleccione un permiso</option>
             <option *ngFor="let option of permissionOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('permissionid')">
-            {{ getFieldError('permissionid') }}
-          </span>
+          <div class="input-hint" id="permissionid-hint">
+            <small>Seleccione el permiso que desea otorgar al rol.</small>
+          </div>
+          <div
+            id="permissionid-error"
+            *ngIf="isFieldInvalid('permissionid')"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('permissionid') }}</span>
+          </div>
         </div>
       </div>
 
@@ -191,66 +227,102 @@
       <button class="close-btn" (click)="cerrarFormularioActualizar()">✕</button>
     </div>
 
-    <form [formGroup]="updateForm" (ngSubmit)="actualizarItem()">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarItem()" novalidate>
       <div class="form-grid">
         <!-- Rol -->
         <div class="form-group">
           <label for="update-rolid" class="form-label">
-            Rol <span class="required">*</span>
+            <span class="label-icon">👤</span>
+            Rol
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="update-rolid"
             class="form-input"
             formControlName="rolid"
-            [class.invalid]="isFieldInvalid('rolid', updateForm)">
+            [class.invalid]="isFieldInvalid('rolid', updateForm)"
+            [attr.aria-invalid]="isFieldInvalid('rolid', updateForm)"
+            aria-describedby="update-rolid-hint update-rolid-error">
             <option value="">Seleccione un rol</option>
             <option *ngFor="let option of roleOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('rolid', updateForm)">
-            {{ getFieldError('rolid', updateForm) }}
-          </span>
+          <div class="input-hint" id="update-rolid-hint">
+            <small>Seleccione el rol al que desea asignar el permiso.</small>
+          </div>
+          <div
+            id="update-rolid-error"
+            *ngIf="isFieldInvalid('rolid', updateForm)"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('rolid', updateForm) }}</span>
+          </div>
         </div>
 
         <!-- Formulario -->
         <div class="form-group">
           <label for="update-formid" class="form-label">
-            Formulario <span class="required">*</span>
+            <span class="label-icon">📝</span>
+            Formulario
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="update-formid"
             class="form-input"
             formControlName="formid"
-            [class.invalid]="isFieldInvalid('formid', updateForm)">
+            [class.invalid]="isFieldInvalid('formid', updateForm)"
+            [attr.aria-invalid]="isFieldInvalid('formid', updateForm)"
+            aria-describedby="update-formid-hint update-formid-error">
             <option value="">Seleccione un formulario</option>
             <option *ngFor="let option of formOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('formid', updateForm)">
-            {{ getFieldError('formid', updateForm) }}
-          </span>
+          <div class="input-hint" id="update-formid-hint">
+            <small>Seleccione el formulario donde se aplicará el permiso.</small>
+          </div>
+          <div
+            id="update-formid-error"
+            *ngIf="isFieldInvalid('formid', updateForm)"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('formid', updateForm) }}</span>
+          </div>
         </div>
 
         <!-- Permiso -->
         <div class="form-group">
           <label for="update-permissionid" class="form-label">
-            Permiso <span class="required">*</span>
+            <span class="label-icon">🔐</span>
+            Permiso
+            <span class="required-asterisk">*</span>
           </label>
           <select
             id="update-permissionid"
             class="form-input"
             formControlName="permissionid"
-            [class.invalid]="isFieldInvalid('permissionid', updateForm)">
+            [class.invalid]="isFieldInvalid('permissionid', updateForm)"
+            [attr.aria-invalid]="isFieldInvalid('permissionid', updateForm)"
+            aria-describedby="update-permissionid-hint update-permissionid-error">
             <option value="">Seleccione un permiso</option>
             <option *ngFor="let option of permissionOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('permissionid', updateForm)">
-            {{ getFieldError('permissionid', updateForm) }}
-          </span>
+          <div class="input-hint" id="update-permissionid-hint">
+            <small>Seleccione el permiso que desea otorgar al rol.</small>
+          </div>
+          <div
+            id="update-permissionid-error"
+            *ngIf="isFieldInvalid('permissionid', updateForm)"
+            class="error-msg"
+            role="alert"
+            aria-live="polite">
+            <span>{{ getFieldError('permissionid', updateForm) }}</span>
+          </div>
         </div>
       </div>
 
