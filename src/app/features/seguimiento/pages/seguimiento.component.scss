@@ -1,4 +1,14 @@
-na.kanban-board {
+// Colores personalizados para consistencia con el resto del software
+$primary-red: #d32f2f;
+$success-green: #4caf50;
+$warning-orange: #ff9800;
+$danger-red: #f44336;
+$info-blue: #1976d2;
+$dark-green: #2e7d32;
+$light-gray: #f5f5f5;
+$medium-gray: #f8f9fa;
+
+.kanban-board {
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
@@ -100,5 +110,36 @@ na.kanban-board {
 }
 
 .download-btn:hover {
-  background-color: #1d4ed8 !important;
+  background-color: $info-blue !important;
+}
+
+// Estilos personalizados para colores consistentes
+.column-header-multas-recientes {
+  background-color: lighten($success-green, 40%) !important;
+  border-left-color: $success-green !important;
+}
+
+.column-header-prejuridico-3dias {
+  background-color: #fff9c4 !important; // Amarillo claro
+  border-left-color: #ffeb3b !important; // Amarillo
+}
+
+.column-header-prejuridico-15dias {
+  background-color: #ffcc80 !important; // Naranja claro
+  border-left-color: #ff9800 !important; // Naranja
+}
+
+.column-header-prejuridico-25dias {
+  background-color: #ffcdd2 !important; // Rojo claro
+  border-left-color: #f44336 !important; // Rojo
+}
+
+.column-header-juridico {
+  background-color: lighten($info-blue, 40%) !important;
+  border-left-color: $info-blue !important;
+}
+
+.column-header-coactivo {
+  background-color: lighten($danger-red, 40%) !important;
+  border-left-color: $danger-red !important;
 }

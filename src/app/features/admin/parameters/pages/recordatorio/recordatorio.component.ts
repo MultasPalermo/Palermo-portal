@@ -41,16 +41,12 @@ export class RecordatorioComponent implements OnInit {
   };
 
   // Variables para modales
-  showForm = false;
   showUpdateForm = false;
-  showConfirm = false;
   showUpdateConfirm = false;
-  recordatorioAEliminar: NotificationSetting | null = null;
   recordatorioSeleccionado: NotificationSetting | null = null;
   recordatorioAActualizar: NotificationSetting | null = null;
 
   // Formularios reactivos
-  recordatorioForm: FormGroup;
   updateForm: FormGroup;
 
   // Alertas estandarizadas
@@ -66,14 +62,6 @@ export class RecordatorioComponent implements OnInit {
 
   constructor() {
     // Inicializar formularios reactivos
-    this.recordatorioForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-      days: ['', [Validators.required, Validators.min(1)]],
-      description: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(500)]],
-      timeUnit: ['DAYS', [Validators.required]],
-      active: [true, [Validators.required]]
-    });
-
     this.updateForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       days: ['', [Validators.required, Validators.min(1)]],
@@ -134,55 +122,6 @@ export class RecordatorioComponent implements OnInit {
     setTimeout(() => this.showAlert = false, 2500);
   }
 
-  // Métodos para manejar formularios
-  abrirFormulario(): void {
-    // Validar que no haya más de 5 recordatorios
-    if (!this.canCreateRecordatorio()) {
-      this.mostrarAlerta('error', 'Solo se permiten 5 recordatorios como máximo. Elimine uno para poder crear otro.');
-      return;
-    }
-
-    this.showForm = true;
-    this.recordatorioForm.reset({
-      timeUnit: 'DAYS',
-      active: true
-    });
-  }
-
-  cerrarFormulario(): void {
-    this.showForm = false;
-    this.recordatorioForm.reset();
-  }
-
-  // Método para crear recordatorio
-  crearRecordatorio(): void {
-    if (this.recordatorioForm.valid) {
-      // Validar nuevamente antes de crear
-      if (!this.canCreateRecordatorio()) {
-        this.mostrarAlerta('error', 'No se pueden crear más de 5 recordatorios.');
-        return;
-      }
-
-      this.loading = true;
-      const recordatorioData = this.recordatorioForm.value;
-
-      this.service.genericService.create<NotificationSetting>(this.service.endpoint, recordatorioData)
-        .pipe(finalize(() => this.loading = false))
-        .subscribe({
-          next: () => {
-            this.mostrarAlerta('creado', 'Recordatorio creado exitosamente.');
-            this.cargarRecordatorios();
-            this.cerrarFormulario();
-          },
-          error: (e: any) => {
-            console.error('Error al crear recordatorio:', e);
-            this.mostrarAlerta('error', e.error?.message || 'Error al crear el recordatorio.');
-          }
-        });
-    } else {
-      this.mostrarAlerta('error', 'Por favor complete todos los campos requeridos.');
-    }
-  }
 
   // Métodos para editar recordatorio
   confirmarActualizacion(recordatorio: NotificationSetting): void {
@@ -244,36 +183,6 @@ export class RecordatorioComponent implements OnInit {
     }
   }
 
-  // Métodos para eliminar recordatorio
-  confirmarEliminacion(recordatorio: NotificationSetting): void {
-    this.recordatorioAEliminar = recordatorio;
-    this.showConfirm = true;
-  }
-
-  cancelarEliminacion(): void {
-    this.recordatorioAEliminar = null;
-    this.showConfirm = false;
-  }
-
-  eliminarRecordatorio(): void {
-    if (this.recordatorioAEliminar && this.recordatorioAEliminar.id) {
-      this.loading = true;
-
-      this.service.genericService.delete(this.service.endpoint, this.recordatorioAEliminar.id)
-        .pipe(finalize(() => this.loading = false))
-        .subscribe({
-          next: () => {
-            this.mostrarAlerta('eliminado', 'Recordatorio eliminado exitosamente.');
-            this.cargarRecordatorios();
-            this.cancelarEliminacion();
-          },
-          error: (e: any) => {
-            console.error('Error al eliminar recordatorio:', e);
-            this.mostrarAlerta('error', e.error?.message || 'Error al eliminar el recordatorio.');
-          }
-        });
-    }
-  }
 
   // Métodos de paginación
   updatePagination(): void {
@@ -297,12 +206,12 @@ export class RecordatorioComponent implements OnInit {
   }
 
   // Métodos auxiliares para validaciones
-  isFieldInvalid(fieldName: string, form: FormGroup = this.recordatorioForm): boolean {
+  isFieldInvalid(fieldName: string, form: FormGroup = this.updateForm): boolean {
     const field = form.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 
-  getFieldError(fieldName: string, form: FormGroup = this.recordatorioForm): string {
+  getFieldError(fieldName: string, form: FormGroup = this.updateForm): string {
     const field = form.get(fieldName);
     if (field && field.errors) {
       if (field.errors['required']) return `El campo ${fieldName} es requerido.`;
@@ -324,8 +233,4 @@ export class RecordatorioComponent implements OnInit {
     return active ? 'Activo' : 'Inactivo';
   }
 
-  // Verificar si se puede crear un nuevo recordatorio
-  canCreateRecordatorio(): boolean {
-    return this.recordatorios.length < 5;
-  }
 }
