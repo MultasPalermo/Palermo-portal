@@ -1,7 +1,7 @@
 // Eliminado ngOnInit duplicado fuera de la clase
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { PaginationComponent } from '../../../../../shared/components/pagination/pagination.component';
 import { RolesService } from '../../../../../core/services/ModelSecurity/roles.service';
@@ -13,15 +13,30 @@ import { Rol } from '../../../../../shared/modeloModelados/modelSecurity/rol';
   templateUrl: './roles-page.component.html',
   styleUrls: ['./roles-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, PaginationComponent]
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, HttpClientModule, PaginationComponent]
 })
 export class RolesPageComponent implements OnInit {
   
+  // Formularios reactivos
+  rolForm: FormGroup;
+  updateForm: FormGroup;
+
   constructor(
     private rolesService: RolesService,
     private cdr: ChangeDetectorRef,
-    private paginationService: PaginationService
-  ) {}
+    private paginationService: PaginationService,
+    private fb: FormBuilder
+  ) {
+    this.rolForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      description: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]]
+    });
+
+    this.updateForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      description: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]]
+    });
+  }
 
   ngOnInit(): void {
     // Agregar algunos datos de prueba si la API no está disponible
@@ -60,11 +75,6 @@ export class RolesPageComponent implements OnInit {
   showUpdateConfirm: boolean = false;
   rolSeleccionado: Rol | null = null;
   rolAActualizar: Rol | null = null;
-  
-  nuevoRol: Omit<Rol, 'id'> = {
-    name: '',
-    description: ''
-  };
 
   showAlert = false;
   alertMsg = '';
@@ -103,19 +113,12 @@ export class RolesPageComponent implements OnInit {
 
   abrirModal() {
     this.showModal = true;
-    this.nuevoRol = {
-      name: '',
-      description: ''
-    };
+    this.rolForm.reset();
   }
 
   cerrarModal() {
     this.showModal = false;
-    // Limpiar el formulario al cerrar
-    this.nuevoRol = {
-      name: '',
-      description: ''
-    };
+    this.rolForm.reset();
   }
 
   confirmarActualizacion(rol: Rol) {
@@ -131,6 +134,7 @@ export class RolesPageComponent implements OnInit {
   abrirModalActualizar() {
     if (this.rolAActualizar) {
       this.rolSeleccionado = { ...this.rolAActualizar };
+      this.updateForm.patchValue(this.rolAActualizar);
       this.showUpdateModal = true;
       this.showUpdateConfirm = false;
       this.rolAActualizar = null;
@@ -139,75 +143,103 @@ export class RolesPageComponent implements OnInit {
 
   cerrarModalActualizar() {
     this.showUpdateModal = false;
+    this.updateForm.reset();
     this.rolSeleccionado = null;
   }
 
   crearRol() {
-    // Validar que los campos no estén vacíos
-    if (!this.nuevoRol["name"] || !this.nuevoRol["description"]) {
-      this.mostrarAlerta('Por favor, complete todos los campos', 'error');
-      return;
-    }
+    if (this.rolForm.valid) {
+      const formValue = this.rolForm.value;
 
-    // Validar que no estén solo con espacios en blanco
-    if (this.nuevoRol["name"].trim() === '' || this.nuevoRol["description"].trim() === '') {
-      this.mostrarAlerta('Los campos no pueden estar vacíos', 'error');
-      return;
-    }
+      const nuevoRol: Omit<Rol, 'id'> = {
+        name: formValue.name,
+        description: formValue.description
+      };
 
-    // Validar límites de longitud
-    if (this.nuevoRol["name"].length < 2 || this.nuevoRol["name"].length > 50) {
-      this.mostrarAlerta('El nombre debe tener entre 2 y 50 caracteres', 'error');
-      return;
-    }
+      console.log('Creando rol:', nuevoRol);
 
-    if (this.nuevoRol["description"].length < 5 || this.nuevoRol["description"].length > 200) {
-      this.mostrarAlerta('La descripción debe tener entre 5 y 200 caracteres', 'error');
-      return;
-    }
-
-    console.log('Creando rol:', this.nuevoRol); // Para depuración
-
-    this.rolesService.genericService.create<Rol>(this.rolesService.endpoint, this.nuevoRol).subscribe({
-      next: (rolCreado: Rol) => {
-        console.log('Rol creado exitosamente:', rolCreado); // Para depuración
-        this.cerrarModal();
-        this.mostrarAlerta('Rol creado exitosamente.', 'creado');
-        // Recargar la lista completa desde la API para asegurar sincronización
-        this.cargarRoles(true);
-      },
-      error: (error: any) => {
-        console.error('Error al crear rol:', error);
-        this.mostrarAlerta('Error al crear el rol: ' + (error.error?.message || error.message), 'error');
-      }
-    });
-  }
-
-  actualizarRol() {
-    if (this.rolSeleccionado && this.rolSeleccionado.id) {
-      // Validar límites de longitud para actualización
-      if (this.rolSeleccionado.name.length < 2 || this.rolSeleccionado.name.length > 50) {
-        this.mostrarAlerta('El nombre debe tener entre 2 y 50 caracteres', 'error');
-        return;
-      }
-
-      if (this.rolSeleccionado.description.length < 5 || this.rolSeleccionado.description.length > 200) {
-        this.mostrarAlerta('La descripción debe tener entre 5 y 200 caracteres', 'error');
-        return;
-      }
-      this.rolesService.genericService.update<Rol>(this.rolesService.endpoint, this.rolSeleccionado.id, this.rolSeleccionado).subscribe({
-        next: (rolActualizado: Rol) => {
-          console.log('Rol actualizado exitosamente:', rolActualizado);
-          this.cerrarModalActualizar();
-          this.mostrarAlerta('Rol actualizado exitosamente.', 'creado');
-          // Recargar la lista completa desde la API para asegurar sincronización
+      this.rolesService.genericService.create<Rol>(this.rolesService.endpoint, nuevoRol).subscribe({
+        next: (rolCreado: Rol) => {
+          console.log('Rol creado exitosamente:', rolCreado);
+          this.cerrarModal();
+          this.mostrarAlerta('Rol creado exitosamente.', 'creado');
           this.cargarRoles(true);
         },
         error: (error: any) => {
-          console.error('Error al actualizar rol:', error);
-          this.mostrarAlerta('Error al actualizar el rol: ' + (error.error?.message || error.message), 'error');
+          console.error('Error al crear rol:', error);
+
+          let errorMessage = 'Error al crear el rol.';
+          if (error?.error) {
+            if (typeof error.error === 'string') {
+              errorMessage = error.error;
+            } else if (error.error.message) {
+              errorMessage = error.error.message;
+            } else if (error.error.errors) {
+              const validationErrors = Object.keys(error.error.errors).map(key =>
+                `${key}: ${error.error.errors[key].join(', ')}`
+              ).join('; ');
+              errorMessage = `Errores de validación: ${validationErrors}`;
+            }
+          }
+
+          console.log('Mensaje de error procesado:', errorMessage);
+          this.mostrarAlerta(errorMessage, 'eliminado');
         }
       });
+    } else {
+      this.mostrarAlerta('Por favor completa todos los campos requeridos.', 'eliminado');
+    }
+  }
+
+  actualizarRol() {
+    if (this.updateForm.valid && this.rolSeleccionado) {
+      const formValue = this.updateForm.value;
+
+      const rolActualizado: Rol = {
+        id: this.rolSeleccionado.id,
+        name: formValue.name,
+        description: formValue.description
+      };
+
+      console.log('Datos a actualizar:', rolActualizado);
+
+      if (rolActualizado.id) {
+        this.rolesService.genericService.update<Rol>(
+          this.rolesService.endpoint,
+          rolActualizado.id,
+          rolActualizado
+        ).subscribe({
+          next: (rol: Rol) => {
+            this.mostrarAlerta('Rol actualizado exitosamente.', 'creado');
+            this.cerrarModalActualizar();
+            this.cargarRoles(true);
+          },
+          error: (error: any) => {
+            console.error('Error al actualizar rol:', error);
+
+            let errorMessage = 'Error al actualizar el rol.';
+            if (error?.error) {
+              if (typeof error.error === 'string') {
+                errorMessage = error.error;
+              } else if (error.error.message) {
+                errorMessage = error.error.message;
+              } else if (error.error.errors) {
+                const validationErrors = Object.keys(error.error.errors).map(key =>
+                  `${key}: ${error.error.errors[key].join(', ')}`
+                ).join('; ');
+                errorMessage = `Errores de validación: ${validationErrors}`;
+              }
+            }
+
+            console.log('Mensaje de error procesado:', errorMessage);
+            this.mostrarAlerta(errorMessage, 'eliminado');
+          }
+        });
+      } else {
+        this.mostrarAlerta('ID de rol no encontrado.', 'eliminado');
+      }
+    } else {
+      this.mostrarAlerta('Por favor completa todos los campos requeridos.', 'eliminado');
     }
   }
 

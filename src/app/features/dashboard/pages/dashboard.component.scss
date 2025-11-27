@@ -118,6 +118,8 @@
   i {
     font-size: 1.25rem;
     color: #3B82F6;
+    line-height: 1;
+    flex-shrink: 0;
   }
 
   span {
@@ -165,6 +167,8 @@
 
   i {
     color: #3B82F6;
+    line-height: 1;
+    flex-shrink: 0;
   }
 }
 

@@ -140,11 +140,12 @@
       <h2>Agregar Nuevo Módulo</h2>
     </div>
 
-    <form (ngSubmit)="crearModule()" autocomplete="off" class="form-styled" #createForm="ngForm">
+    <form (ngSubmit)="crearModule()" autocomplete="off" class="form-styled" #createForm="ngForm" novalidate>
       <div class="form-group">
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Módulo
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
@@ -153,13 +154,33 @@
           [(ngModel)]="nuevoModule.name"
           name="name"
           required
+          minlength="3"
           #nameInput="ngModel"
           maxlength="80"
-          placeholder="Ej: Módulo de Usuarios" />
+          placeholder="Ej: Módulo de Usuarios"
+          aria-describedby="create-name-error create-name-hint"
+          [attr.aria-invalid]="nameInput.invalid && nameInput.touched" />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 3 caracteres, máximo 80. Permite letras, números, espacios y caracteres: - _ . , ( )</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ nuevoModule.name.length }}/80 caracteres</small>
+        </div>
         <div
-          *ngIf="nameInput.invalid && nameInput.touched"
-          class="error-msg">
-          El nombre es requerido
+          id="create-name-error"
+          *ngIf="nameInput.touched && nuevoModule.name.trim().length > 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="nuevoModule.name.trim().length < 3">El nombre debe tener al menos 3 caracteres.</span>
+          <span *ngIf="nuevoModule.name.length > 80">El nombre no puede superar los 80 caracteres.</span>
+        </div>
+        <div
+          *ngIf="nameInput.touched && nuevoModule.name.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          El nombre es obligatorio.
         </div>
       </div>
 
@@ -167,6 +188,7 @@
         <label for="create-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="create-desc-input"
@@ -174,14 +196,34 @@
           [(ngModel)]="nuevoModule.description"
           name="description"
           required
+          minlength="10"
           #descriptionInput="ngModel"
           maxlength="250"
           rows="4"
-          placeholder="Describe la funcionalidad del módulo..."></textarea>
+          placeholder="Describe la funcionalidad del módulo... (mínimo 10 caracteres)"
+          aria-describedby="create-desc-error create-desc-hint"
+          [attr.aria-invalid]="descriptionInput.invalid && descriptionInput.touched"></textarea>
+        <div class="input-hint" id="create-desc-hint">
+          <small>Mínimo 10 caracteres, máximo 250. Describe claramente la funcionalidad del módulo.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ nuevoModule.description.length }}/250 caracteres</small>
+        </div>
         <div
-          *ngIf="descriptionInput.invalid && descriptionInput.touched"
-          class="error-msg">
-          La descripción es requerida
+          id="create-desc-error"
+          *ngIf="descriptionInput.touched && nuevoModule.description.trim().length > 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="nuevoModule.description.trim().length < 10">La descripción debe tener al menos 10 caracteres.</span>
+          <span *ngIf="nuevoModule.description.length > 250">La descripción no puede superar los 250 caracteres.</span>
+        </div>
+        <div
+          *ngIf="descriptionInput.touched && nuevoModule.description.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          La descripción es obligatoria.
         </div>
       </div>
 
@@ -211,11 +253,12 @@
       <h2>Actualizar Módulo</h2>
     </div>
 
-    <form (ngSubmit)="actualizarModule()" autocomplete="off" class="form-styled" #updateForm="ngForm">
+    <form (ngSubmit)="actualizarModule()" autocomplete="off" class="form-styled" #updateForm="ngForm" novalidate>
       <div class="form-group">
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Módulo
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
@@ -224,12 +267,33 @@
           [(ngModel)]="moduleSeleccionado.name"
           name="name"
           required
+          minlength="3"
           #nameUpdateInput="ngModel"
-          maxlength="80" />
+          maxlength="80"
+          placeholder="Ej: Módulo de Usuarios"
+          aria-describedby="update-name-error update-name-hint"
+          [attr.aria-invalid]="nameUpdateInput.invalid && nameUpdateInput.touched" />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 3 caracteres, máximo 80. Permite letras, números, espacios y caracteres: - _ . , ( )</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ moduleSeleccionado.name.length }}/80 caracteres</small>
+        </div>
         <div
-          *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched"
-          class="error-msg">
-          El nombre es requerido
+          id="update-name-error"
+          *ngIf="nameUpdateInput.touched && moduleSeleccionado.name.trim().length > 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="moduleSeleccionado.name.trim().length < 3">El nombre debe tener al menos 3 caracteres.</span>
+          <span *ngIf="moduleSeleccionado.name.length > 80">El nombre no puede superar los 80 caracteres.</span>
+        </div>
+        <div
+          *ngIf="nameUpdateInput.touched && moduleSeleccionado.name.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          El nombre es obligatorio.
         </div>
       </div>
 
@@ -237,6 +301,7 @@
         <label for="update-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="update-desc-input"
@@ -244,13 +309,34 @@
           [(ngModel)]="moduleSeleccionado.description"
           name="description"
           required
+          minlength="10"
           #descriptionUpdateInput="ngModel"
           maxlength="250"
-          rows="4"></textarea>
+          rows="4"
+          placeholder="Describe la funcionalidad del módulo... (mínimo 10 caracteres)"
+          aria-describedby="update-desc-error update-desc-hint"
+          [attr.aria-invalid]="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"></textarea>
+        <div class="input-hint" id="update-desc-hint">
+          <small>Mínimo 10 caracteres, máximo 250. Describe claramente la funcionalidad del módulo.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ moduleSeleccionado.description.length }}/250 caracteres</small>
+        </div>
         <div
-          *ngIf="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"
-          class="error-msg">
-          La descripción es requerida
+          id="update-desc-error"
+          *ngIf="descriptionUpdateInput.touched && moduleSeleccionado.description.trim().length > 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="moduleSeleccionado.description.trim().length < 10">La descripción debe tener al menos 10 caracteres.</span>
+          <span *ngIf="moduleSeleccionado.description.length > 250">La descripción no puede superar los 250 caracteres.</span>
+        </div>
+        <div
+          *ngIf="descriptionUpdateInput.touched && moduleSeleccionado.description.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          La descripción es obligatoria.
         </div>
       </div>
 

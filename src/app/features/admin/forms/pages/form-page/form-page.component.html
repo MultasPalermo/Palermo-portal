@@ -145,6 +145,7 @@
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Formulario
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
@@ -153,18 +154,33 @@
           [(ngModel)]="nuevoForm.name"
           name="name"
           required
+          minlength="3"
           #nameInput="ngModel"
           maxlength="100"
           placeholder="Ej: Formulario de acuerdo de pago"
-          aria-describedby="create-name-error"
+          aria-describedby="create-name-error create-name-hint"
           [attr.aria-invalid]="nameInput.invalid && nameInput.touched" />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 3 caracteres, máximo 100. Permite letras, números, espacios y caracteres: - _ . , ( )</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ nuevoForm.name.length }}/100 caracteres</small>
+        </div>
         <div
           id="create-name-error"
-          *ngIf="nameInput.invalid && nameInput.touched"
+          *ngIf="nameInput.touched && nuevoForm.name.trim().length > 0"
           class="error-msg"
           role="alert"
           aria-live="polite">
-          El nombre es requerido
+          <span *ngIf="nuevoForm.name.trim().length < 3">El nombre debe tener al menos 3 caracteres.</span>
+          <span *ngIf="nuevoForm.name.length > 100">El nombre no puede superar los 100 caracteres.</span>
+        </div>
+        <div
+          *ngIf="nameInput.touched && nuevoForm.name.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          El nombre es obligatorio.
         </div>
       </div>
 
@@ -172,6 +188,7 @@
         <label for="create-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="create-desc-input"
@@ -179,19 +196,34 @@
           [(ngModel)]="nuevoForm.description"
           name="description"
           required
+          minlength="10"
           #descriptionInput="ngModel"
-          maxlength="300"
+          maxlength="500"
           rows="4"
-          placeholder="Describe el propósito y uso del formulario..."
-          aria-describedby="create-desc-error"
+          placeholder="Describe el propósito y uso del formulario... (mínimo 10 caracteres)"
+          aria-describedby="create-desc-error create-desc-hint"
           [attr.aria-invalid]="descriptionInput.invalid && descriptionInput.touched"></textarea>
+        <div class="input-hint" id="create-desc-hint">
+          <small>Mínimo 10 caracteres, máximo 500. Describe claramente el propósito del formulario.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ nuevoForm.description.length }}/500 caracteres</small>
+        </div>
         <div
           id="create-desc-error"
-          *ngIf="descriptionInput.invalid && descriptionInput.touched"
+          *ngIf="descriptionInput.touched && nuevoForm.description.trim().length > 0"
           class="error-msg"
           role="alert"
           aria-live="polite">
-          La descripción es requerida
+          <span *ngIf="nuevoForm.description.trim().length < 10">La descripción debe tener al menos 10 caracteres.</span>
+          <span *ngIf="nuevoForm.description.length > 500">La descripción no puede superar los 500 caracteres.</span>
+        </div>
+        <div
+          *ngIf="descriptionInput.touched && nuevoForm.description.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          La descripción es obligatoria.
         </div>
       </div>
 
@@ -231,6 +263,7 @@
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Formulario
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
@@ -239,18 +272,33 @@
           [(ngModel)]="formSeleccionado.name"
           name="name"
           required
+          minlength="3"
           #nameUpdateInput="ngModel"
           maxlength="100"
           placeholder="Ej: Formulario de acuerdo de pago"
-          aria-describedby="update-name-error"
+          aria-describedby="update-name-error update-name-hint"
           [attr.aria-invalid]="nameUpdateInput.invalid && nameUpdateInput.touched" />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 3 caracteres, máximo 100. Permite letras, números, espacios y caracteres: - _ . , ( )</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ formSeleccionado.name.length }}/100 caracteres</small>
+        </div>
         <div
           id="update-name-error"
-          *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched"
+          *ngIf="nameUpdateInput.touched && formSeleccionado.name.trim().length > 0"
           class="error-msg"
           role="alert"
           aria-live="polite">
-          El nombre es requerido
+          <span *ngIf="formSeleccionado.name.trim().length < 3">El nombre debe tener al menos 3 caracteres.</span>
+          <span *ngIf="formSeleccionado.name.length > 100">El nombre no puede superar los 100 caracteres.</span>
+        </div>
+        <div
+          *ngIf="nameUpdateInput.touched && formSeleccionado.name.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          El nombre es obligatorio.
         </div>
       </div>
 
@@ -258,6 +306,7 @@
         <label for="update-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="update-desc-input"
@@ -265,19 +314,34 @@
           [(ngModel)]="formSeleccionado.description"
           name="description"
           required
+          minlength="10"
           #descriptionUpdateInput="ngModel"
-          maxlength="300"
+          maxlength="500"
           rows="4"
-          placeholder="Describe el propósito y uso del formulario..."
-          aria-describedby="update-desc-error"
+          placeholder="Describe el propósito y uso del formulario... (mínimo 10 caracteres)"
+          aria-describedby="update-desc-error update-desc-hint"
           [attr.aria-invalid]="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"></textarea>
+        <div class="input-hint" id="update-desc-hint">
+          <small>Mínimo 10 caracteres, máximo 500. Describe claramente el propósito del formulario.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ formSeleccionado.description.length }}/500 caracteres</small>
+        </div>
         <div
           id="update-desc-error"
-          *ngIf="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"
+          *ngIf="descriptionUpdateInput.touched && formSeleccionado.description.trim().length > 0"
           class="error-msg"
           role="alert"
           aria-live="polite">
-          La descripción es requerida
+          <span *ngIf="formSeleccionado.description.trim().length < 10">La descripción debe tener al menos 10 caracteres.</span>
+          <span *ngIf="formSeleccionado.description.length > 500">La descripción no puede superar los 500 caracteres.</span>
+        </div>
+        <div
+          *ngIf="descriptionUpdateInput.touched && formSeleccionado.description.trim().length === 0"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          La descripción es obligatoria.
         </div>
       </div>
 

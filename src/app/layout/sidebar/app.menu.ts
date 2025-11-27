@@ -45,6 +45,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
               <a
                 [routerLink]="item.routerLink"
                 routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: true}"
                 class="menu-link"
                 [class.disabled]="item.disabled"
                 [attr.title]="item.label">
