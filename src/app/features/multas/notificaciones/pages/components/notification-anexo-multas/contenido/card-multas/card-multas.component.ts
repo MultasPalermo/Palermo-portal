@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { UserInfractionSelectDto } from '../../../../../../../../shared/modeloModelados/Entities/select/UserInfractionSelectDto';
+
 @Component({
   selector: 'app-card-multas',
   standalone: true,
@@ -11,10 +12,18 @@ import { UserInfractionSelectDto } from '../../../../../../../../shared/modeloMo
 export class CardMultasComponent {
   @Input() multa!: UserInfractionSelectDto;
 
+  /** 🔥 CLASE CSS SEGÚN EL ESTADO */
   get estadoClass(): string {
-    return this.multa.stateInfraction === 3 ? 'estado-abierto' : 'estado-pendiente';
+    switch (this.multa.stateInfraction) {
+      case 0: return 'estado-pendiente';
+      case 1: return 'estado-proceso';
+      case 2: return 'estado-pagada';
+      case 3: return 'estado-acuerdo';
+      default: return 'estado-desconocido';
+    }
   }
 
+  /** 🔥 TEXTO QUE SE MOSTRARÁ */
   get estadoTexto(): string {
     switch (this.multa.stateInfraction) {
       case 0: return 'PENDIENTE';

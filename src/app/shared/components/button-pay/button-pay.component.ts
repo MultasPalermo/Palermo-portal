@@ -1,37 +1,85 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+import { CommonModule } from '@angular/common';
+import { PaymentService } from '../../../core/services/payments/payment.service';
 
 @Component({
-  selector: 'app-button-pay',
   standalone: true,
-  imports: [],
+  selector: 'app-button-pay',
+  imports: [CommonModule],
   templateUrl: './button-pay.component.html',
   styleUrls: ['./button-pay.component.scss']
 })
-export class ButtonPayComponent implements AfterViewInit, OnDestroy {
+export class ButtonPayComponent {
 
-  private scriptElement?: HTMLScriptElement;
+  @Input() multaId?: number;
+  @Input() agreementId?: number;
+  @Input() cuotaId?: number;
 
-  constructor(private el: ElementRef) {}
+  @Output() paid = new EventEmitter<void>();
 
-  ngAfterViewInit(): void {
-    this.loadMercadoPagoScript();
-  }
+  loading = false;
+  error: string | null = null;
 
-  ngOnDestroy(): void {
-    if (this.scriptElement) {
-      this.el.nativeElement.removeChild(this.scriptElement);
+  constructor(
+    private http: HttpClient,
+    private paymentService: PaymentService
+  ) {}
+
+  pay() {
+    this.error = null;
+
+    // Validación base
+    if (!this.multaId && !this.agreementId) {
+      this.error = 'No se encontró información de pago.';
+      return;
     }
+
+    this.loading = true;
+
+    // =========================================================
+    // 🔵 1. PAGO DE MULTA
+    // =========================================================
+    if (this.multaId) {
+      this.http.post<{ url: string }>(
+        `${environment.apiURL}/payments/infraction/${this.multaId}/checkout`, {}
+      )
+      .subscribe({
+        next: resp => {
+          this.paid.emit();
+          window.location.href = resp.url;
+        },
+        error: () => this.error = 'No se pudo iniciar el pago de la multa.'
+      })
+      .add(() => this.loading = false);
+
+      return;
+    }
+
+    // =========================================================
+    // 🟡 3. (Opcional) Pago por cuota si el día de mañana regresa
+    // =========================================================
+    if (this.agreementId && this.cuotaId) {
+      this.paymentService.generateAgreementPayment(this.agreementId, this.cuotaId)
+        .subscribe({
+          next: (resp: any) => {
+            if (resp?.url) {
+              this.paid.emit();
+              window.location.href = resp.url;
+            } else {
+              this.error = 'No se pudo generar el pago del acuerdo.';
+            }
+          },
+          error: () => this.error = 'No se pudo iniciar el pago del acuerdo.'
+        })
+        .add(() => this.loading = false);
+
+      return;
+    }
+
+ if (this.agreementId && !this.cuotaId) {
+    this.error = 'Debe seleccionar una cuota para pagar.';
   }
-
-  private loadMercadoPagoScript(): void {
-    const existingScript = this.el.nativeElement.querySelector('script[data-source="button"]');
-    if (existingScript) existingScript.remove();
-
-    this.scriptElement = document.createElement('script');
-    this.scriptElement.src = 'https://www.mercadopago.com.co/integrations/v1/web-payment-checkout.js';
-    this.scriptElement.setAttribute('data-preference-id', '42011033-358f9d87-871b-4c99-8fdf-a5823dee7df9');
-    this.scriptElement.setAttribute('data-source', 'button');
-
-    this.el.nativeElement.querySelector('#mp-button-container')?.appendChild(this.scriptElement);
   }
 }

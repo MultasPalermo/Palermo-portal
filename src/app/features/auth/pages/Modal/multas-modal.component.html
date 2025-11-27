@@ -12,18 +12,25 @@
     <div class="multas-container">
         <div class="ciudadano-info" *ngIf="ciudadano">
             <h4>Ciudadano: {{ maskCitizenName(ciudadano) }}</h4>
-            <p class="description">Consulta tus multas y acuerdos de pago. Al seleccionar una multa podrás descargar el PDF correspondiente.</p>
+            <p class="description">
+                Consulta tus multas y acuerdos de pago. Al seleccionar una multa podrás descargar el PDF correspondiente.
+            </p>
         </div>
 
         <p-tabView>
-            <!-- Pestaña de Multas -->
+
+            <!-- ===================================================== -->
+            <!-- 🔵 TAB DE MULTAS -->
+            <!-- ===================================================== -->
             <p-tabPanel header="Multas">
                 <div class="multas-grid">
+
                     <p-card *ngFor="let multa of multas; trackBy: trackByFn" class="multa-card" (click)="onMultaClick(multa)">
+
                         <ng-template pTemplate="header">
                             <div class="card-header">
                                 <h5>{{ multa.tipo }}</h5>
-                                <p-chip [label]="multa.estado" [styleClass]="getEstadoSeverity(multa.estado)"> </p-chip>
+                                <p-chip [label]="multa.estado" [styleClass]="getEstadoSeverity(multa.estado)"></p-chip>
                             </div>
                         </ng-template>
 
@@ -32,17 +39,23 @@
                                 <div class="multa-detail"><strong>Fecha de infracción:</strong> {{ multa.fecha }}</div>
                                 <div class="multa-detail"><strong>Descripción:</strong> {{ multa.descripcion }}</div>
 
-                                <!-- Contenedor conjunto para descarga + botón de pago -->
+                                <!-- Botón Único de Pago de Multa -->
                                 <div class="multa-actions" *ngIf="multa.estado === 'Pendiente' || multa.estado === 'Con acuerdo'">
+
                                     <small class="click-hint">
                                         <i class="pi pi-download"></i>
                                         {{ multa.estado === 'Pendiente' ? 'Descargar PDF de multa' : 'Descargar acuerdo de pago' }}
                                     </small>
 
-                                     <app-button-pay></app-button-pay>
+                                    <app-button-pay
+                                        [multaId]="multa.id!"
+                                        (paid)="recargarMultas()">
+                                    </app-button-pay>
+
                                 </div>
                             </div>
                         </ng-template>
+
                     </p-card>
                 </div>
 
@@ -51,24 +64,67 @@
                 </div>
             </p-tabPanel>
 
-            <!-- Pestaña de Acuerdos de Pago -->
+
+
+            <!-- ===================================================== -->
+            <!-- 🟢 TAB DE ACUERDOS DE PAGO -->
+            <!-- ===================================================== -->
             <p-tabPanel header="Acuerdos de Pago">
+
                 <div class="acuerdos-grid">
-                    <app-acuerdo-card
-                        *ngFor="let acuerdo of acuerdosPago; trackBy: trackByAcuerdoFn"
-                        [acuerdo]="acuerdo"
-                        (cardClick)="onAcuerdoClick($event)">
-                    </app-acuerdo-card>
+
+                    <div *ngFor="let acuerdo of acuerdosPago; trackBy: trackByAcuerdoFn" class="acuerdo-card">
+
+                        <!-- CARD DEL ACUERDO -->
+                        <app-acuerdo-card
+                            [acuerdo]="acuerdo"
+                            (cardClick)="onAcuerdoClick($event)">
+                        </app-acuerdo-card>
+
+
+                        <!-- ===================================================== -->
+                        <!-- 🔥 BOTÓN ÚNICO PARA PAGAR TODO EL ACUERDO -->
+                        <!-- ===================================================== -->
+                        <div class="pagar-acuerdo-wrapper">
+                            <app-button-pay
+                                [agreementId]="acuerdo.id"
+                                (paid)="recargarAcuerdos()">
+                            </app-button-pay>
+                        </div>
+
+
+                        <!-- ===================================================== -->
+                        <!-- 📌 LISTA DE CUOTAS (SIN BOTONES) -->
+                        <!-- ===================================================== -->
+                        <div class="cuotas-list">
+
+                            <div *ngFor="let cuota of getCuotas(acuerdo)" class="cuota-item">
+
+                                <p>
+                                    Cuota #{{ cuota.number }} –
+                                    <strong>${{ cuota.amount }}</strong>
+                                    (vence: {{ cuota.dueDate | date:'shortDate' }})
+                                </p>
+
+                                <app-button-pay
+      [agreementId]="acuerdo.id"
+      [cuotaId]="cuota.id"
+      (paid)="recargarAcuerdos()">
+    </app-button-pay>
+
+                            </div>
+
+                        </div>
+
+                    </div>
                 </div>
 
                 <div *ngIf="acuerdosPago.length === 0" class="no-acuerdos">
                     <p>No hay acuerdos de pago disponibles para mostrar.</p>
                 </div>
+
             </p-tabPanel>
+
         </p-tabView>
     </div>
-
-    <ng-template pTemplate="footer">
-        <p-button label="Cerrar" icon="pi pi-times" styleClass="p-button-text" (click)="onClose()"> </p-button>
-    </ng-template>
 </p-dialog>

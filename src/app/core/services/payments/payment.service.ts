@@ -4,6 +4,7 @@ import { ApiService } from '../base/api.service';
 import { PaymentAgreementCreateResponse } from '../../../shared/modeloModelados/Entities/PaymentAgreementCreateResponse';
 import { PaymentAgreementInitDto } from '../../../shared/modeloModelados/init/PaymentAgreementInitDto';
 import { PaymentAgreementSelectDto } from '../../../shared/modeloModelados/Entities/select/PaymentAgreementSelectDto';
+import { environment } from '../../../../environments/environment';
 
 // Models
 
@@ -44,6 +45,18 @@ export class PaymentService extends ApiService {
       responseType: 'blob' as 'json'
     });
   }
+
+generateAgreementPayment(agreementId: number, cuotaId: number) {
+  return this.http.post<{ url: string }>(
+    `${environment.apiURL}/payments/agreement/${agreementId}/installment/${cuotaId}/checkout`,
+    {},
+    this.optsJwt()
+  );
+}
+
+
+
+
 
   getFiltered(phoneNumber?: string, address?: string, neighborhood?: string, email?: string) {
     const url = this.url('PaymentAgreement', 'filter');

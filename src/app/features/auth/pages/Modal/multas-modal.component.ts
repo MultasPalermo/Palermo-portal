@@ -8,9 +8,10 @@ import { TabViewModule } from 'primeng/tabview';
 import { PaymentService } from '../../../../core/services/payments/payment.service';
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import Swal from 'sweetalert2';
-import { ButtonPayComponent } from '../../../../shared/components/button-pay/button-pay.component';
+
 import { PaymentAgreementSelectDto } from '../../../../shared/modeloModelados/Entities/select/PaymentAgreementSelectDto';
 import { AcuerdoCardComponent } from '../../../multas/notificaciones/pages/components/contenido/acuerdo-card/acuerdo-card.component';
+import { ButtonPayComponent } from '../../../../shared/components/button-pay/button-pay.component';
 
 interface MultaTableRow {
   id?: number;
@@ -34,6 +35,9 @@ export class MultasModalComponent {
   @Input() multas: MultaTableRow[] = [];
   @Input() acuerdosPago: PaymentAgreementSelectDto[] = [];
   @Input() ciudadano = '';
+  @Input() multaId!: number;
+  @Output() paid = new EventEmitter<void>();
+
   @Output() visibleChange = new EventEmitter<boolean>();
 
   constructor(
@@ -45,6 +49,84 @@ export class MultasModalComponent {
     this.visible = false;
     this.visibleChange.emit(false);
   }
+  emitPaid() {
+  this.paid.emit();
+}
+
+recargarAcuerdos() {
+  this.serviceGeneric.getAll<any>('PaymentAgreement').subscribe({
+    next: (resp: any[]) => {
+      this.acuerdosPago = resp.map((acuerdo: any) => ({
+        ...acuerdo,
+
+        installments: (acuerdo.installments ?? []).map((c: any) => ({
+          id: c.id,
+
+          // normalización: usa lo que exista
+          number: c.number ?? c.feeNumber ?? c.installmentNumber ?? null,
+          amount: c.amount ?? c.value ?? c.total ?? null,
+          dueDate: c.dueDate ?? c.expiration ?? c.deadline ?? null,
+        })),
+
+      }));
+    },
+    error: () => {
+      this.showErrorAlert('No se pudo actualizar el estado de los acuerdos.');
+    }
+  });
+}
+
+
+
+getCuotas(acuerdo: any) {
+  console.log("🔍 Acuerdo recibido:", acuerdo);
+
+  if (!acuerdo.installments) {
+    console.warn("❌ Este acuerdo NO tiene installments");
+    return [];
+  }
+
+  console.log("📌 Cuotas:", acuerdo.installments);
+
+  return acuerdo.installments;
+}
+
+
+
+
+
+
+
+
+  recargarMultas() {
+  this.serviceGeneric.getAll<any>('UserInfraction').subscribe({
+    next: (resp: any[]) => {
+      this.multas = resp.map(m => ({
+        id: m.id,
+        tipo: m.typeInfractionName,
+        fecha: m.dateInfraction,
+        descripcion: m.observations,
+        estado: this.mapEstado(m.stateInfraction),
+        pdfUrl: m.pdfUrl,
+        documentNumber: m.documentNumber
+      }));
+    },
+    error: () => {
+      this.showErrorAlert('No se pudo actualizar el estado de las multas.');
+    }
+  });
+}
+
+mapEstado(value: number): 'Pendiente' | 'Pagada' | 'Con acuerdo' | 'Vencida' {
+  switch (value) {
+    case 0: return 'Pendiente';
+    case 1: return 'Pagada';
+    case 2: return 'Con acuerdo';
+    default: return 'Pendiente';
+  }
+}
+
+
 
   onMultaClick(multa: MultaTableRow) {
     console.log('Clic en multa:', multa);
