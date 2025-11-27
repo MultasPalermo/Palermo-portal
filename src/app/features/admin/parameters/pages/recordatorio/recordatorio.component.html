@@ -130,9 +130,18 @@
             class="form-input"
             formControlName="name"
             placeholder="Ingrese el nombre"
+            maxlength="100"
+            aria-describedby="update-name-hint update-name-error"
+            [attr.aria-invalid]="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
             [class.invalid]="isFieldInvalid('name', updateForm)"
           />
-          <span class="error-message" *ngIf="isFieldInvalid('name', updateForm)">
+          <div class="input-hint" id="update-name-hint">
+            <small>Mínimo 2 caracteres, máximo 100.</small>
+          </div>
+          <div class="char-counter">
+            <small>{{ updateForm.get('name')?.value?.length || 0 }}/100 caracteres</small>
+          </div>
+          <span class="error-message" id="update-name-error" *ngIf="isFieldInvalid('name', updateForm)" role="alert" aria-live="polite">
             {{ getFieldError('name', updateForm) }}
           </span>
         </div>
@@ -149,9 +158,14 @@
             formControlName="days"
             placeholder="Ingrese los días"
             min="1"
+            aria-describedby="update-days-hint update-days-error"
+            [attr.aria-invalid]="updateForm.get('days')?.invalid && updateForm.get('days')?.touched"
             [class.invalid]="isFieldInvalid('days', updateForm)"
           />
-          <span class="error-message" *ngIf="isFieldInvalid('days', updateForm)">
+          <div class="input-hint" id="update-days-hint">
+            <small>Valor numérico positivo (mínimo 1).</small>
+          </div>
+          <span class="error-message" id="update-days-error" *ngIf="isFieldInvalid('days', updateForm)" role="alert" aria-live="polite">
             {{ getFieldError('days', updateForm) }}
           </span>
         </div>
@@ -165,12 +179,17 @@
             id="update-timeUnit"
             class="form-input"
             formControlName="timeUnit"
+            aria-describedby="update-timeUnit-hint update-timeUnit-error"
+            [attr.aria-invalid]="updateForm.get('timeUnit')?.invalid && updateForm.get('timeUnit')?.touched"
             [class.invalid]="isFieldInvalid('timeUnit', updateForm)">
             <option *ngFor="let option of timeUnitOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <span class="error-message" *ngIf="isFieldInvalid('timeUnit', updateForm)">
+          <div class="input-hint" id="update-timeUnit-hint">
+            <small>Seleccione la unidad de tiempo (días, semanas, meses, etc.).</small>
+          </div>
+          <span class="error-message" id="update-timeUnit-error" *ngIf="isFieldInvalid('timeUnit', updateForm)" role="alert" aria-live="polite">
             {{ getFieldError('timeUnit', updateForm) }}
           </span>
         </div>
@@ -198,9 +217,18 @@
             formControlName="description"
             placeholder="Ingrese la descripción"
             rows="4"
+            maxlength="500"
+            aria-describedby="update-description-hint update-description-error"
+            [attr.aria-invalid]="updateForm.get('description')?.invalid && updateForm.get('description')?.touched"
             [class.invalid]="isFieldInvalid('description', updateForm)">
           </textarea>
-          <span class="error-message" *ngIf="isFieldInvalid('description', updateForm)">
+          <div class="input-hint" id="update-description-hint">
+            <small>Mínimo 5 caracteres, máximo 500.</small>
+          </div>
+          <div class="char-counter">
+            <small>{{ updateForm.get('description')?.value?.length || 0 }}/500 caracteres</small>
+          </div>
+          <span class="error-message" id="update-description-error" *ngIf="isFieldInvalid('description', updateForm)" role="alert" aria-live="polite">
             {{ getFieldError('description', updateForm) }}
           </span>
         </div>

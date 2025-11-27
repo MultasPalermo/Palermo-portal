@@ -140,11 +140,12 @@
       <h2>Agregar Nuevo Departamento</h2>
     </div>
 
-    <form [formGroup]="departmentForm" (ngSubmit)="crearDepartamento()" autocomplete="off" class="form-styled">
+    <form [formGroup]="departmentForm" (ngSubmit)="crearDepartamento()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Departamento
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
@@ -152,11 +153,25 @@
           class="custom-input"
           formControlName="name"
           maxlength="50"
-          placeholder="Ej: Antioquia" />
+          placeholder="Ej: Antioquia"
+          aria-describedby="create-name-hint create-name-error"
+          [attr.aria-invalid]="departmentForm.get('name')?.invalid && departmentForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 2 caracteres, máximo 50.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ departmentForm.get('name')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name')"
-          class="error-msg">
-          {{ getFieldError('name') }}
+          id="create-name-error"
+          *ngIf="departmentForm.get('name')?.invalid && departmentForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="departmentForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="departmentForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="departmentForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -164,6 +179,7 @@
         <label for="create-daneCode-input">
           <span class="label-icon">🔢</span>
           Código DANE
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-daneCode-input"
@@ -171,11 +187,25 @@
           class="custom-input"
           formControlName="daneCode"
           maxlength="5"
-          placeholder="Ej: 05" />
+          placeholder="Ej: 05"
+          aria-describedby="create-daneCode-hint create-daneCode-error"
+          [attr.aria-invalid]="departmentForm.get('daneCode')?.invalid && departmentForm.get('daneCode')?.touched"
+        />
+        <div class="input-hint" id="create-daneCode-hint">
+          <small>Máximo 5 dígitos numéricos.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ departmentForm.get('daneCode')?.value?.length || 0 }}/5 dígitos</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('daneCode')"
-          class="error-msg">
-          {{ getFieldError('daneCode') }}
+          id="create-daneCode-error"
+          *ngIf="departmentForm.get('daneCode')?.invalid && departmentForm.get('daneCode')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="departmentForm.get('daneCode')?.hasError('required')">El código DANE es obligatorio.</span>
+          <span *ngIf="departmentForm.get('daneCode')?.hasError('pattern')">El código DANE debe contener solo números.</span>
+          <span *ngIf="departmentForm.get('daneCode')?.hasError('maxlength')">El código DANE no puede superar los 5 dígitos.</span>
         </div>
       </div>
 
@@ -205,22 +235,37 @@
       <h2>Actualizar Departamento</h2>
     </div>
 
-    <form [formGroup]="updateForm" (ngSubmit)="actualizarDepartamento()" autocomplete="off" class="form-styled">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarDepartamento()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Departamento
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
           type="text"
           class="custom-input"
           formControlName="name"
-          maxlength="50" />
+          maxlength="50"
+          aria-describedby="update-name-hint update-name-error"
+          [attr.aria-invalid]="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 2 caracteres, máximo 50.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('name')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('name', updateForm)"
-          class="error-msg">
-          {{ getFieldError('name', updateForm) }}
+          id="update-name-error"
+          *ngIf="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -228,17 +273,32 @@
         <label for="update-daneCode-input">
           <span class="label-icon">🔢</span>
           Código DANE
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-daneCode-input"
           type="text"
           class="custom-input"
           formControlName="daneCode"
-          maxlength="5" />
+          maxlength="5"
+          aria-describedby="update-daneCode-hint update-daneCode-error"
+          [attr.aria-invalid]="updateForm.get('daneCode')?.invalid && updateForm.get('daneCode')?.touched"
+        />
+        <div class="input-hint" id="update-daneCode-hint">
+          <small>Máximo 5 dígitos numéricos.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('daneCode')?.value?.length || 0 }}/5 dígitos</small>
+        </div>
         <div
-          *ngIf="isFieldInvalid('daneCode', updateForm)"
-          class="error-msg">
-          {{ getFieldError('daneCode', updateForm) }}
+          id="update-daneCode-error"
+          *ngIf="updateForm.get('daneCode')?.invalid && updateForm.get('daneCode')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('daneCode')?.hasError('required')">El código DANE es obligatorio.</span>
+          <span *ngIf="updateForm.get('daneCode')?.hasError('pattern')">El código DANE debe contener solo números.</span>
+          <span *ngIf="updateForm.get('daneCode')?.hasError('maxlength')">El código DANE no puede superar los 5 dígitos.</span>
         </div>
       </div>
 

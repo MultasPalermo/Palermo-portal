@@ -140,26 +140,38 @@
       <h2>Agregar Nuevo Rol</h2>
     </div>
 
-    <form (ngSubmit)="crearRol()" autocomplete="off" class="form-styled" #createForm="ngForm">
+    <form [formGroup]="rolForm" (ngSubmit)="crearRol()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="create-name-input">
           <span class="label-icon">📝</span>
           Nombre del Rol
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="create-name-input"
           type="text"
           class="custom-input"
-          [(ngModel)]="nuevoRol.name"
-          name="name"
-          required
-          #nameInput="ngModel"
+          formControlName="name"
           maxlength="50"
-          placeholder="Ej: Administrador" />
+          placeholder="Ej: Administrador"
+          aria-describedby="create-name-hint create-name-error"
+          [attr.aria-invalid]="rolForm.get('name')?.invalid && rolForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="create-name-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ rolForm.get('name')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="nameInput.invalid && nameInput.touched"
-          class="error-msg">
-          El nombre es requerido
+          id="create-name-error"
+          *ngIf="rolForm.get('name')?.invalid && rolForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="rolForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="rolForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="rolForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -167,21 +179,33 @@
         <label for="create-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="create-desc-input"
           class="custom-textarea"
-          [(ngModel)]="nuevoRol.description"
-          name="description"
-          required
-          #descriptionInput="ngModel"
+          formControlName="description"
           maxlength="200"
           rows="4"
-          placeholder="Describe la función del rol..."></textarea>
+          placeholder="Describe la función del rol..."
+          aria-describedby="create-desc-hint create-desc-error"
+          [attr.aria-invalid]="rolForm.get('description')?.invalid && rolForm.get('description')?.touched"
+        ></textarea>
+        <div class="input-hint" id="create-desc-hint">
+          <small>Mínimo 5 caracteres, máximo 200.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ rolForm.get('description')?.value?.length || 0 }}/200 caracteres</small>
+        </div>
         <div
-          *ngIf="descriptionInput.invalid && descriptionInput.touched"
-          class="error-msg">
-          La descripción es requerida
+          id="create-desc-error"
+          *ngIf="rolForm.get('description')?.invalid && rolForm.get('description')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="rolForm.get('description')?.hasError('required')">La descripción es obligatoria.</span>
+          <span *ngIf="rolForm.get('description')?.hasError('minlength')">La descripción debe tener al menos 5 caracteres.</span>
+          <span *ngIf="rolForm.get('description')?.hasError('maxlength')">La descripción no puede superar los 200 caracteres.</span>
         </div>
       </div>
 
@@ -193,7 +217,7 @@
         <button
           type="submit"
           class="submit-btn"
-          [disabled]="createForm.invalid || !nuevoRol.name.trim() || !nuevoRol.description.trim()">
+          [disabled]="rolForm.invalid">
           <span class="btn-icon">➕</span>
           Crear
         </button>
@@ -211,25 +235,37 @@
       <h2>Actualizar Rol</h2>
     </div>
 
-    <form (ngSubmit)="actualizarRol()" autocomplete="off" class="form-styled" #updateForm="ngForm">
+    <form [formGroup]="updateForm" (ngSubmit)="actualizarRol()" autocomplete="off" class="form-styled" novalidate>
       <div class="form-group">
         <label for="update-name-input">
           <span class="label-icon">📝</span>
           Nombre del Rol
+          <span class="required-asterisk">*</span>
         </label>
         <input
           id="update-name-input"
           type="text"
           class="custom-input"
-          [(ngModel)]="rolSeleccionado.name"
-          name="name"
-          required
-          #nameUpdateInput="ngModel"
-          maxlength="50" />
+          formControlName="name"
+          maxlength="50"
+          aria-describedby="update-name-hint update-name-error"
+          [attr.aria-invalid]="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+        />
+        <div class="input-hint" id="update-name-hint">
+          <small>Mínimo 2 caracteres, máximo 50. Solo letras y espacios.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('name')?.value?.length || 0 }}/50 caracteres</small>
+        </div>
         <div
-          *ngIf="nameUpdateInput.invalid && nameUpdateInput.touched"
-          class="error-msg">
-          El nombre es requerido
+          id="update-name-error"
+          *ngIf="updateForm.get('name')?.invalid && updateForm.get('name')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('name')?.hasError('required')">El nombre es obligatorio.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('minlength')">El nombre debe tener al menos 2 caracteres.</span>
+          <span *ngIf="updateForm.get('name')?.hasError('maxlength')">El nombre no puede superar los 50 caracteres.</span>
         </div>
       </div>
 
@@ -237,20 +273,32 @@
         <label for="update-desc-input">
           <span class="label-icon">📄</span>
           Descripción
+          <span class="required-asterisk">*</span>
         </label>
         <textarea
           id="update-desc-input"
           class="custom-textarea"
-          [(ngModel)]="rolSeleccionado.description"
-          name="description"
-          required
-          #descriptionUpdateInput="ngModel"
+          formControlName="description"
           maxlength="200"
-          rows="4"></textarea>
+          rows="4"
+          aria-describedby="update-desc-hint update-desc-error"
+          [attr.aria-invalid]="updateForm.get('description')?.invalid && updateForm.get('description')?.touched"
+        ></textarea>
+        <div class="input-hint" id="update-desc-hint">
+          <small>Mínimo 5 caracteres, máximo 200.</small>
+        </div>
+        <div class="char-counter">
+          <small>{{ updateForm.get('description')?.value?.length || 0 }}/200 caracteres</small>
+        </div>
         <div
-          *ngIf="descriptionUpdateInput.invalid && descriptionUpdateInput.touched"
-          class="error-msg">
-          La descripción es requerida
+          id="update-desc-error"
+          *ngIf="updateForm.get('description')?.invalid && updateForm.get('description')?.touched"
+          class="error-msg"
+          role="alert"
+          aria-live="polite">
+          <span *ngIf="updateForm.get('description')?.hasError('required')">La descripción es obligatoria.</span>
+          <span *ngIf="updateForm.get('description')?.hasError('minlength')">La descripción debe tener al menos 5 caracteres.</span>
+          <span *ngIf="updateForm.get('description')?.hasError('maxlength')">La descripción no puede superar los 200 caracteres.</span>
         </div>
       </div>
 
@@ -262,7 +310,7 @@
         <button
           type="submit"
           class="submit-btn"
-          [disabled]="updateForm.invalid || !rolSeleccionado.name.trim() || !rolSeleccionado.description.trim()">
+          [disabled]="updateForm.invalid">
           <span class="btn-icon">💾</span>
           Actualizar
         </button>

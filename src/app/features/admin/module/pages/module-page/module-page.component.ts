@@ -5,6 +5,7 @@ import { PaginationComponent } from '../../../../../shared/components/pagination
 import { ModuleService } from '../../../../../core/services/ModelSecurity/module.service';
 import { PaginationConfig, PaginationService } from '../../../../../shared/services/pagination.service';
 import { Module } from '../../../../../shared/modeloModelados/modelSecurity/module';
+import { validateModuleName, validateModuleDescription } from '../../../../../shared/utils/validator/validator-form/module';
 
 
 @Component({
@@ -130,32 +131,21 @@ export class ModulePageComponent implements OnInit {
   }
 
   crearModule() {
-    // Validar que los campos no estén vacíos
-    if (!this.nuevoModule.name || !this.nuevoModule.description) {
-      this.mostrarAlerta('Por favor, complete todos los campos', 'error');
+    const validationResult = this.validateNewModule();
+
+    if (!validationResult.isValid) {
+      this.mostrarAlerta(validationResult.error!, 'error');
       return;
     }
 
-    // Validar que no estén solo con espacios en blanco
-    if (this.nuevoModule.name.trim() === '' || this.nuevoModule.description.trim() === '') {
-      this.mostrarAlerta('Los campos no pueden estar vacíos', 'error');
-      return;
-    }
+    const moduleToCreate = {
+      name: this.nuevoModule.name.trim(),
+      description: this.nuevoModule.description.trim()
+    };
 
-    // Validar límites de longitud
-    if (this.nuevoModule.name.length < 3 || this.nuevoModule.name.length > 80) {
-      this.mostrarAlerta('El nombre debe tener entre 3 y 80 caracteres', 'error');
-      return;
-    }
+    console.log('Creando módulo:', moduleToCreate); // Para depuración
 
-    if (this.nuevoModule.description.length < 5 || this.nuevoModule.description.length > 250) {
-      this.mostrarAlerta('La descripción debe tener entre 5 y 250 caracteres', 'error');
-      return;
-    }
-
-    console.log('Creando módulo:', this.nuevoModule); // Para depuración
-
-    this.moduleService.genericService.create<Module>(this.moduleService.endpoint, this.nuevoModule).subscribe({
+    this.moduleService.genericService.create<Module>(this.moduleService.endpoint, moduleToCreate).subscribe({
       next: (moduleCreado: Module) => {
         console.log('Módulo creado exitosamente:', moduleCreado); // Para depuración
         this.cerrarModal();
@@ -165,54 +155,55 @@ export class ModulePageComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error al crear módulo:', error);
-        this.mostrarAlerta('Error al crear el módulo: ' + (error.error?.message || error.message), 'error');
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        this.mostrarAlerta(`Error al crear el módulo: ${errorMessage}`, 'error');
       }
     });
   }
 
- actualizarModule() {
-  if (this.moduleSeleccionado && this.moduleSeleccionado.id) {
-    const original = this.modules.find(m => m.id === this.moduleSeleccionado!.id);
+  /**
+   * Valida los datos del nuevo módulo
+   */
+  private validateNewModule(): { isValid: boolean; error?: string } {
+    const nameError = validateModuleName(this.nuevoModule.name);
+    const descError = validateModuleDescription(this.nuevoModule.description);
 
-    // Verificar si existe el módulo original
-    if (!original) {
-      this.mostrarAlerta('No se encontró el módulo original', 'error');
+    if (nameError) {
+      return { isValid: false, error: nameError };
+    }
+
+    if (descError) {
+      return { isValid: false, error: descError };
+    }
+
+    return { isValid: true };
+  }
+
+  actualizarModule() {
+    if (!this.moduleSeleccionado?.id) {
+      this.mostrarAlerta('Error: No se puede actualizar el módulo', 'error');
       return;
     }
 
-    // Comparar valores ignorando espacios al inicio y fin
-    const nombreNuevo = this.moduleSeleccionado.name.trim();
-    const descripcionNueva = this.moduleSeleccionado.description.trim();
+    const validationResult = this.validateUpdateModule();
 
-    const nombreIgual = nombreNuevo === original.name.trim();
-    const descripcionIgual = descripcionNueva === original.description.trim();
-
-    if (nombreIgual && descripcionIgual) {
-      this.mostrarAlerta('Debe realizar al menos un cambio antes de actualizar.', 'error');
+    if (!validationResult.isValid) {
+      this.mostrarAlerta(validationResult.error!, validationResult.type!);
       return;
     }
 
-    // Validar límites
-    if (nombreNuevo.length < 3 || nombreNuevo.length > 80) {
-      this.mostrarAlerta('El nombre debe tener entre 3 y 80 caracteres', 'error');
-      return;
-    }
+    const moduleToUpdate = {
+      ...this.moduleSeleccionado,
+      name: this.moduleSeleccionado.name.trim(),
+      description: this.moduleSeleccionado.description.trim()
+    };
 
-    if (descripcionNueva.length < 10 || descripcionNueva.length > 250) {
-      this.mostrarAlerta('La descripción debe tener entre 10 y 250 caracteres', 'error');
-      return;
-    }
-
-    // Actualizar con los valores ya "limpios"
-    this.moduleSeleccionado.name = nombreNuevo;
-    this.moduleSeleccionado.description = descripcionNueva;
-
-    console.log('Actualizando módulo:', this.moduleSeleccionado);
+    console.log('Actualizando módulo:', moduleToUpdate);
 
     this.moduleService.genericService.update<Module>(
       this.moduleService.endpoint,
       this.moduleSeleccionado.id,
-      this.moduleSeleccionado
+      moduleToUpdate
     ).subscribe({
       next: (moduleActualizado: Module) => {
         console.log('Módulo actualizado exitosamente:', moduleActualizado);
@@ -222,11 +213,50 @@ export class ModulePageComponent implements OnInit {
       },
       error: (error: any) => {
         console.error('Error al actualizar módulo:', error);
-        this.mostrarAlerta('Error al actualizar el módulo: ' + (error.error?.message || error.message), 'error');
+        const errorMessage = error.error?.message || error.message || 'Error desconocido';
+        this.mostrarAlerta(`No se pudo actualizar el módulo: ${errorMessage}`, 'error');
       }
     });
   }
-}
+
+  /**
+   * Valida los datos del módulo a actualizar
+   */
+  private validateUpdateModule(): { isValid: boolean; error?: string; type?: 'error' | 'info' } {
+    if (!this.moduleSeleccionado) {
+      return { isValid: false, error: 'No hay módulo seleccionado', type: 'error' };
+    }
+
+    const nameError = validateModuleName(this.moduleSeleccionado.name);
+    const descError = validateModuleDescription(this.moduleSeleccionado.description);
+
+    if (nameError) {
+      return { isValid: false, error: nameError, type: 'error' };
+    }
+
+    if (descError) {
+      return { isValid: false, error: descError, type: 'error' };
+    }
+
+    // Verificar si hay cambios
+    const original = this.modules.find(m => m.id === this.moduleSeleccionado!.id);
+    if (original) {
+      const nombreNuevo = this.moduleSeleccionado.name.trim();
+      const descripcionNueva = this.moduleSeleccionado.description.trim();
+      const nombreOriginal = original.name?.trim() || '';
+      const descripcionOriginal = original.description?.trim() || '';
+
+      if (nombreNuevo === nombreOriginal && descripcionNueva === descripcionOriginal) {
+        return {
+          isValid: false,
+          error: 'No se detectaron cambios en el módulo.',
+          type: 'info'
+        };
+      }
+    }
+
+    return { isValid: true };
+  }
 
 
   mostrarAlerta(msg: string, tipo: string) {

@@ -1,26 +1,25 @@
 /**
- * Valida el nombre de un formulario
- * @param name - Nombre del formulario a validar
+ * Valida el nombre de un rol
+ * @param name - Nombre del rol a validar
  * @returns mensaje de error o null si es válido
  */
-export function validateFormName(name: string): string | null {
+export function validateRolName(name: string): string | null {
   // Validar que no esté vacío
   if (!name || name.trim() === '') {
     return 'El nombre es obligatorio.';
   }
 
   // Validar longitud mínima
-  if (name.trim().length < 3) {
-    return 'El nombre debe tener al menos 3 caracteres.';
+  if (name.trim().length < 2) {
+    return 'El nombre debe tener al menos 2 caracteres.';
   }
 
   // Validar longitud máxima
-  if (name.length > 100) {
-    return 'El nombre no puede superar los 100 caracteres.';
+  if (name.length > 50) {
+    return 'El nombre no puede superar los 50 caracteres.';
   }
 
-  // Validar que solo contenga caracteres permitidos (letras, números, espacios y algunos caracteres especiales)
-  // Permite: letras (a-z, A-Z), números (0-9), espacios, guiones, guiones bajos, puntos, comas, paréntesis
+  // Validar que solo contenga caracteres permitidos
   const allowedPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-_.,()]+$/;
   if (!allowedPattern.test(name)) {
     return 'El nombre contiene caracteres no permitidos. Solo se permiten letras, números, espacios y los caracteres: - _ . , ( )';
@@ -31,12 +30,12 @@ export function validateFormName(name: string): string | null {
     return 'El nombre no puede contener múltiples espacios consecutivos.';
   }
 
-  // Validar que no empiece ni termine con espacios (después del trim ya no debería pasar)
+  // Validar que no empiece ni termine con espacios
   if (name !== name.trim()) {
     return 'El nombre no puede comenzar ni terminar con espacios.';
   }
 
-  // Prevenir caracteres peligrosos que podrían usarse en ataques XSS o SQL injection
+  // Prevenir caracteres peligrosos
   const dangerousChars = /<|>|&lt;|&gt;|<script|javascript:|onerror=|onclick=/i;
   if (dangerousChars.test(name)) {
     return 'El nombre contiene caracteres potencialmente peligrosos.';
@@ -46,34 +45,33 @@ export function validateFormName(name: string): string | null {
 }
 
 /**
- * Valida la descripción de un formulario
- * @param description - Descripción del formulario a validar
+ * Valida la descripción de un rol
+ * @param description - Descripción del rol a validar
  * @returns mensaje de error o null si es válido
  */
-export function validateFormDescription(description: string): string | null {
+export function validateRolDescription(description: string): string | null {
   // Validar que no esté vacío
   if (!description || description.trim() === '') {
     return 'La descripción es obligatoria.';
   }
 
   // Validar longitud mínima
-  if (description.trim().length < 10) {
-    return 'La descripción debe tener al menos 10 caracteres.';
+  if (description.trim().length < 5) {
+    return 'La descripción debe tener al menos 5 caracteres.';
   }
 
   // Validar longitud máxima
-  if (description.length > 500) {
-    return 'La descripción no puede superar los 500 caracteres.';
+  if (description.length > 200) {
+    return 'La descripción no puede superar los 200 caracteres.';
   }
 
   // Validar que solo contenga caracteres permitidos
-  // Permite más caracteres que el nombre porque es un campo descriptivo
   const allowedPattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\s\-_.,;:()\n\r¿?¡!'"]+$/;
   if (!allowedPattern.test(description)) {
     return 'La descripción contiene caracteres no permitidos. Solo se permiten letras, números, espacios y signos de puntuación básicos.';
   }
 
-  // Validar que no contenga múltiples espacios consecutivos (excepto saltos de línea)
+  // Validar que no contenga múltiples espacios consecutivos
   if (/[^\S\r\n]{2,}/.test(description)) {
     return 'La descripción no puede contener múltiples espacios consecutivos.';
   }
@@ -83,7 +81,7 @@ export function validateFormDescription(description: string): string | null {
     return 'La descripción no puede comenzar ni terminar con espacios.';
   }
 
-  // Prevenir caracteres peligrosos que podrían usarse en ataques XSS o SQL injection
+  // Prevenir caracteres peligrosos
   const dangerousChars = /<|>|&lt;|&gt;|<script|javascript:|onerror=|onclick=|<iframe|eval\(|expression\(/i;
   if (dangerousChars.test(description)) {
     return 'La descripción contiene caracteres potencialmente peligrosos.';

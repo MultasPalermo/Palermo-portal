@@ -48,6 +48,11 @@ import { CommonModule } from '@angular/common';
       border-radius: 12px;
       font-size: 1.75rem;
       flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .stat-icon i {
+      line-height: 1;
     }
 
     .stat-content {
