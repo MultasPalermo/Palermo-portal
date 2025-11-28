@@ -25,7 +25,7 @@ import { validateEmail } from '../../../../shared/utils/validator/login-register
 <div class="login-wrapper animate-fade-in">
   <div class="login-card">
     <div class="login-image">
-      <img src="../../../assets/demo/login.png" alt="Imagen de fondo" />
+      <img src="../../../assets/demo/flags/image.png" alt="Imagen de fondo" />
     </div>
 
     <div class="login-form">
