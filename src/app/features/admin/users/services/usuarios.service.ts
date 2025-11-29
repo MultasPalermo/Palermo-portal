@@ -36,7 +36,7 @@ export interface Usuario {
   providedIn: 'root'
 })
 export class UsuariosService {
-  private readonly apiUrl = 'https://localhost:7286/api/Users';
+  private readonly apiUrl = 'https://web-app.graydune-e2d1949c.eastus2.azurecontainerapps.io/api/Users';
 
   constructor(private http: HttpClient) {}
 
