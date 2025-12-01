@@ -7,7 +7,6 @@ import { ButtonModule } from 'primeng/button';
 import { Router } from '@angular/router';
 
 import Swal from 'sweetalert2';
-import { RecaptchaService } from '../../../../core/services/utils/recaptcha.service';
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import { DocumentSessionService } from '../../../../core/services/documents/document-session.service';
 import { SessionPingService } from '../../../../core/services/utils/session-ping.service';
@@ -18,7 +17,14 @@ import { TerminosCondicionesModalComponent } from '../../../../shared/components
 @Component({
   selector: 'app-identification',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownModule, InputTextModule, ButtonModule, TerminosCondicionesModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownModule,
+    InputTextModule,
+    ButtonModule,
+    TerminosCondicionesModalComponent
+  ],
   template: `
   <div [ngClass]="layout === 'embedded' ? 'block pt-0' : 'flex justify-center items-center pt-20'">
     <div [ngClass]="layout === 'embedded' ? 'bg-white p-8 md:p-10 rounded-xl shadow-lg w-full max-w-md md:max-w-lg' : 'bg-white p-12 rounded-xl shadow-lg w-full max-w-2xl'">
@@ -52,13 +58,6 @@ import { TerminosCondicionesModalComponent } from '../../../../shared/components
         [disabled]="isSubmitting"
         (click)="onSubmit()">
       </button>
-
-      <small>
-        Este sitio está protegido por reCAPTCHA y aplican la
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de privacidad</a>
-        y los
-        <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Términos de servicio</a> de Google.
-      </small>
     </div>
   </div>
 
@@ -70,16 +69,17 @@ import { TerminosCondicionesModalComponent } from '../../../../shared/components
   `
 })
 export class Identificacion implements OnInit {
+
   @Input() layout: 'standalone' | 'embedded' = 'standalone';
   @Input() redirectTo: string = '/contenido-documento/document';
   @Input() showLogoutButton = false;
-  @Input() mode: 'modal' | 'redirect' = 'redirect'; // Nuevo input para controlar el comportamiento
-  @Output() loginSuccess = new EventEmitter<{multas: any[], acuerdosPago: any[], ciudadano: string}>();
+  @Input() mode: 'modal' | 'redirect' = 'redirect';
+
+  @Output() loginSuccess = new EventEmitter<{ multas: any[], acuerdosPago: any[], ciudadano: string }>();
   @Output() logoutClick = new EventEmitter<void>();
 
   constructor(
     private router: Router,
-    private recaptcha: RecaptchaService,
     private documentSessionService: DocumentSessionService,
     private sessionPing: SessionPingService,
     private api: ServiceGenericService
@@ -120,38 +120,36 @@ export class Identificacion implements OnInit {
   }
 
   async onSubmit() {
-    this.isSubmitting = true;
-    try {
-      const action = 'documento';
-      const recaptchaToken = await this.recaptcha.getToken(action);
+    if (!this.selectedDocType || !this.documentNumber.trim()) {
+      await this.showError('Seleccione tipo de documento e ingrese número.');
+      return;
+    }
 
+    this.isSubmitting = true;
+
+    try {
       const body: LoginDocumentoRequest = {
-        documentTypeId: this.selectedDocType as number, // puede venir undefined, el back lo validará
-        documentNumber: (this.documentNumber ?? '').trim(), // el back valida longitud/numérico/>0
-        recaptchaToken,
-        recaptchaAction: action
+        documentTypeId: this.selectedDocType,
+        documentNumber: this.documentNumber.trim()
       };
 
-      // 1) Login por documento: si hay errores de DTO, FluentValidation devuelve 400 con errors:{...}
       const resp = await this.documentSessionService.loginDocumento(body).toPromise();
       if (!resp?.isSuccess) {
         await this.showError(resp?.message ?? 'No fue posible iniciar sesión.');
         return;
       }
 
-      // 2) Guarda doc para fallback
-      sessionStorage.setItem('docTypeId', String(body.documentTypeId ?? ''));
-      sessionStorage.setItem('docNumber', body.documentNumber ?? '');
+      sessionStorage.setItem('docTypeId', String(body.documentTypeId));
+      sessionStorage.setItem('docNumber', body.documentNumber);
 
-      // 3) Consultar multas
-      const r = await this.documentSessionService.getMultasByDocument(body.documentTypeId!, body.documentNumber!).toPromise();
+      const r = await this.documentSessionService.getMultasByDocument(body.documentTypeId, body.documentNumber).toPromise();
       const data = r?.data ?? [];
+
       if (!data.length) {
         await this.showInfo('Este usuario no tiene multas registradas.', 'Sin resultados');
         return;
       }
 
-      // 4) Extraer multas y acuerdos de pago
       const multas = data.map((x: any) => ({
         id: x.id,
         userId: x.userId,
@@ -163,50 +161,38 @@ export class Identificacion implements OnInit {
         documentNumber: x.documentNumber
       }));
 
-      // Extraer acuerdos de pago de todas las infracciones
       const acuerdosPago = data.flatMap((x: any) => x.paymentAgreements || []);
-
       const first = data[0];
       const ciudadano = [first?.firstName, first?.lastName].filter(Boolean).join(' ');
 
-      // 5) Iniciar ping de sesión (idle)
       this.sessionPing.start(60000);
 
-      // 6) Guardar datos pendientes y mostrar términos y condiciones
       this.pendingData = { multas, acuerdosPago, ciudadano };
       this.showTermsModal = true;
 
     } catch (err: any) {
-      // === Aquí mostramos SOLO el primer error de las validaciones del back ===
       const payload = await this.normalizeErrorPayload(err);
-      const firstMsg = this.pickFirstFluentError(payload)
-        ?? payload?.message
-        ?? 'Error en la solicitud.';
+      const firstMsg = this.pickFirstFluentError(payload) ?? payload?.message ?? 'Error en la solicitud.';
       await this.showError(firstMsg);
+
     } finally {
       this.isSubmitting = false;
     }
   }
 
-  // =========================
-  // SweetAlert2 helpers
-  // =========================
   private async showInfo(text: string, title = 'Aviso') {
     await Swal.fire({ icon: 'info', title, text, confirmButtonText: 'Ok' });
   }
+
   private async showError(text: string, title = 'Error') {
     await Swal.fire({ icon: 'error', title, text, confirmButtonText: 'Entendido' });
   }
 
-  /**
-   * Devuelve SOLO el primer error de FluentValidation (errors:{campo:[msg,...]}).
-   * Prioriza campos del DocumentLoginDto: DocumentTypeId, DocumentNumber, RecaptchaToken, RecaptchaAction.
-   */
   private pickFirstFluentError(payload: any): string | null {
     const errors = payload?.errors;
     if (!errors) return null;
 
-    const order = ['DocumentTypeId', 'DocumentNumber', 'RecaptchaToken', 'RecaptchaAction'];
+    const order = ['DocumentTypeId', 'DocumentNumber'];
     for (const f of order) {
       const list = errors[f];
       if (Array.isArray(list) && list.length) return list[0];
@@ -222,10 +208,6 @@ export class Identificacion implements OnInit {
     this.logoutClick.emit();
   }
 
-  /**
-   * Normaliza el error si vino como Blob (text/html) o string en vez de JSON.
-   * Si no es parseable, devuelve {} para evitar romper el flujo.
-   */
   private async normalizeErrorPayload(err: any): Promise<any> {
     if (err?.error instanceof Blob) {
       try { return JSON.parse(await err.error.text()); } catch { return {}; }
@@ -236,18 +218,13 @@ export class Identificacion implements OnInit {
     return err?.error ?? {};
   }
 
-  // =========================
-  // Términos y condiciones
-  // =========================
   onTermsAccepted() {
     if (this.pendingData) {
       const { multas, acuerdosPago, ciudadano } = this.pendingData;
 
       if (this.mode === 'modal') {
-        // Emitir datos para mostrar modal
         this.loginSuccess.emit({ multas, acuerdosPago, ciudadano });
       } else {
-        // Navegar con state (comportamiento original)
         if (this.redirectTo) {
           this.router.navigate([this.redirectTo], { state: { multas, acuerdosPago, ciudadano } });
         }
@@ -269,7 +246,6 @@ export class Identificacion implements OnInit {
   }
 }
 
-// 🔎 Mapear enum del backend a texto legible (misma función que en contenido-documento.component.ts)
 function mapEstadoFromEnum(v: string | number | null | undefined): 'Pendiente' | 'Pagada' | 'Vencida' | 'Con acuerdo' {
   if (v === null || v === undefined) return 'Pendiente';
 

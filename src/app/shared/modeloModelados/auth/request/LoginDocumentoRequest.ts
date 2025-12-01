@@ -1,6 +1,4 @@
 export interface LoginDocumentoRequest {
-  documentTypeId: number;         
+  documentTypeId: number;
   documentNumber: string;         
-  recaptchaToken: string;
-  recaptchaAction: string;
 }

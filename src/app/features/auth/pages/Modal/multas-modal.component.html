@@ -83,18 +83,23 @@
 
 
                         <!-- ===================================================== -->
-                        <!-- 🔥 BOTÓN ÚNICO PARA PAGAR TODO EL ACUERDO -->
+                        <!-- 🔥 BOTÓN PARA PAGAR ACUERDO (con selector de cuotas) -->
                         <!-- ===================================================== -->
                         <div class="pagar-acuerdo-wrapper">
-                            <app-button-pay
-                                [agreementId]="acuerdo.id"
-                                (paid)="recargarAcuerdos()">
-                            </app-button-pay>
+
+                            <!-- 🔥 AGREGADO: este botón abre el modal -->
+                            <button
+                                pButton
+                                label="Pagar cuotas"
+                                class="p-button-success"
+                                (click)="abrirSelectorCuotas(acuerdo)">
+                            </button>
+
                         </div>
 
 
                         <!-- ===================================================== -->
-                        <!-- 📌 LISTA DE CUOTAS (SIN BOTONES) -->
+                        <!-- 📌 LISTA DE CUOTAS -->
                         <!-- ===================================================== -->
                         <div class="cuotas-list">
 
@@ -107,10 +112,10 @@
                                 </p>
 
                                 <app-button-pay
-      [agreementId]="acuerdo.id"
-      [cuotaId]="cuota.id"
-      (paid)="recargarAcuerdos()">
-    </app-button-pay>
+                                    [agreementId]="acuerdo.id"
+                                    [cuotaId]="cuota.id"
+                                    (paid)="recargarAcuerdos()">
+                                </app-button-pay>
 
                             </div>
 
@@ -127,4 +132,46 @@
 
         </p-tabView>
     </div>
+</p-dialog>
+
+
+
+<!-- ===================================================== -->
+<!-- 🔥 AGREGADO: MODAL PARA SELECCIONAR CUOTAS -->
+<!-- ===================================================== -->
+<p-dialog
+    header="Seleccionar cuotas a pagar"
+    [(visible)]="modalCuotasVisible"
+    [modal]="true"
+    [closable]="true"
+    [style]="{ width: '350px' }">
+
+    <div class="p-fluid">
+        <label for="inputCuotas"><strong>Número de cuotas:</strong></label>
+
+        <p-inputNumber
+            [(ngModel)]="cuotasSeleccionadas"
+            [min]="1"
+            [max]="cuotasMaximas"
+            inputId="inputCuotas">
+        </p-inputNumber>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button
+            pButton
+            label="Cancelar"
+            class="p-button-text"
+            (click)="modalCuotasVisible = false">
+        </button>
+
+        <button
+            pButton
+            label="Continuar"
+            class="p-button-success"
+            (click)="confirmarPagoCuotas()"
+            [disabled]="!cuotasSeleccionadas">
+        </button>
+    </ng-template>
+
 </p-dialog>

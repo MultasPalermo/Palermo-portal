@@ -9,6 +9,10 @@ import { PaymentService } from '../../../../core/services/payments/payment.servi
 import { ServiceGenericService } from '../../../../core/services/utils/generic/service-generic.service';
 import Swal from 'sweetalert2';
 
+import { InputNumberModule } from 'primeng/inputnumber';
+import { FormsModule } from '@angular/forms';
+
+
 import { PaymentAgreementSelectDto } from '../../../../shared/modeloModelados/Entities/select/PaymentAgreementSelectDto';
 import { AcuerdoCardComponent } from '../../../multas/notificaciones/pages/components/contenido/acuerdo-card/acuerdo-card.component';
 import { ButtonPayComponent } from '../../../../shared/components/button-pay/button-pay.component';
@@ -26,7 +30,7 @@ interface MultaTableRow {
 @Component({
   selector: 'app-multas-modal',
   standalone: true,
-  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule, TabViewModule, ButtonPayComponent, AcuerdoCardComponent],
+  imports: [CommonModule, DialogModule, ButtonModule, CardModule, ChipModule, TabViewModule, ButtonPayComponent, AcuerdoCardComponent, InputNumberModule, FormsModule ],
   templateUrl: './multas-modal.component.html',
   styleUrls: ['./multas-modal.component.scss']
 })
@@ -37,8 +41,12 @@ export class MultasModalComponent {
   @Input() ciudadano = '';
   @Input() multaId!: number;
   @Output() paid = new EventEmitter<void>();
-
   @Output() visibleChange = new EventEmitter<boolean>();
+
+    modalCuotasVisible = false;
+  cuotasMaximas = 1;
+  cuotasSeleccionadas: number | null = null;
+  acuerdoActual: any = null;
 
   constructor(
     private paymentService: PaymentService,
@@ -90,6 +98,68 @@ getCuotas(acuerdo: any) {
 
   return acuerdo.installments;
 }
+
+abrirSelectorCuotas(acuerdo: any) {
+  this.acuerdoActual = acuerdo;
+
+  const cuotas = this.getCuotas(acuerdo);
+  this.cuotasMaximas = cuotas.length;
+
+  this.cuotasSeleccionadas = null;
+  this.modalCuotasVisible = true;
+}
+
+confirmarPagoCuotas() {
+  if (!this.cuotasSeleccionadas || !this.acuerdoActual) return;
+
+  const cuotas = this.getCuotas(this.acuerdoActual);
+
+  // Tomamos las primeras N cuotas
+  const cuotasAPagar = cuotas.slice(0, this.cuotasSeleccionadas);
+
+  // ID REAL de la primera cuota
+  const installmentId = cuotasAPagar[0].id;
+
+  console.log("Pagando cuotas reales:", cuotasAPagar);
+
+  this.paymentService.generateAgreementPayment(
+    this.acuerdoActual.id,
+    installmentId
+  ).subscribe({
+    next: (resp) => {
+      if (resp.url) window.location.href = resp.url;
+    },
+    error: (err) => {
+      console.error("ERROR:", err);
+      this.showErrorAlert("Error al procesar el pago del acuerdo.");
+    }
+  });
+
+  this.modalCuotasVisible = false;
+}
+
+
+
+
+
+pagarCuota(acuerdoId: number, cuotaId: number) {
+  this.paymentService.generateAgreementPayment(acuerdoId, cuotaId)
+    .subscribe({
+      next: (resp) => {
+
+        // Manejo si debe abrir checkout del backend
+        if (resp.url) {
+          window.location.href = resp.url;  // redirigir al checkout
+        }
+
+        this.recargarAcuerdos();
+      },
+      error: () => {
+        this.showErrorAlert('Error al procesar el pago de la cuota');
+      }
+    });
+}
+
 
 
 

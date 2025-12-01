@@ -28,58 +28,82 @@ export class ButtonPayComponent {
   ) {}
 
   pay() {
-    this.error = null;
+  this.error = null;
 
-    // Validación base
-    if (!this.multaId && !this.agreementId) {
-      this.error = 'No se encontró información de pago.';
+  if (!this.multaId && !this.agreementId) {
+    this.error = 'No se encontró información de pago.';
+    return;
+  }
+
+  this.loading = true;
+
+  const navigateTo = (url?: string) => {
+    if (!url) {
+      this.error = 'URL de pago inválida.';
+      this.loading = false;
       return;
     }
+    console.log('Navegando a:', url);
+    try {
+      // Preferimos location.assign (más explícito)
+      window.location.assign(url);
+    } catch (e) {
+      console.warn('location.assign falló, intentando window.open', e);
+      window.open(url, '_self');
+    }
+  };
 
-    this.loading = true;
-
-    // =========================================================
-    // 🔵 1. PAGO DE MULTA
-    // =========================================================
-    if (this.multaId) {
-      this.http.post<{ url: string }>(
-        `${environment.apiURL}/payments/infraction/${this.multaId}/checkout`, {}
-      )
-      .subscribe({
-        next: resp => {
+  // PAGO DE MULTA
+  if (this.multaId) {
+    this.http.post<any>(
+      `${environment.apiURL}/payments/infraction/${this.multaId}/checkout`, {}
+    ).subscribe({
+      next: resp => {
+        console.log('Resp checkout infraction:', resp);
+        // Intentamos varios nombres posibles por si el backend cambia
+        const url = resp?.initPoint ?? resp?.init_point ?? resp?.url ?? resp?.InitPoint;
+        if (!url) {
+          this.error = 'No se recibió initPoint del servidor.';
+        } else {
           this.paid.emit();
-          window.location.href = resp.url;
+          navigateTo(url);
+        }
+      },
+      error: (err) => {
+        console.error('Error al iniciar pago de multa:', err);
+        this.error = 'No se pudo iniciar el pago de la multa.';
+      },
+      complete: () => this.loading = false
+    });
+    return;
+  }
+
+  // PAGO DE CUOTA (acuerdo)
+  if (this.agreementId && this.cuotaId) {
+    this.paymentService.generateAgreementPayment(this.agreementId, this.cuotaId)
+      .subscribe({
+        next: (resp: any) => {
+          console.log('Resp checkout agreement:', resp);
+          const url = resp?.initPoint ?? resp?.init_point ?? resp?.url ?? resp?.InitPoint;
+          if (!url) {
+            this.error = 'No se recibió initPoint del servidor (acuerdo).';
+          } else {
+            this.paid.emit();
+            navigateTo(url);
+          }
         },
-        error: () => this.error = 'No se pudo iniciar el pago de la multa.'
-      })
-      .add(() => this.loading = false);
+        error: (err) => {
+          console.error('Error al iniciar pago de acuerdo:', err);
+          this.error = 'No se pudo iniciar el pago del acuerdo.';
+        },
+        complete: () => this.loading = false
+      });
+    return;
+  }
 
-      return;
-    }
-
-    // =========================================================
-    // 🟡 3. (Opcional) Pago por cuota si el día de mañana regresa
-    // =========================================================
-    if (this.agreementId && this.cuotaId) {
-      this.paymentService.generateAgreementPayment(this.agreementId, this.cuotaId)
-        .subscribe({
-          next: (resp: any) => {
-            if (resp?.url) {
-              this.paid.emit();
-              window.location.href = resp.url;
-            } else {
-              this.error = 'No se pudo generar el pago del acuerdo.';
-            }
-          },
-          error: () => this.error = 'No se pudo iniciar el pago del acuerdo.'
-        })
-        .add(() => this.loading = false);
-
-      return;
-    }
-
- if (this.agreementId && !this.cuotaId) {
+  if (this.agreementId && !this.cuotaId) {
     this.error = 'Debe seleccionar una cuota para pagar.';
+    this.loading = false;
   }
-  }
+}
 }
