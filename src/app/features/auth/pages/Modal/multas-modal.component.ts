@@ -63,79 +63,104 @@ export class MultasModalComponent {
 
 recargarAcuerdos() {
   this.serviceGeneric.getAll<any>('PaymentAgreement').subscribe({
-    next: (resp: any[]) => {
-      this.acuerdosPago = resp.map((acuerdo: any) => ({
-        ...acuerdo,
+    next: (resp: any) => {
+      const respArray = Array.isArray(resp) ? resp : [];
 
-        installments: (acuerdo.installments ?? []).map((c: any) => ({
-          id: c.id,
+      this.acuerdosPago = respArray.map((acuerdo: any) => {
+        // El backend retorna installmentSchedule (minúscula) con el array de cuotas
+        const cuotasArray = Array.isArray(acuerdo.installmentSchedule)
+          ? acuerdo.installmentSchedule
+          : [];
 
-          // normalización: usa lo que exista
-          number: c.number ?? c.feeNumber ?? c.installmentNumber ?? null,
-          amount: c.amount ?? c.value ?? c.total ?? null,
-          dueDate: c.dueDate ?? c.expiration ?? c.deadline ?? null,
-        })),
+        return {
+          ...acuerdo,
+          cuotas: cuotasArray.map((c: any) => ({
+            id: c.id,
+            numero: c.number,
+            monto: c.amount,
+            fechaPago: c.paymentDate,
+            pagada: c.isPaid
+          }))
+        };
+      });
 
-      }));
+      console.log("✅ Acuerdos cargados:", this.acuerdosPago);
     },
-    error: () => {
-      this.showErrorAlert('No se pudo actualizar el estado de los acuerdos.');
+    error: (err) => {
+      console.error("❌ Error al cargar acuerdos:", err);
+      this.showErrorAlert('No se pudieron cargar los acuerdos de pago.');
     }
   });
 }
 
-
-
 getCuotas(acuerdo: any) {
-  console.log("🔍 Acuerdo recibido:", acuerdo);
-
-  if (!acuerdo.installments) {
-    console.warn("❌ Este acuerdo NO tiene installments");
+  if (!acuerdo || !acuerdo.cuotas) {
     return [];
   }
 
-  console.log("📌 Cuotas:", acuerdo.installments);
-
-  return acuerdo.installments;
+  return Array.isArray(acuerdo.cuotas) ? acuerdo.cuotas : [];
 }
 
 abrirSelectorCuotas(acuerdo: any) {
+  console.log("=== ABRIENDO SELECTOR DE CUOTAS ===");
+  console.log("Acuerdo completo:", acuerdo);
+  console.log("Acuerdo ID:", acuerdo.id);
+  console.log("Acuerdo.installments (total):", acuerdo.installments);
+
   this.acuerdoActual = acuerdo;
 
-  const cuotas = this.getCuotas(acuerdo);
-  this.cuotasMaximas = cuotas.length;
+  // Usar el número total de cuotas del acuerdo (no las cuotas guardadas)
+  const totalCuotas = acuerdo.installments || 0;
 
-  this.cuotasSeleccionadas = null;
+  if (!totalCuotas || totalCuotas <= 0) {
+    this.showErrorAlert(`Este acuerdo no tiene cuotas configuradas.`);
+    return;
+  }
+
+  // El usuario puede pagar de 1 hasta el total de cuotas del acuerdo
+  this.cuotasMaximas = totalCuotas;
+  this.cuotasSeleccionadas = 1;
   this.modalCuotasVisible = true;
+  console.log("✅ Modal abierto. Cuotas disponibles:", totalCuotas);
 }
 
 confirmarPagoCuotas() {
-  if (!this.cuotasSeleccionadas || !this.acuerdoActual) return;
+  if (!this.cuotasSeleccionadas || this.cuotasSeleccionadas <= 0) {
+    this.showErrorAlert("Por favor, selecciona al menos 1 cuota para pagar.");
+    return;
+  }
 
-  const cuotas = this.getCuotas(this.acuerdoActual);
+  if (!this.acuerdoActual) {
+    this.showErrorAlert("Error: No se encontró el acuerdo de pago.");
+    return;
+  }
 
-  // Tomamos las primeras N cuotas
-  const cuotasAPagar = cuotas.slice(0, this.cuotasSeleccionadas);
+  console.log("Procesando pago de cuotas:");
+  console.log("- Acuerdo ID:", this.acuerdoActual.id);
+  console.log("- Cantidad de cuotas a pagar:", this.cuotasSeleccionadas);
 
-  // ID REAL de la primera cuota
-  const installmentId = cuotasAPagar[0].id;
-
-  console.log("Pagando cuotas reales:", cuotasAPagar);
-
+  // Enviar la cantidad de cuotas como cuotaId al endpoint
+  // El backend lo interpretará como "cantidad de cuotas a pagar"
   this.paymentService.generateAgreementPayment(
     this.acuerdoActual.id,
-    installmentId
+    this.cuotasSeleccionadas  // Enviar la cantidad seleccionada
   ).subscribe({
     next: (resp) => {
-      if (resp.url) window.location.href = resp.url;
+      this.modalCuotasVisible = false;
+
+      if (resp.url) {
+        console.log("Redirigiendo a MercadoPago:", resp.url);
+        window.location.href = resp.url;
+      } else {
+        this.showErrorAlert("Error: No se recibió la URL de pago.");
+      }
     },
     error: (err) => {
-      console.error("ERROR:", err);
-      this.showErrorAlert("Error al procesar el pago del acuerdo.");
+      console.error("Error al procesar el pago:", err);
+      this.modalCuotasVisible = false;
+      this.showErrorAlert(`Error al procesar el pago: ${err.error?.message || err.message || 'Error desconocido'}`);
     }
   });
-
-  this.modalCuotasVisible = false;
 }
 
 
