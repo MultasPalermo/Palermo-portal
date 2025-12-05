@@ -14,7 +14,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { LayoutService } from '../services/layout.service';
 import { ProfileService } from '../../core/services/profile/profile.service';
-import { NotificationBellComponent } from '../../shared/notificacion/notificacion.component';
+import { NotificacionComponent } from '../../features/multas/notificaciones/pages/components/encabezado/notificacion/notificacion.component';
 
 
 
@@ -34,7 +34,7 @@ import { NotificationBellComponent } from '../../shared/notificacion/notificacio
     TooltipModule,
     DialogModule,
     InputTextModule,
-     NotificationBellComponent
+     NotificacionComponent
   ]
 })
 export class AppTopbar implements OnInit, OnDestroy {
