@@ -1,9 +1,9 @@
 // shared/utils/validators.ts
 export function validateEmail(email: string): string | null {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const regex = /^[^\s@]+@soy\.sena\.edu\.co$/;
   if (!email.trim()) return 'El correo electrónico es obligatorio.';
   if (email.length > 150) return 'El correo electrónico no debe superar los 150 caracteres.';
-  if (!regex.test(email)) return 'El correo electrónico no tiene un formato válido.';
+  if (!regex.test(email)) return 'El correo electrónico debe ser del dominio @soy.sena.edu.co';
   return null;
 }
 
@@ -34,11 +34,11 @@ export function validateRegisterPassword(password: string): string | null {
 }
 
 export function validateRegisterEmail(email: string): string | null {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@soy\.sena\.edu\.co$/;
 
   if (!email.trim()) return 'El correo electrónico es obligatorio.';
   if (email.length > 150) return 'El correo electrónico no debe superar los 150 caracteres.';
-  if (!emailRegex.test(email)) return 'El correo electrónico no tiene un formato válido.';
+  if (!emailRegex.test(email)) return 'El correo electrónico debe ser del dominio @soy.sena.edu.co';
 
   return null;
 }
