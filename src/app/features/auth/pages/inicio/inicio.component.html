@@ -11,8 +11,27 @@
 
   <!-- HERO -->
   <main class="hero" id="inicio">
-    <div class="hero-overlay"></div>
+    <div class="hero-overlay">
+      <div class="hero-overlay-bubble"></div>
+      <div class="hero-overlay-bubble"></div>
+      <div class="hero-overlay-bubble"></div>
+    </div>
     <div class="hero-inner">
+      <div class="qr-code-section">
+        <div class="qr-code-card">
+          <div class="qr-code-header">
+            <mat-icon>smartphone</mat-icon>
+            <h3>Descarga nuestra App</h3>
+          </div>
+          <div class="qr-code-image">
+            <img src="assets/demo/frame.png" alt="Código QR para descargar la aplicación móvil" />
+          </div>
+          <p class="qr-code-description">
+            Escanea el código QR con tu celular para descargar la aplicación móvil
+          </p>
+        </div>
+      </div>
+      
       <div class="hero-content">
         <span class="hero-badge">Sistema Ciudadano</span>
         <h1 class="hero-title">
@@ -23,12 +42,15 @@
           Consulta rápida, información transparente y gestión digital de tus infracciones ciudadanas
         </p>
       </div>
-      <div class="hero-form">
-        <app-identification
-          [layout]="'embedded'"
-          [mode]="'modal'"
-          (loginSuccess)="onMultasConsultadas($event.multas, $event.acuerdosPago, $event.ciudadano)">
-        </app-identification>
+      
+      <div class="hero-form-wrapper">
+        <div class="hero-form">
+          <app-identification
+            [layout]="'embedded'"
+            [mode]="'modal'"
+            (loginSuccess)="onMultasConsultadas($event.multas, $event.acuerdosPago, $event.ciudadano)">
+          </app-identification>
+        </div>
       </div>
     </div>
   </main>

@@ -111,19 +111,95 @@ $white: #ffffff;
     left: 0;
     right: 0;
     bottom: 0;
-    background:
-      radial-gradient(circle at 20% 80%, rgba(255,255,255,.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255,255,255,.08) 0%, transparent 50%);
     pointer-events: none;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    &::before {
+      width: 400px;
+      height: 400px;
+      top: -100px;
+      left: -100px;
+      animation: floatBubble1 25s ease-in-out infinite;
+    }
+    
+    &::after {
+      width: 350px;
+      height: 350px;
+      bottom: -80px;
+      right: -80px;
+      animation: floatBubble2 30s ease-in-out infinite;
+    }
+  }
+  
+  .hero-overlay-bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    
+    &:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      top: 20%;
+      right: 10%;
+      animation: floatBubble3 20s ease-in-out infinite;
+    }
+    
+    &:nth-child(2) {
+      width: 200px;
+      height: 200px;
+      bottom: 30%;
+      left: 15%;
+      animation: floatBubble4 22s ease-in-out infinite;
+    }
+    
+    &:nth-child(3) {
+      width: 150px;
+      height: 150px;
+      top: 50%;
+      left: 50%;
+      animation: floatBubble5 18s ease-in-out infinite;
+    }
+  }
+  
+  @keyframes floatBubble1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, 30px) scale(1.1); }
+  }
+  
+  @keyframes floatBubble2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-40px, -40px) scale(1.15); }
+  }
+  
+  @keyframes floatBubble3 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-20px, 20px); }
+  }
+  
+  @keyframes floatBubble4 {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(25px, -25px); }
+  }
+  
+  @keyframes floatBubble5 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-15px, 15px) scale(1.2); }
   }
 
   .hero-inner {
     position: relative;
-    max-width: 1300px;
+    max-width: 1400px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 80px;
     align-items: center;
   }
 
@@ -158,9 +234,75 @@ $white: #ffffff;
     }
   }
 
+  .hero-form-wrapper {
+    position: relative;
+    z-index: 10;
+  }
+
   .hero-form {
     position: relative;
     z-index: 10;
+  }
+
+  .qr-code-section {
+    position: relative;
+    z-index: 10;
+  }
+
+  .qr-code-card {
+    background: $white;
+    padding: 24px;
+    border-radius: 20px;
+    @include shadow-strong;
+    text-align: center;
+
+    .qr-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      mat-icon {
+        color: $primary-green;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: $text-dark;
+        margin: 0;
+      }
+    }
+
+    .qr-code-image {
+      width: 240px;
+      height: 240px;
+      margin: 0 auto 16px;
+      padding: 12px;
+      background: $white;
+      border: 2px solid $border-color;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .qr-code-description {
+      font-size: 13px;
+      color: $text-gray;
+      line-height: 1.5;
+      margin: 0;
+    }
   }
 }
 
@@ -613,6 +755,16 @@ $white: #ffffff;
       .hero-subtitle {
         margin-left: auto;
         margin-right: auto;
+      }
+    }
+
+    .hero-form-wrapper {
+      flex-direction: column;
+      align-items: center;
+
+      .qr-code-section {
+        width: 100%;
+        max-width: 300px;
       }
     }
   }
