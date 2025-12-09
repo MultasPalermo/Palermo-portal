@@ -106,12 +106,14 @@
                             <div *ngFor="let cuota of getCuotas(acuerdo)" class="cuota-item">
 
                                 <p>
-                                    Cuota #{{ cuota.number }} –
-                                    <strong>${{ cuota.amount }}</strong>
-                                    (vence: {{ cuota.dueDate | date:'shortDate' }})
+                                    Cuota #{{ cuota.numero }} –
+                                    <strong>{{ cuota.monto | currency:'COP':'symbol-narrow' }}</strong>
+                                    (vence: {{ cuota.fechaPago | date:'dd/MM/yyyy' }})
+                                    <span *ngIf="cuota.pagada" class="badge-pagada">✓ Pagada</span>
                                 </p>
 
                                 <app-button-pay
+                                    *ngIf="!cuota.pagada"
                                     [agreementId]="acuerdo.id"
                                     [cuotaId]="cuota.id"
                                     (paid)="recargarAcuerdos()">

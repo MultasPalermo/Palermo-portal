@@ -14,7 +14,9 @@
       "Bash(npm test:*)",
       "Bash(npm start)",
       "Bash(npm start:*)",
-      "Bash(NUL)"
+      "Bash(NUL)",
+      "Bash(nul)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }
