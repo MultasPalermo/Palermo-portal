@@ -88,7 +88,7 @@ pipeline {
                 dir(env.PROJECT_DIR) {
                     script {
                         // Selecciona Dockerfile según entorno
-                        def dockerfileToUse = (env.ENVIRONMENT == 'develop') ? 'Dockerfile.dev' : 'Dockerfile'
+                        def dockerfileToUse = (env.ENVIRONMENT == 'develop') ? : 'Dockerfile'
 
                         echo "🐳 Construyendo imagen Docker para PALERMO-PORTAL (${ENVIRONMENT}) usando ${dockerfileToUse}..."
 
